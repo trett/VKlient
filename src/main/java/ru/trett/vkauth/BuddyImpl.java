@@ -76,7 +76,7 @@ public class BuddyImpl implements Buddy {
 
     @Override
     public String getOnlineStatus() {
-        return online == 0 ? "offline" : "online"; //TODO: something wrong
+        return online == 0 ? "offline" : "online";
     }
 
     @Override
