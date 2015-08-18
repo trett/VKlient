@@ -5,7 +5,6 @@ package ru.trett.vklient;
  * @since 15.08.2015
  */
 
-import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -71,7 +70,7 @@ public class Roster {
         me.setExpanded(true);
         this.account = account;
         fillFriendsNode();
-        updateTree();
+        updateInfo();
     }
 
     public void fillFriendsNode() {
@@ -111,20 +110,18 @@ public class Roster {
         });
     }
 
-    public void updateTree() {
-        new Timer().schedule(
-                new TimerTask() {
+    public void updateInfo() {
+        Timer timer = new Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("Updating -----------------------------------------");
+                VKUtils.updateAccountInfo(account);
+                System.out.println("Updated-------------------------------------------");
+            }
+        };
 
-                    @Override
-                    public void run() {
-                        Platform.runLater(() -> {
-                            System.out.println("Start update -----------------------------------------");
-                            VKUtils.updateAccountInfo(account);
-                            System.out.println("Updated----------------------------------------");
-                        });
-
-                    }
-                }, 5000, 60000);
+        timer.schedule(timerTask, 10000, 60000);
     }
 
     private ColorAdjust effect(int online) {
