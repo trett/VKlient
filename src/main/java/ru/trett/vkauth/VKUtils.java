@@ -57,7 +57,7 @@ public class VKUtils {
                 buddies.add(buddy);
             }
             return buddies;
-        } catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException|NullPointerException e) {
             e.printStackTrace();
         }
         return null;
@@ -73,23 +73,25 @@ public class VKUtils {
             System.out.println(obj);
             JSONArray array = obj.getJSONArray("response");
             StringBuilder content = new StringBuilder();
+            StringBuilder message = new StringBuilder();
             Date date = new Date();
             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.");
             for (int i = 1; i < array.length(); ++i) {
-                date.setTime(array.getJSONObject(i).getLong("date") * 1000) ;//.toString();
-                String message = "<p>[" + sdf.format(date) + "] ";
-                if(array.getJSONObject(i).has("emoji")) {
-                    message += EmojiParser.parseToHtmlDecimal(array.getJSONObject(i).getString("body")) + "<br />";
+                date.setTime(array.getJSONObject(i).getLong("date") * 1000);//.toString();
+                message.append("<p>[" + sdf.format(date) + "] ");
+                if (array.getJSONObject(i).has("emoji")) {
+                    message.append(EmojiParser.parseToHtmlDecimal(array.getJSONObject(i).getString("body")) + "<br />");
 
                 } else {
-                    message += array.getJSONObject(i).getString("body") + "<br />";
+                    message.append(array.getJSONObject(i).getString("body") + "<br />");
                 }
-                message += "</p>";
-                content.insert(0, message);
+                message.append("</p>");
+                content.insert(0, message.toString());
+                message.setLength(0);
             }
             content.insert(0, "<head><style>p { font: 10pt sans-serif; }</style></head>"); //temporary
             return content.toString();
-        } catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException|NullPointerException e) {
             e.printStackTrace();
         }
         return null;
@@ -110,16 +112,19 @@ public class VKUtils {
                 friends.get(i).setOnlineStatus(json.getJSONObject(i).getInt("online"));
                 friends.get(i).setStatus(json.getJSONObject(i).getString("status"));
             }
-        } catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException|NullPointerException e) {
             e.printStackTrace();
         }
     }
 
-    private static JSONObject requestBuilder(String vkMethod, String urlParameters) {
+    private static JSONObject requestBuilder(String vkMethod, String urlParameters) throws NullPointerException{
         StringBuilder url = new StringBuilder("https://api.vk.com/method/");
         url.append(vkMethod);
-        JSONObject recievedAnswer = new JSONObject(Request.sendRequest(url.toString(), urlParameters));
-        System.out.println(urlParameters + System.getProperty("line.separator") + recievedAnswer);
+        String str = Request.sendRequest(url.toString(), urlParameters);
+        if (str == null)
+            throw new NullPointerException();
+        JSONObject recievedAnswer = new JSONObject(str);
+        System.out.println(urlParameters + System.getProperty("line.separator") + recievedAnswer); //debug output
         return recievedAnswer;
     }
 

@@ -60,7 +60,6 @@ public class ChatWindowController {
 
     public void enterKeyPressed(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ENTER) {
-            System.out.println("userId: ");
             try {
 
                 String urlParameters = "user_id=" + URLEncoder.encode(Integer.toString(userId), "UTF-8") +
