@@ -1,0 +1,26 @@
+.tree-cell {
+    -fx-font-smoothing-type: gray;
+    -fx-font-size: 0.9em;
+/*    -fx-background-color: linear-gradient(#ffffff 0%, #f6f6f6 47%, #ededed 100%);*/
+    
+} 
+
+.tree-cell:selected {
+    -fx-background-color: linear-gradient(#328BDB 0%, #207BCF 25%, #1973C9 75%, #0A65BF 100%);
+    -fx-text-fill: #333;
+    -fx-font-weight: bold;
+    
+}
+
+.tree-cell:even {
+    -fx-background-color: #ededed;
+    
+    
+} 
+
+/*.tree-cell:highlighted {
+    -fx-background-color: linear-gradient(#328BDB 0%, #207BCF 25%, #1973C9 75%, #0A65BF 100%);
+    -fx-text-fill: black;
+    
+}*/
+
