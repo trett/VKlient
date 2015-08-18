@@ -61,17 +61,13 @@ public class ChatWindowController {
     public void enterKeyPressed(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ENTER) {
             System.out.println("userId: ");
-//            engine.loadContent(area.getText(), "text/html");
             try {
 
                 String urlParameters = "user_id=" + URLEncoder.encode(Integer.toString(userId), "UTF-8") +
                         "&access_token=" + URLEncoder.encode(account.getAccessToken(), "UTF-8") +
                         "&chat_id=1" +
                         "&message=" + URLEncoder.encode(area.getText(), "UTF-8");
-//                JSONObject obj = getInfo(userId, accessToken, "friends.get", urlParameters, "GET");
-                String ans = Request.sendRequest("https://api.vk.com/method/messages.send", urlParameters);
-//                System.out.println(account.getAccessToken() + " " + account.getUserId() + " " + userId + ans);
-//                System.out.println(urlParameters);
+                String ans = Request.sendRequest("https://api.vk.com/method/messages.send", urlParameters); //TODO: move to API and get delivery message
                 area.clear();
                 area.positionCaret(0);
             } catch (UnsupportedEncodingException e) {

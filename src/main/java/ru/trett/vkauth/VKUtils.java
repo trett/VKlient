@@ -7,7 +7,9 @@ import ru.trett.vklient.Account;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -71,16 +73,21 @@ public class VKUtils {
             System.out.println(obj);
             JSONArray array = obj.getJSONArray("response");
             StringBuilder content = new StringBuilder();
-
+            Date date = new Date();
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.");
             for (int i = 1; i < array.length(); ++i) {
-//                content.append(array.getJSONObject(i).getString("date"));
-//                content.append(" ");
+                date.setTime(array.getJSONObject(i).getLong("date") * 1000) ;//.toString();
+                String message = "<p>[" + sdf.format(date) + "] ";
                 if(array.getJSONObject(i).has("emoji")) {
-                    content.insert(0, EmojiParser.parseToHtmlDecimal(array.getJSONObject(i).getString("body")) + "<br />");
+                    message += EmojiParser.parseToHtmlDecimal(array.getJSONObject(i).getString("body")) + "<br />";
+
                 } else {
-                    content.insert(0, array.getJSONObject(i).getString("body") + "<br />");
+                    message += array.getJSONObject(i).getString("body") + "<br />";
                 }
+                message += "</p>";
+                content.insert(0, message);
             }
+            content.insert(0, "<head><style>p { font: 10pt sans-serif; }</style></head>"); //temporary
             return content.toString();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
