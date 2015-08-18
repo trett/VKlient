@@ -1,5 +1,6 @@
 package ru.trett.vkauth;
 
+import com.vdurmont.emoji.EmojiParser;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.trett.vklient.Account;
@@ -70,12 +71,16 @@ public class VKUtils {
             System.out.println(obj);
             JSONArray array = obj.getJSONArray("response");
             StringBuilder content = new StringBuilder();
+
             for (int i = 1; i < array.length(); ++i) {
 //                content.append(array.getJSONObject(i).getString("date"));
 //                content.append(" ");
-                content.insert(0, array.getJSONObject(i).getString("body") + "<br />");
+                if(array.getJSONObject(i).has("emoji")) {
+                    content.insert(0, EmojiParser.parseToHtmlDecimal(array.getJSONObject(i).getString("body")) + "<br />");
+                } else {
+                    content.insert(0, array.getJSONObject(i).getString("body") + "<br />");
+                }
             }
-            content.insert(0, "<head><meta charset=utf-8></head>");
             return content.toString();
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
