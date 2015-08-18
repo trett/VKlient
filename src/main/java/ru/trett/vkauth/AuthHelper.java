@@ -80,8 +80,6 @@ public class AuthHelper {
             url.append("?client_id=" + getClient_id());
             url.append("&display=page");
             url.append("&scope=friends");
-            url.append("&email=trett1983@mail.ru");
-
             url.append("&response_type=token&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=messages");
             webEngine.load(url.toString());
             getChildren().add(browser);
