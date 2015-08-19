@@ -8,7 +8,10 @@ import ru.trett.vklient.Account;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Roman Tretyakov
@@ -30,7 +33,7 @@ public class VKUtils {
             name.put("onlineStatus", Integer.toString(json.getJSONObject(0).getInt("online")));
             name.put("status", json.getJSONObject(0).getString("status"));
             return name;
-        } catch (UnsupportedEncodingException|NullPointerException e) {
+        } catch (UnsupportedEncodingException | NullPointerException e) {
             e.printStackTrace();
         }
         return null;
@@ -54,7 +57,7 @@ public class VKUtils {
                 buddies.add(buddy);
             }
             return buddies;
-        } catch (UnsupportedEncodingException|NullPointerException e) {
+        } catch (UnsupportedEncodingException | NullPointerException e) {
             e.printStackTrace();
         }
         return null;
@@ -87,7 +90,7 @@ public class VKUtils {
             }
             content.insert(0, "<head><style>p { font: 10pt sans-serif; }</style></head>"); //temporary
             return content.toString();
-        } catch (UnsupportedEncodingException|NullPointerException e) {
+        } catch (UnsupportedEncodingException | NullPointerException e) {
             e.printStackTrace();
         }
         return null;
@@ -108,40 +111,40 @@ public class VKUtils {
                 friends.get(i).setOnlineStatus(json.getJSONObject(i).getInt("online"));
                 friends.get(i).setStatus(json.getJSONObject(i).getString("status"));
             }
-        } catch (UnsupportedEncodingException|NullPointerException e) {
+        } catch (UnsupportedEncodingException | NullPointerException e) {
             e.printStackTrace();
         }
     }
 
-    public static void getLongPollServer(Account account) {
+    public static HashMap<String, String> getLongPollServer(Account account) {
 //        Example {"ts":1698645966,"updates":[]}
         String url = Request.sendRequest("https://api.vk.com/method/messages.getLongPollServer",
                 "access_token=" + account.getAccessToken());
+        System.out.println("Get Server:" + url);
         JSONObject obj = new JSONObject(url);
-        String lpServer = obj.getJSONObject("response").getString("server");
-        String key = obj.getJSONObject("response").getString("key");
-        int ts = obj.getJSONObject("response").getInt("ts");
-        System.out.println("Long Poll Server: " + lpServer);
-        try {
-            String urlParameters = "act=a_check" + "&key=" + URLEncoder.encode(key, "UTF-8") +
-                    "&ts=" + URLEncoder.encode(Integer.toString(ts), "UTF-8") +
-                    "&wait=25" +
-                    "&mode=2";
-            String answer = Request.sendRequest("http://" + lpServer, urlParameters);
-//            JSONObject json = new JSONObject(answer);
-//            JSONObject ts = json.getJSONObject("ts");
-//            JSONArray array = json.getJSONArray("updates");
-//            StringBuilder content = new StringBuilder();
-            //TODO: parser for answer
-            System.out.println(urlParameters);
-            System.out.println("LPServerAnswer " + answer);
-        } catch (UnsupportedEncodingException|NullPointerException e) {
-            e.printStackTrace();
-        }
-
+        HashMap<String, String> lpServerMap = new HashMap<>();
+        lpServerMap.put("server", obj.getJSONObject("response").getString("server"));
+        lpServerMap.put("key", obj.getJSONObject("response").getString("key"));
+        lpServerMap.put("ts", Integer.toString(obj.getJSONObject("response").getInt("ts")));
+        return lpServerMap;
     }
 
-    private static JSONObject requestBuilder(String vkMethod, String urlParameters) throws NullPointerException{
+    public static String getUpdates(String server, String key, String ts) {
+        try {
+            System.out.println(server + " " + key + " " + ts);
+            String urlParameters = "act=a_check" + "&key=" + URLEncoder.encode(key, "UTF-8") +
+                    "&ts=" + URLEncoder.encode(ts, "UTF-8") +
+                    "&wait=25" +
+                    "&mode=2";
+            String answer = Request.sendRequest("http://" + server, urlParameters);
+            return answer;
+        } catch (UnsupportedEncodingException | NullPointerException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static JSONObject requestBuilder(String vkMethod, String urlParameters) throws NullPointerException {
         StringBuilder url = new StringBuilder("https://api.vk.com/method/");
         url.append(vkMethod);
         String str = Request.sendRequest(url.toString(), urlParameters);

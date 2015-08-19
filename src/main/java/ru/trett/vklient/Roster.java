@@ -75,7 +75,6 @@ public class Roster {
                 (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                     System.out.println("Account change state to " + newValue.intValue());
                 });
-        System.out.println(account.getFriends().toString());
         account.getFriends().forEach(x -> {
             try {
                 TreeItem<Buddy> buddy = new TreeItem<>(x, AvatarLoader.getImageFromUrl(x.getAvatarURL()));

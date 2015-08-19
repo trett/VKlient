@@ -5,20 +5,22 @@ package ru.trett.vklient;
  * @since 15.08.2015
  */
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import ru.trett.vkauth.AuthHelper;
 import ru.trett.vkauth.BuddyImpl;
 import ru.trett.vkauth.VKUtils;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 public class Account extends BuddyImpl {
 
     private int userId = 0;
     private String accessToken = null;
     private ArrayList<BuddyImpl> friends = null;
+    private String lpServer = null;
+    private String lpServerKey = null;
+    private String ts = null;
 
     public Account() {
         AuthHelper helper = new AuthHelper();
@@ -32,7 +34,7 @@ public class Account extends BuddyImpl {
         setStatus(name.get("status"));
         setAvatarURL(name.get("avatarURL"));
         setFriends();
-        updateInfo();
+//        updateInfo();
         update();
     }
 
@@ -62,31 +64,43 @@ public class Account extends BuddyImpl {
         return friends;
     }
 
-    public void updateInfo() {
-        Timer timer = new Timer();
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                System.out.println("-----------------------Updating -----------------------------------------");
-                VKUtils.updateAccountInfo(Account.this);
-                System.out.println("-----------------------Updated-------------------------------------------");
-            }
-        };
-
-        timer.schedule(timerTask, 10000, 60000);
-    }
+//    public void updateInfo() {
+//        Timer timer = new Timer();
+//        TimerTask timerTask = new TimerTask() {
+//            @Override
+//            public void run() {
+//                System.out.println("-----------------------Updating -----------------------------------------");
+//                VKUtils.updateAccountInfo(Account.this);
+//                System.out.println("-----------------------Updated-------------------------------------------");
+//            }
+//        };
+//
+//        timer.schedule(timerTask, 10000, 60000);
+//    }
 
     public void update() {
+        HashMap<String, String> longPollServer = VKUtils.getLongPollServer(Account.this);
+        lpServer = longPollServer.get("server");
+        lpServerKey = longPollServer.get("key");
+        ts = longPollServer.get("ts");
+
         Timer timer = new Timer();
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                System.out.println("-----------------------LONGPOLL -----------------------------------------");
-                VKUtils.getLongPollServer(Account.this);
-                System.out.println("-----------------------LONGPOLL_END-------------------------------------------");
+                while (true) {
+                    String updates = VKUtils.getUpdates(lpServer, lpServerKey, ts);
+                    if (updates != null) {
+                        JSONObject json = new JSONObject(updates);
+                        ts = json.optString("ts");
+                        JSONArray array = json.getJSONArray("updates");
+                        System.out.println(updates);
+//                        TODO:// make a getBuddyById and update by this info
+                    }
+                }
             }
         };
-
-        timer.schedule(timerTask, 20000, 60000);
+        timer.schedule(timerTask, 10000);
     }
+
 }
