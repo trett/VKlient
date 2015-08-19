@@ -17,11 +17,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import ru.trett.vkauth.Buddy;
-import ru.trett.vkauth.VKUtils;
 
 import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class Roster {
     private final GridPane root;
@@ -70,7 +67,6 @@ public class Roster {
         me.setExpanded(true);
         this.account = account;
         fillFriendsNode();
-        updateInfo();
     }
 
     public void fillFriendsNode() {
@@ -108,20 +104,6 @@ public class Roster {
         tree.setCellFactory(call -> {
             return new BuddyCellFactoryImpl();
         });
-    }
-
-    public void updateInfo() {
-        Timer timer = new Timer();
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                System.out.println("Updating -----------------------------------------");
-                VKUtils.updateAccountInfo(account);
-                System.out.println("Updated-------------------------------------------");
-            }
-        };
-
-        timer.schedule(timerTask, 10000, 60000);
     }
 
     private ColorAdjust effect(int online) {

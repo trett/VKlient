@@ -11,6 +11,8 @@ import ru.trett.vkauth.VKUtils;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Account extends BuddyImpl {
 
@@ -30,6 +32,7 @@ public class Account extends BuddyImpl {
         setStatus(name.get("status"));
         setAvatarURL(name.get("avatarURL"));
         setFriends();
+        updateInfo();
     }
 
     @Override
@@ -56,5 +59,19 @@ public class Account extends BuddyImpl {
 
     public ArrayList<BuddyImpl> getFriends() {
         return friends;
+    }
+
+    public void updateInfo() {
+        Timer timer = new Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("-----------------------Updating -----------------------------------------");
+                VKUtils.updateAccountInfo(Account.this);
+                System.out.println("-----------------------Updated-------------------------------------------");
+            }
+        };
+
+        timer.schedule(timerTask, 10000, 60000);
     }
 }

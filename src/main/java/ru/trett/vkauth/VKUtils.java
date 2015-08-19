@@ -70,7 +70,6 @@ public class VKUtils {
                     "&user_id=" + URLEncoder.encode(Integer.toString(userId), "UTF-8") +
                     "&rev=" + rev;
             JSONObject obj = requestBuilder("messages.getHistory", urlParameters);
-            System.out.println(obj);
             JSONArray array = obj.getJSONArray("response");
             StringBuilder content = new StringBuilder();
             StringBuilder message = new StringBuilder();
