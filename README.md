@@ -1,2 +1,2 @@
 # VKlient #
-IM Clinet for vk.com
+IM Client for vk.com
