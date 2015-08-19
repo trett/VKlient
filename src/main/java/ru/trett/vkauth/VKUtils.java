@@ -8,10 +8,7 @@ import ru.trett.vklient.Account;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Roman Tretyakov
@@ -33,7 +30,7 @@ public class VKUtils {
             name.put("onlineStatus", Integer.toString(json.getJSONObject(0).getInt("online")));
             name.put("status", json.getJSONObject(0).getString("status"));
             return name;
-        } catch (UnsupportedEncodingException e) {
+        } catch (UnsupportedEncodingException|NullPointerException e) {
             e.printStackTrace();
         }
         return null;
@@ -114,6 +111,34 @@ public class VKUtils {
         } catch (UnsupportedEncodingException|NullPointerException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void getLongPollServer(Account account) {
+//        Example {"ts":1698645966,"updates":[]}
+        String url = Request.sendRequest("https://api.vk.com/method/messages.getLongPollServer",
+                "access_token=" + account.getAccessToken());
+        JSONObject obj = new JSONObject(url);
+        String lpServer = obj.getJSONObject("response").getString("server");
+        String key = obj.getJSONObject("response").getString("key");
+        int ts = obj.getJSONObject("response").getInt("ts");
+        System.out.println("Long Poll Server: " + lpServer);
+        try {
+            String urlParameters = "act=a_check" + "&key=" + URLEncoder.encode(key, "UTF-8") +
+                    "&ts=" + URLEncoder.encode(Integer.toString(ts), "UTF-8") +
+                    "&wait=25" +
+                    "&mode=2";
+            String answer = Request.sendRequest("http://" + lpServer, urlParameters);
+//            JSONObject json = new JSONObject(answer);
+//            JSONObject ts = json.getJSONObject("ts");
+//            JSONArray array = json.getJSONArray("updates");
+//            StringBuilder content = new StringBuilder();
+            //TODO: parser for answer
+            System.out.println(urlParameters);
+            System.out.println("LPServerAnswer " + answer);
+        } catch (UnsupportedEncodingException|NullPointerException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private static JSONObject requestBuilder(String vkMethod, String urlParameters) throws NullPointerException{

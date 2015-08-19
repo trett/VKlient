@@ -33,6 +33,7 @@ public class Account extends BuddyImpl {
         setAvatarURL(name.get("avatarURL"));
         setFriends();
         updateInfo();
+        update();
     }
 
     @Override
@@ -73,5 +74,19 @@ public class Account extends BuddyImpl {
         };
 
         timer.schedule(timerTask, 10000, 60000);
+    }
+
+    public void update() {
+        Timer timer = new Timer();
+        TimerTask timerTask = new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("-----------------------LONGPOLL -----------------------------------------");
+                VKUtils.getLongPollServer(Account.this);
+                System.out.println("-----------------------LONGPOLL_END-------------------------------------------");
+            }
+        };
+
+        timer.schedule(timerTask, 20000, 60000);
     }
 }

@@ -43,4 +43,10 @@ public interface Buddy {
 
     IntegerProperty onlineStatusProperty();
 
+    int getNewMessages();
+
+    IntegerProperty newMessagesProperty();
+
+    void setNewMessages(int newMessages);
+
 }

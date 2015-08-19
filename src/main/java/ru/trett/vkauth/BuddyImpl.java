@@ -18,6 +18,7 @@ public class BuddyImpl implements Buddy {
     private int online = 0;
     private String status = "";
     private IntegerProperty onlineStatusProperty = new SimpleIntegerProperty();
+    private IntegerProperty newMessages = new SimpleIntegerProperty();
 
     @Override
     public final int getOnlineStatusProperty() {
@@ -93,6 +94,21 @@ public class BuddyImpl implements Buddy {
     @Override
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    @Override
+    public int getNewMessages() {
+        return newMessages.get();
+    }
+
+    @Override
+    public IntegerProperty newMessagesProperty() {
+        return newMessages;
+    }
+
+    @Override
+    public void setNewMessages(int newMessages) {
+        this.newMessages.set(newMessages);
     }
 
     // TODO: Create sort by online Status

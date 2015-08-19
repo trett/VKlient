@@ -21,9 +21,7 @@ import java.net.URLEncoder;
 
 
 public class ChatWindowController {
-    String lpServer = null;
-    String key = null;
-    int ts = 0;
+
     @FXML
     private WebView view;
     @FXML
@@ -80,37 +78,4 @@ public class ChatWindowController {
         engine.loadContent(m);
     }
 
-    //TODO: Connection to Long Poll Server
-//    public void getUpdates() {
-//        System.out.println("Long Poll Server: " + lpServer);
-//        try {
-//            String urlParameters = "act=a_check" + "key=" + URLEncoder.encode(key, "UTF-8") +
-//                    "&ts=" + URLEncoder.encode(Integer.toString(ts), "UTF-8") +
-//                    "&wait=25" +
-//                    "&mode=2";
-//            String m = Request.sendRequest("http://" + lpServer, urlParameters, "GET");
-//            JSONObject obj = new JSONObject(m);
-//            JSONArray array = obj.getJSONArray("response");
-//            StringBuilder content = new StringBuilder();
-//            for (int i = 0; i < array.length(); ++i) {
-//                content.append(array.getJSONObject(i).getString("date"));
-//                content.append(" ");
-//                content.append(array.getJSONObject(i).getString("body"));
-//                content.append(System.getProperty("line.separator"));
-//            }
-//            engine.loadContent(content.toString());
-//        } catch (UnsupportedEncodingException e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    public void getLongPollServer() {
-//        String hui = Request.sendRequest("https://api.vk.com/method/messages.getLongPollServer", "access_token=" + account.getAccessToken(), "GET");
-//        System.out.println(hui);
-//        JSONObject obj = new JSONObject(hui);
-////        JSONArray array = obj.getJSONArray("response");
-//        lpServer = obj.getJSONObject("response").getString("server");
-//        key = obj.getJSONObject("response").getString("key");
-//        ts = obj.getJSONObject("response").getInt("ts");
-//    }
 }
