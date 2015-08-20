@@ -8,6 +8,7 @@ package ru.trett.vklient;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.trett.vkauth.AuthHelper;
+import ru.trett.vkauth.Buddy;
 import ru.trett.vkauth.BuddyImpl;
 import ru.trett.vkauth.VKUtils;
 
@@ -35,7 +36,7 @@ public class Account extends BuddyImpl {
         setAvatarURL(name.get("avatarURL"));
         setFriends();
 //        updateInfo();
-        update();
+        longPollConnection();
     }
 
     @Override
@@ -78,29 +79,65 @@ public class Account extends BuddyImpl {
 //        timer.schedule(timerTask, 10000, 60000);
 //    }
 
-    public void update() {
+    private void getLongPollConnection() {
         HashMap<String, String> longPollServer = VKUtils.getLongPollServer(Account.this);
         lpServer = longPollServer.get("server");
         lpServerKey = longPollServer.get("key");
         ts = longPollServer.get("ts");
+    }
 
+    public void longPollConnection() {
+        getLongPollConnection();
         Timer timer = new Timer();
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
                 while (true) {
-                    String updates = VKUtils.getUpdates(lpServer, lpServerKey, ts);
-                    if (updates != null) {
-                        JSONObject json = new JSONObject(updates);
-                        ts = json.optString("ts");
-                        JSONArray array = json.getJSONArray("updates");
-                        System.out.println(updates);
-//                        TODO:// make a getBuddyById and update by this info
+                    String answer = VKUtils.getUpdates(lpServer, lpServerKey, ts);
+                    if (answer != null) {
+                        JSONObject json = new JSONObject(answer);
+                        if (json.has("failed")) {
+                            getLongPollConnection();
+                        } else {
+                            ts = json.optString("ts");
+                            JSONArray array = json.getJSONArray("updates");
+                            System.out.println(answer);
+                            update(array);
+                        }
                     }
                 }
             }
         };
         timer.schedule(timerTask, 10000);
+    }
+
+    public Buddy getFriendById(ArrayList<BuddyImpl> friends, int userId) {
+        for (int i = 0; i < friends.size(); ++i) {
+            if (friends.get(i).getUserId() == userId)
+                return friends.get(i);
+        }
+        return null;
+    }
+
+    private void update(JSONArray array) {
+        for (int i = 0; i < array.length(); ++i) {
+            JSONArray temp = array.getJSONArray(i);
+            ArrayList<Object> list = new ArrayList<>();
+            for (int j = 0; j < temp.length(); ++j) {
+                list.add(temp.get(j));
+            }
+            //TODO: parse all !!!
+            switch ((int)list.get(0)) {
+                case 8:
+                    getFriendById(friends, - (int) list.get(1)).setOnlineStatus(1); //TODO:parse to platform
+                    break;
+                case 9:
+                    getFriendById(friends, - (int) list.get(1)).setOnlineStatus(0);
+                    break;
+                default:
+                    break;
+            }
+        }
     }
 
 }
