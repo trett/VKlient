@@ -74,21 +74,20 @@ public class VKUtils {
             StringBuilder content = new StringBuilder();
             StringBuilder message = new StringBuilder();
             Date date = new Date();
-            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss.");
+            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
             for (int i = 1; i < array.length(); ++i) {
-                date.setTime(array.getJSONObject(i).getLong("date") * 1000);//.toString();
-                message.append("<p>[" + sdf.format(date) + "] ");
+                date.setTime(array.getJSONObject(i).getLong("date") * 1000);
+                message.append("<div id='message'>[" + sdf.format(date) + "] ");
                 if (array.getJSONObject(i).has("emoji")) {
-                    message.append(EmojiParser.parseToHtmlDecimal(array.getJSONObject(i).getString("body")) + "<br />");
+                    message.append(EmojiParser.parseToHtmlDecimal(array.getJSONObject(i).getString("body")));
 
                 } else {
-                    message.append(array.getJSONObject(i).getString("body") + "<br />");
+                    message.append(array.getJSONObject(i).getString("body"));
                 }
-                message.append("</p>");
+                message.append("</div>");
                 content.insert(0, message.toString());
                 message.setLength(0);
             }
-            content.insert(0, "<head><style>p { font: 10pt sans-serif; }</style></head>"); //temporary
             return content.toString();
         } catch (UnsupportedEncodingException | NullPointerException e) {
             e.printStackTrace();
