@@ -29,7 +29,6 @@ public class ChatWindowImpl implements ChatWindow {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/chatWindow.fxml"));
             root = loader.load();
-//            root = FXMLLoader.load(getClass().getClassLoader().getResource("fxml/chatWindow.fxml"));
             ChatWindowController chatWindowController = loader.getController();
             chatWindowController.setAccount(account);
             chatWindowController.setUserId(userId);
@@ -37,11 +36,26 @@ public class ChatWindowImpl implements ChatWindow {
             stage.setTitle("Chat Window");
             stage.setScene(new Scene(root, 450, 450));
             stage.show();
-//            chatWindowController.getLongPollServer();
             chatWindowController.showHistory();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
+
+    public Account getAccount() {
+        return account;
+    }
+
+    public void setAccount(Account account) {
+        this.account = account;
+    }
 }

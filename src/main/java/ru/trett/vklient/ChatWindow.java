@@ -6,6 +6,38 @@
 
 package ru.trett.vklient;
 
+/**
+ *  Chat Window Interface.
+ *
+ */
+
 public interface ChatWindow {
+
+    /**
+     * Return User ID of reciever
+     * @return int
+     */
+    int getUserId();
+
+    /**
+     * Set the User ID of reciver
+     * @param userId
+     */
+
+    void setUserId(int userId);
+
+    /**
+     * Return sender's account
+     * @return Account
+     */
+
+    Account getAccount();
+
+    /**
+     * Set account for sender
+     * @param account
+     */
+
+    void setAccount(Account account);
 
 }

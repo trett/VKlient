@@ -8,10 +8,7 @@ import ru.trett.vklient.Account;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Roman Tretyakov
@@ -136,6 +133,21 @@ public class VKUtils {
                     "&wait=25" +
                     "&mode=2";
             String answer = Request.sendRequest("http://" + server, urlParameters);
+            return answer;
+        } catch (UnsupportedEncodingException | NullPointerException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static String sendMessage(Account account, int userId, String message) {
+        try {
+            String timeStamp = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
+            String urlParameters = "user_id=" + URLEncoder.encode(Integer.toString(userId), "UTF-8") +
+                    "&access_token=" + URLEncoder.encode(account.getAccessToken(), "UTF-8") +
+                    "&chat_id=1" +
+                    "&message=" + URLEncoder.encode(message, "UTF-8");
+            String answer = requestBuilder("messages.send", urlParameters).toString();
             return answer;
         } catch (UnsupportedEncodingException | NullPointerException e) {
             e.printStackTrace();

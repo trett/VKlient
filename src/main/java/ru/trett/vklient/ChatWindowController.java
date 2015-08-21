@@ -13,11 +13,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import ru.trett.vkauth.Request;
 import ru.trett.vkauth.VKUtils;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
@@ -60,13 +57,9 @@ public class ChatWindowController {
 
     public void enterKeyPressed(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ENTER) {
-            try {
-                String timeStamp = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
-                String urlParameters = "user_id=" + URLEncoder.encode(Integer.toString(userId), "UTF-8") +
-                        "&access_token=" + URLEncoder.encode(account.getAccessToken(), "UTF-8") +
-                        "&chat_id=1" +
-                        "&message=" + URLEncoder.encode(area.getText(), "UTF-8");
-                String ans = Request.sendRequest("https://api.vk.com/method/messages.send", urlParameters); //TODO: move to API and get delivery message
+            String timeStamp = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
+            String messageId = VKUtils.sendMessage(account, userId, area.getText());
+            if (messageId != null) {
                 engine.executeScript(
                         "var newDiv = document.createElement('div');" +
                                 "newDiv.setAttribute('id', 'outcomingMessage');" +
@@ -74,8 +67,6 @@ public class ChatWindowController {
                                 "document.getElementById('chat').appendChild(newDiv);");
                 area.clear();
                 area.positionCaret(0); //TODO: it seems doesn't work
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
             }
         }
     }
