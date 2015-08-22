@@ -44,6 +44,7 @@ public class VKlient extends Application {
         helper.recievedAnswerProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
                     Account account = new Account();
+                    s.close();
                     roster.setAccount(account);
                     account.setOnlineStatus(1); //TODO: create ENUM for statusOnline
                 });

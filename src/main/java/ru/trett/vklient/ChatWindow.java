@@ -44,7 +44,7 @@ public interface ChatWindow {
      * Append message to chat
      * @param message
      */
-    void appendMessage(String message);
+    void appendMessage(String message, boolean incoming);
 
     /**
      * Show Chat window

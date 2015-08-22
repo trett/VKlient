@@ -58,13 +58,10 @@ public class ChatWindowController {
     public void enterKeyPressed(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ENTER) {
             String timeStamp = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
-            String messageId = VKUtils.sendMessage(account, userId, area.getText());
-            if (messageId != null) {
-                engine.executeScript(
-                        "var newDiv = document.createElement('div');" +
-                                "newDiv.setAttribute('id', 'outcomingMessage');" +
-                                "newDiv.innerHTML ='[" + timeStamp + "] " + area.getText() + "';" +
-                                "document.getElementById('chat').appendChild(newDiv);");
+            if (!area.getText().isEmpty()) {
+                String text = area.getText();
+                String messageId = VKUtils.sendMessage(account, userId, text);
+                appendMessage("[" + timeStamp + "] " + text, false);
                 area.clear();
                 area.positionCaret(0); //TODO: it seems doesn't work
             }
@@ -79,6 +76,15 @@ public class ChatWindowController {
             messages.append("</div></body>");
             engine.loadContent(messages.toString());
         }
+    }
+
+    public void appendMessage(String message, boolean incoming) {
+        String direction = incoming ? "incomingMessage" : "outcomingMessage";
+        engine.executeScript(
+                "var newDiv = document.createElement('div');" +
+                        "newDiv.setAttribute('id', '" + direction + "');" +
+                        "newDiv.innerHTML ='" + message + "';" +
+                        "document.getElementById('chat').appendChild(newDiv);");
     }
 
 }

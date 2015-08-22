@@ -74,7 +74,7 @@ public class VKUtils {
             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
             for (int i = 1; i < array.length(); ++i) {
                 date.setTime(array.getJSONObject(i).getLong("date") * 1000);
-                message.append("<div id='message'>[" + sdf.format(date) + "] ");
+                message.append("<div id='incomingMessage'>[" + sdf.format(date) + "] ");
                 if (array.getJSONObject(i).has("emoji")) {
                     message.append(EmojiParser.parseToHtmlDecimal(array.getJSONObject(i).getString("body")));
 

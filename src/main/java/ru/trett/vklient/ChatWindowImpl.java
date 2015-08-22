@@ -22,6 +22,7 @@ public class ChatWindowImpl implements ChatWindow {
     public int userId = 0;
     public Account account = null;
     private Stage stage;
+    private ChatWindowController chatWindowController;
 
     ChatWindowImpl(Account account, int userId) {
         this.userId = userId;
@@ -30,7 +31,7 @@ public class ChatWindowImpl implements ChatWindow {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/chatWindow.fxml"));
             root = loader.load();
-            ChatWindowController chatWindowController = loader.getController();
+            chatWindowController = loader.getController();
             chatWindowController.setAccount(account);
             chatWindowController.setUserId(userId);
             stage = new Stage();
@@ -64,8 +65,8 @@ public class ChatWindowImpl implements ChatWindow {
     }
 
     @Override
-    public void appendMessage(String message) {
-        //TODO: realization
+    public void appendMessage(String message, boolean incoming) {
+        chatWindowController.appendMessage(message, incoming);
     }
 
     @Override

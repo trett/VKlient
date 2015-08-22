@@ -5,7 +5,9 @@ package ru.trett.vklient;
  * @since 15.08.2015
  */
 
+import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.effect.ColorAdjust;
@@ -42,6 +44,11 @@ public class Roster {
         MenuBar mbar = new MenuBar();
         Menu acc = new Menu();
         acc.setGraphic(getIcon());
+        MenuItem quit = new MenuItem("Quit");
+        quit.setOnAction((ActionEvent event) -> {
+            Platform.exit();
+        });
+        acc.getItems().add(quit);
         Menu set = new Menu("Settings");
         mbar.getMenus().addAll(acc, set);
         root.add(mbar, 0, 0);

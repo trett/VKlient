@@ -5,6 +5,8 @@ package ru.trett.vklient;
  * @since 15.08.2015
  */
 
+import com.vdurmont.emoji.EmojiParser;
+import javafx.application.Platform;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.trett.vkauth.AuthHelper;
@@ -12,6 +14,7 @@ import ru.trett.vkauth.Buddy;
 import ru.trett.vkauth.BuddyImpl;
 import ru.trett.vkauth.VKUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Account extends BuddyImpl {
@@ -127,12 +130,26 @@ public class Account extends BuddyImpl {
                 list.add(temp.get(j));
             }
             //TODO: parse all !!!
-            switch ((int)list.get(0)) {
+            switch ((int) list.get(0)) {
                 case 8:
-                    getFriendById(friends, - (int) list.get(1)).setOnlineStatus(1); //TODO:parse to platform
+                    getFriendById(friends, -(int) list.get(1)).setOnlineStatus(1); //TODO:parse to platform
                     break;
                 case 9:
-                    getFriendById(friends, - (int) list.get(1)).setOnlineStatus(0);
+                    getFriendById(friends, -(int) list.get(1)).setOnlineStatus(0);
+                    break;
+                case 4:
+                    Platform.runLater(() -> {
+                        if ((int) list.get(2) == 49 || (int) list.get(2) == 33) {
+                            Date date = new Date((int) list.get(4) * 1000);
+                            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+                            StringBuilder message = new StringBuilder(
+                                    EmojiParser.parseToHtmlDecimal(list.get(6).toString())
+                            );
+                            message.insert(0, "[" + sdf.format(date) + "] ");
+                            ChatWindowFactory.getNewInstance(this, (int) list.get(3)).
+                                    appendMessage(message.toString(), true);
+                        }
+                    });
                     break;
                 default:
                     break;
