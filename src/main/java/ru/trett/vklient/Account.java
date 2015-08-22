@@ -141,7 +141,7 @@ public class Account extends BuddyImpl {
                     Platform.runLater(() -> {
                         int flag = (int) list.get(2);
                         //TODO: parse flag answer
-                        if (flag == 49 || flag == 33 || flag == 35 || flag == 51) {
+                        if (flag == 49 || flag == 33 || flag == 51) {
                             Date date = new Date((int) list.get(4) * 1000);
                             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
                             StringBuilder message = new StringBuilder(

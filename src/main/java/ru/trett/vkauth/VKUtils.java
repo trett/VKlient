@@ -5,8 +5,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.trett.vklient.Account;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -18,7 +16,6 @@ import java.util.*;
 public class VKUtils {
 
     public static Map<String, String> getBuddy(int userId, String token) {
-        try {
             HashMap<String, String> urlParameters = new HashMap<>();
             urlParameters.put("user_id", Integer.toString(userId));
             urlParameters.put("access_token", token);
@@ -32,14 +29,9 @@ public class VKUtils {
             name.put("onlineStatus", Integer.toString(json.getJSONObject(0).getInt("online")));
             name.put("status", json.getJSONObject(0).getString("status"));
             return name;
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     public static ArrayList<BuddyImpl> getFriends(int userId, String token) {
-        try {
             HashMap<String, String> urlParameters = new HashMap<>();
             urlParameters.put("user_id", Integer.toString(userId));
             urlParameters.put("access_token", token);
@@ -58,14 +50,9 @@ public class VKUtils {
                 buddies.add(buddy);
             }
             return buddies;
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     public static String getMessagesHistory(Account account, int userId, int count, int rev) {
-        try {
             HashMap<String, String> urlParameters = new HashMap<>();
             urlParameters.put("access_token", account.getAccessToken());
             urlParameters.put("count", Integer.toString(count));
@@ -91,16 +78,12 @@ public class VKUtils {
                 message.setLength(0);
             }
             return content.toString();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     public static HashMap<String, String> getLongPollServer(Account account) {
-//        Example {"ts":1698645966,"updates":[]}
-        String url = Request.sendRequest("https://api.vk.com/method/messages.getLongPollServer",
-                "access_token=" + account.getAccessToken());
+        HashMap<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("access_token", account.getAccessToken());
+        String url = Request.HttpClientSend("api.vk.com/method/", "messages.getLongPollServer", urlParameters);
         System.out.println("Get Server:" + url);
         JSONObject obj = new JSONObject(url);
         HashMap<String, String> lpServerMap = new HashMap<>();
@@ -111,23 +94,18 @@ public class VKUtils {
     }
 
     public static String getUpdates(String server, String key, String ts) {
-        try {
-            System.out.println(server + " " + key + " " + ts);
-            String urlParameters = "act=a_check" + "&key=" + URLEncoder.encode(key, "UTF-8") +
-                    "&ts=" + URLEncoder.encode(ts, "UTF-8") +
-                    "&wait=25" +
-                    "&mode=2";
-            String answer = Request.sendRequest("http://" + server, urlParameters);
+            HashMap<String, String> urlParameters = new HashMap<>();
+            urlParameters.put("act", "a_check");
+            urlParameters.put("key", key);
+            urlParameters.put("ts", ts);
+            urlParameters.put("wait", "25");
+            urlParameters.put("mode", "2");
+            String answer = Request.HttpClientSend(server, "", urlParameters);
             return answer;
-        } catch (UnsupportedEncodingException | NullPointerException e) {
-            e.printStackTrace();
-        }
-        return null;
     }
 
     public static String sendMessage(Account account, int userId, String message) {
         try {
-            String timeStamp = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
             HashMap<String, String> urlParameters = new HashMap<>();
             urlParameters.put("user_id", Integer.toString(userId));
             urlParameters.put("access_token", account.getAccessToken());
@@ -142,9 +120,8 @@ public class VKUtils {
     }
 
     private static JSONObject requestBuilder(String vkMethod, HashMap<String, String> urlParameters) throws NullPointerException {
-        String str = Request.HttpClientSend("api.vk.com/method/", vkMethod, urlParameters);
-        if (str == null)
-            throw new NullPointerException();
+        String str;
+        str = Request.HttpClientSend("api.vk.com/method/", vkMethod, urlParameters);
         JSONObject receivedAnswer = new JSONObject(str);
         System.out.println(urlParameters + System.getProperty("line.separator") + receivedAnswer); //debug output
         return receivedAnswer;
