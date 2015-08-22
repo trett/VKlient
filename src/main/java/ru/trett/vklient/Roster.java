@@ -133,7 +133,7 @@ public class Roster {
 
             setOnMouseClicked((MouseEvent event) -> {
                 if (event.getClickCount() == 2) {
-                    ChatWindowFactory.getNewInstance(account, getItem().getUserId());
+                    ChatWindowFactory.getNewInstance(account, getItem().getUserId()).showWindow();
                 }
             });
 

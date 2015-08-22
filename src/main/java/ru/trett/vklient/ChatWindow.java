@@ -46,4 +46,10 @@ public interface ChatWindow {
      */
     void appendMessage(String message);
 
+    /**
+     * Show Chat window
+     *
+     */
+    void showWindow();
+
 }

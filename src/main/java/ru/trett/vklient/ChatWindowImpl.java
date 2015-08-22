@@ -21,6 +21,7 @@ public class ChatWindowImpl implements ChatWindow {
 
     public int userId = 0;
     public Account account = null;
+    private Stage stage;
 
     ChatWindowImpl(Account account, int userId) {
         this.userId = userId;
@@ -32,7 +33,7 @@ public class ChatWindowImpl implements ChatWindow {
             ChatWindowController chatWindowController = loader.getController();
             chatWindowController.setAccount(account);
             chatWindowController.setUserId(userId);
-            Stage stage = new Stage();
+            stage = new Stage();
             stage.setTitle("Chat Window");
             stage.setScene(new Scene(root, 450, 450));
             stage.show();
@@ -66,4 +67,11 @@ public class ChatWindowImpl implements ChatWindow {
     public void appendMessage(String message) {
         //TODO: realization
     }
+
+    @Override
+    public void showWindow() {
+        if (!stage.isShowing())
+            stage.show();
+    }
+
 }
