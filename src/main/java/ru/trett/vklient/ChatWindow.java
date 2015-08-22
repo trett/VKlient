@@ -40,4 +40,10 @@ public interface ChatWindow {
 
     void setAccount(Account account);
 
+    /**
+     * Append message to chat
+     * @param message
+     */
+    void appendMessage(String message);
+
 }

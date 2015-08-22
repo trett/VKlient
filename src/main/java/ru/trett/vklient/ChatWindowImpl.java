@@ -22,7 +22,7 @@ public class ChatWindowImpl implements ChatWindow {
     public int userId = 0;
     public Account account = null;
 
-    ChatWindowImpl(int userId, Account account) {
+    ChatWindowImpl(Account account, int userId) {
         this.userId = userId;
         this.account = account;
         Parent root;
@@ -42,20 +42,28 @@ public class ChatWindowImpl implements ChatWindow {
         }
     }
 
-
+    @Override
     public int getUserId() {
         return userId;
     }
 
+    @Override
     public void setUserId(int userId) {
         this.userId = userId;
     }
 
+    @Override
     public Account getAccount() {
         return account;
     }
 
+    @Override
     public void setAccount(Account account) {
         this.account = account;
+    }
+
+    @Override
+    public void appendMessage(String message) {
+        //TODO: realization
     }
 }
