@@ -19,8 +19,10 @@ public class VKUtils {
 
     public static Map<String, String> getBuddy(int userId, String token) {
         try {
-            String urlParameters = "user_id=" + URLEncoder.encode(Integer.toString(userId), "UTF-8") +
-                    "&access_token=" + URLEncoder.encode(token, "UTF-8") + "&fields=photo_50,online,status";
+            HashMap<String, String> urlParameters = new HashMap<>();
+            urlParameters.put("user_id", Integer.toString(userId));
+            urlParameters.put("access_token", token);
+            urlParameters.put("fields", "photo_50,online,status");
             Map<String, String> name = new HashMap<>();
             JSONObject obj = requestBuilder("users.get", urlParameters);
             JSONArray json = obj.getJSONArray("response");
@@ -30,7 +32,7 @@ public class VKUtils {
             name.put("onlineStatus", Integer.toString(json.getJSONObject(0).getInt("online")));
             name.put("status", json.getJSONObject(0).getString("status"));
             return name;
-        } catch (UnsupportedEncodingException | NullPointerException e) {
+        } catch (NullPointerException e) {
             e.printStackTrace();
         }
         return null;
@@ -38,8 +40,10 @@ public class VKUtils {
 
     public static ArrayList<BuddyImpl> getFriends(int userId, String token) {
         try {
-            String urlParameters = "user_id=" + URLEncoder.encode(Integer.toString(userId), "UTF-8") +
-                    "&access_token=" + URLEncoder.encode(token, "UTF-8") + "&fields=first_name,last_name,photo_50,online,status";
+            HashMap<String, String> urlParameters = new HashMap<>();
+            urlParameters.put("user_id", Integer.toString(userId));
+            urlParameters.put("access_token", token);
+            urlParameters.put("fields", "first_name,last_name,photo_50,online,status");
             JSONObject obj = requestBuilder("friends.get", urlParameters);
             JSONArray json = obj.getJSONArray("response");
             ArrayList<BuddyImpl> buddies = new ArrayList<>();
@@ -54,7 +58,7 @@ public class VKUtils {
                 buddies.add(buddy);
             }
             return buddies;
-        } catch (UnsupportedEncodingException | NullPointerException e) {
+        } catch (NullPointerException e) {
             e.printStackTrace();
         }
         return null;
@@ -62,10 +66,11 @@ public class VKUtils {
 
     public static String getMessagesHistory(Account account, int userId, int count, int rev) {
         try {
-            String urlParameters = "access_token=" + URLEncoder.encode(account.getAccessToken(), "UTF-8") +
-                    "&count=" + count +
-                    "&user_id=" + URLEncoder.encode(Integer.toString(userId), "UTF-8") +
-                    "&rev=" + rev;
+            HashMap<String, String> urlParameters = new HashMap<>();
+            urlParameters.put("access_token", account.getAccessToken());
+            urlParameters.put("count", Integer.toString(count));
+            urlParameters.put("user_id", Integer.toString(userId));
+            urlParameters.put("rev", Integer.toString(rev));
             JSONObject obj = requestBuilder("messages.getHistory", urlParameters);
             JSONArray array = obj.getJSONArray("response");
             StringBuilder content = new StringBuilder();
@@ -86,30 +91,10 @@ public class VKUtils {
                 message.setLength(0);
             }
             return content.toString();
-        } catch (UnsupportedEncodingException | NullPointerException e) {
+        } catch (NullPointerException e) {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public static void updateAccountInfo(Account account) {
-        try {
-            String urlParameters = "user_id=" + URLEncoder.encode(Integer.toString(account.getUserId()), "UTF-8") +
-                    "&access_token=" + URLEncoder.encode(account.getAccessToken(), "UTF-8") + "&fields=first_name,last_name,online,status";
-            JSONObject obj = requestBuilder("friends.get", urlParameters);
-            JSONArray json = obj.getJSONArray("response");
-            ArrayList<BuddyImpl> friends = account.getFriends();
-            for (int i = 0; i < json.length(); ++i) {
-                friends.get(i).setUserId(json.getJSONObject(i).getInt("user_id"));
-                friends.get(i).setFirstName(json.getJSONObject(i).getString("first_name"));
-                friends.get(i).setLastName(json.getJSONObject(i).getString("last_name"));
-//                    friends.get(i).setAvatarURL(json.getJSONObject(i).getString("photo_50"));
-                friends.get(i).setOnlineStatus(json.getJSONObject(i).getInt("online"));
-                friends.get(i).setStatus(json.getJSONObject(i).getString("status"));
-            }
-        } catch (UnsupportedEncodingException | NullPointerException e) {
-            e.printStackTrace();
-        }
     }
 
     public static HashMap<String, String> getLongPollServer(Account account) {
@@ -143,27 +128,26 @@ public class VKUtils {
     public static String sendMessage(Account account, int userId, String message) {
         try {
             String timeStamp = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
-            String urlParameters = "user_id=" + URLEncoder.encode(Integer.toString(userId), "UTF-8") +
-                    "&access_token=" + URLEncoder.encode(account.getAccessToken(), "UTF-8") +
-                    "&chat_id=1" +
-                    "&message=" + URLEncoder.encode(message, "UTF-8");
+            HashMap<String, String> urlParameters = new HashMap<>();
+            urlParameters.put("user_id", Integer.toString(userId));
+            urlParameters.put("access_token", account.getAccessToken());
+            urlParameters.put("chat_id", "1");
+            urlParameters.put("message", message);
             String answer = requestBuilder("messages.send", urlParameters).toString();
             return answer;
-        } catch (UnsupportedEncodingException | NullPointerException e) {
+        } catch (NullPointerException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    private static JSONObject requestBuilder(String vkMethod, String urlParameters) throws NullPointerException {
-        StringBuilder url = new StringBuilder("https://api.vk.com/method/");
-        url.append(vkMethod);
-        String str = Request.sendRequest(url.toString(), urlParameters);
+    private static JSONObject requestBuilder(String vkMethod, HashMap<String, String> urlParameters) throws NullPointerException {
+        String str = Request.HttpClientSend("api.vk.com/method/", vkMethod, urlParameters);
         if (str == null)
             throw new NullPointerException();
-        JSONObject recievedAnswer = new JSONObject(str);
-        System.out.println(urlParameters + System.getProperty("line.separator") + recievedAnswer); //debug output
-        return recievedAnswer;
+        JSONObject receivedAnswer = new JSONObject(str);
+        System.out.println(urlParameters + System.getProperty("line.separator") + receivedAnswer); //debug output
+        return receivedAnswer;
     }
 
 }
