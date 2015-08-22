@@ -111,7 +111,7 @@ public class Account extends BuddyImpl {
                 }
             }
         };
-        timer.schedule(timerTask, 10000);
+        timer.schedule(timerTask, 5000);
     }
 
     public Buddy getFriendById(ArrayList<BuddyImpl> friends, int userId) {

@@ -88,8 +88,8 @@ public class AuthHelper {
                         if (newValue.contains("access_token")) {
                             try {
                                 answer = new URL(webEngine.getLocation()); //TODO: timer on expires_in
-                                setRecievedAnswer(true);
                                 System.out.println(answer);
+                                setRecievedAnswer(true);
                             } catch (MalformedURLException e) {
                                 e.printStackTrace();
                             }
