@@ -46,6 +46,7 @@ public class Roster {
         acc.setGraphic(getIcon());
         MenuItem quit = new MenuItem("Quit");
         quit.setOnAction((ActionEvent event) -> {
+            account.setOnlineStatus(0);
             Platform.exit();
         });
         acc.getItems().add(quit);

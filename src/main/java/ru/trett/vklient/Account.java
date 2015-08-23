@@ -95,7 +95,7 @@ public class Account extends BuddyImpl {
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                while (true) {
+                while (getOnlineStatusProperty() ==1) {
                     String answer = VKUtils.getUpdates(lpServer, lpServerKey, ts);
                     if (answer != null) {
                         JSONObject json = new JSONObject(answer);
@@ -104,7 +104,6 @@ public class Account extends BuddyImpl {
                         } else {
                             ts = json.optString("ts");
                             JSONArray array = json.getJSONArray("updates");
-                            System.out.println(answer);
                             update(array);
                         }
                     }

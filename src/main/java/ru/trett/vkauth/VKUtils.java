@@ -129,7 +129,7 @@ public class VKUtils {
     private static JSONObject requestBuilder(String vkMethod, HashMap<String, String> urlParameters) {
         String str = Request.send("api.vk.com/method/", vkMethod, urlParameters);
         JSONObject receivedAnswer = new JSONObject(str);
-        System.out.println(urlParameters + System.getProperty("line.separator") + receivedAnswer); //debug output
+        System.out.println(urlParameters); //debug output
         return receivedAnswer;
     }
 

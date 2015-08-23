@@ -12,6 +12,9 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import ru.trett.vkauth.AuthHelper;
 
+import java.io.*;
+import java.util.Properties;
+
 public class VKlient extends Application {
 
     private Stage mainStage;
@@ -21,20 +24,51 @@ public class VKlient extends Application {
         launch(args);
     }
 
+    public static void setConfig(String key, String value) {
+        try {
+            Properties config = new Properties();
+            config.load(new FileInputStream("vklient.properties"));
+            config.put(key, value);
+            FileOutputStream out = new FileOutputStream("vklient.properties");
+            config.store(out, "account settings");
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String getConfig(String key) {
+        try  {
+            Properties config = new Properties();
+            config.load(new FileInputStream("vklient.properties"));
+            String value = config.getProperty(key);
+            return value;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
+        checkConfig();
         setUserAgentStylesheet(STYLESHEET_MODENA);
         mainStage = primaryStage;
         mainStage.setTitle("VKlient");
         roster = new Roster();
         mainStage.setScene(new Scene(roster.getRoot(), 300, 500));
         mainStage.getScene().getStylesheets().add("css/main.css");
-        mainStage.close();
 //        Platform.setImplicitExit(false);
-        showAuthWindow();
+        if (getConfig("access_token") != null) {
+            Account account = new Account();
+            roster.setAccount(account);
+            account.setOnlineStatus(1);
+        } else {
+            showAuthWindow();
+        }
+
         mainStage.show();
     }
-
 
     private void showAuthWindow() {
         Stage s = new Stage();
@@ -49,5 +83,16 @@ public class VKlient extends Application {
                     account.setOnlineStatus(1); //TODO: create ENUM for statusOnline
                 });
         s.show();
+    }
+
+    private void checkConfig() {
+        File configFile = new File("vklient.properties");
+        if (!configFile.exists()) {
+            try {
+                configFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
