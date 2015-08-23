@@ -43,6 +43,7 @@ public class Request {
             };
             String responseBody = httpclient.execute(httpget, responseHandler);
             System.out.println(responseBody);
+            httpclient.close();
             return responseBody;
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();

@@ -79,10 +79,6 @@ public class Roster {
 
     public void fillFriendsNode() {
         me.getChildren().add(friendsNode);
-        account.onlineStatusProperty().addListener(
-                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-                    System.out.println("Account change state to " + newValue.intValue());
-                });
         account.getFriends().forEach(x -> {
             try {
                 TreeItem<Buddy> buddy = new TreeItem<>(x, AvatarLoader.getImageFromUrl(x.getAvatarURL()));

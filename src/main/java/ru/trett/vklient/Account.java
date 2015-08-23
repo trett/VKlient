@@ -7,6 +7,7 @@ package ru.trett.vklient;
 
 import com.vdurmont.emoji.EmojiParser;
 import javafx.application.Platform;
+import javafx.beans.value.ObservableValue;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.trett.vkauth.AuthHelper;
@@ -38,8 +39,11 @@ public class Account extends BuddyImpl {
         setStatus(name.get("status"));
         setAvatarURL(name.get("avatarURL"));
 //        setFriends();
-//        updateInfo();
         longPollConnection();
+        onlineStatusProperty().addListener(
+                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+                    System.out.println("Account change state to " + newValue.intValue());
+                });
     }
 
     @Override
@@ -67,20 +71,6 @@ public class Account extends BuddyImpl {
     public ArrayList<BuddyImpl> getFriends() {
         return friends;
     }
-
-//    public void updateInfo() {
-//        Timer timer = new Timer();
-//        TimerTask timerTask = new TimerTask() {
-//            @Override
-//            public void run() {
-//                System.out.println("-----------------------Updating -----------------------------------------");
-//                VKUtils.updateAccountInfo(Account.this);
-//                System.out.println("-----------------------Updated-------------------------------------------");
-//            }
-//        };
-//
-//        timer.schedule(timerTask, 10000, 60000);
-//    }
 
     private void getLongPollConnection() {
         HashMap<String, String> longPollServer = VKUtils.getLongPollServer(Account.this);

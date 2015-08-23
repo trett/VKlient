@@ -76,7 +76,7 @@ public class VKlient extends Application {
                     account.setOnlineStatus(1);
                 }
             };
-            timer.schedule(timerTask, 2000);
+            timer.schedule(timerTask, 3000);
         } else {
             showAuthWindow();
         }
