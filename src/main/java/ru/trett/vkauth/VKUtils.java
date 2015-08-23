@@ -90,7 +90,7 @@ public class VKUtils {
     public static HashMap<String, String> getLongPollServer(Account account) {
         HashMap<String, String> urlParameters = new HashMap<>();
         urlParameters.put("access_token", account.getAccessToken());
-        String url = Request.HttpClientSend("api.vk.com/method/", "messages.getLongPollServer", urlParameters);
+        String url = Request.send("api.vk.com/method/", "messages.getLongPollServer", urlParameters);
         System.out.println("Get Server:" + url);
         JSONObject obj = new JSONObject(url);
         HashMap<String, String> lpServerMap = new HashMap<>();
@@ -107,7 +107,7 @@ public class VKUtils {
         urlParameters.put("ts", ts);
         urlParameters.put("wait", "25");
         urlParameters.put("mode", "2");
-        String answer = Request.HttpClientSend(server, "", urlParameters);
+        String answer = Request.send(server, "", urlParameters);
         return answer;
     }
 
@@ -126,9 +126,8 @@ public class VKUtils {
         return null;
     }
 
-    private static JSONObject requestBuilder(String vkMethod, HashMap<String, String> urlParameters) throws NullPointerException {
-        String str;
-        str = Request.HttpClientSend("api.vk.com/method/", vkMethod, urlParameters);
+    private static JSONObject requestBuilder(String vkMethod, HashMap<String, String> urlParameters) {
+        String str = Request.send("api.vk.com/method/", vkMethod, urlParameters);
         JSONObject receivedAnswer = new JSONObject(str);
         System.out.println(urlParameters + System.getProperty("line.separator") + receivedAnswer); //debug output
         return receivedAnswer;
