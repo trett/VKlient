@@ -11,6 +11,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import ru.trett.vkauth.Buddy;
 
 import java.io.IOException;
 
@@ -34,8 +35,9 @@ public class ChatWindowImpl implements ChatWindow {
             chatWindowController = loader.getController();
             chatWindowController.setAccount(account);
             chatWindowController.setUserId(userId);
+            Buddy user = account.getFriendById(account.getFriends(), userId);
             stage = new Stage();
-            stage.setTitle("Chat Window");
+            stage.setTitle("Chat with " + user.getFirstName() + " " + user.getLastName());
             stage.setScene(new Scene(root, 450, 450));
             stage.show();
             chatWindowController.showHistory();
