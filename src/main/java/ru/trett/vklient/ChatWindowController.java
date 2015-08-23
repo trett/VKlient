@@ -21,6 +21,11 @@ import java.util.Calendar;
 
 public class ChatWindowController {
 
+    final String style = "<head><style>" +
+            "body {font: 10pt \"Liberation Sans\" \"Times New Roman\", Times, serif; -webkit-font-smoothing: antialiased; }" +
+            "#incomingMessage { color: #008B00 }" +
+            "#outcomingMessage { color: #191970}" +
+            "</style></head><body><div id='chat'>";
     @FXML
     private WebView view;
     @FXML
@@ -70,12 +75,10 @@ public class ChatWindowController {
 
     public void showHistory() {
         String m = VKUtils.getMessagesHistory(account, userId, 50, 0);
-        if (m != null) {
-            StringBuilder messages = new StringBuilder(m);
-            messages.insert(0, "<head><style>p { font: 10pt sans-serif; }</style></head><body><div id='chat'>"); //temporary
-            messages.append("</div></body>");
-            engine.loadContent(messages.toString());
-        }
+        StringBuilder messages = new StringBuilder(m);
+        messages.insert(0, style); //temporary
+        messages.append("</div></body>");
+        engine.loadContent(messages.toString());
     }
 
     public void appendMessage(String message, boolean incoming) {
@@ -86,5 +89,4 @@ public class ChatWindowController {
                         "newDiv.innerHTML ='" + message + "';" +
                         "document.getElementById('chat').appendChild(newDiv);");
     }
-
 }
