@@ -6,14 +6,20 @@ package ru.trett.vklient;
  */
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import ru.trett.vkauth.AuthHelper;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class VKlient extends Application {
 
@@ -38,7 +44,7 @@ public class VKlient extends Application {
     }
 
     public static String getConfig(String key) {
-        try  {
+        try {
             Properties config = new Properties();
             config.load(new FileInputStream("vklient.properties"));
             String value = config.getProperty(key);
@@ -61,8 +67,16 @@ public class VKlient extends Application {
 //        Platform.setImplicitExit(false);
         if (getConfig("access_token") != null) {
             Account account = new Account();
-            roster.setAccount(account);
-            account.setOnlineStatus(1);
+            Timer timer = new Timer();
+            TimerTask timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    account.setFriends();
+                    Platform.runLater(() -> roster.setAccount(account));
+                    account.setOnlineStatus(1);
+                }
+            };
+            timer.schedule(timerTask, 2000);
         } else {
             showAuthWindow();
         }

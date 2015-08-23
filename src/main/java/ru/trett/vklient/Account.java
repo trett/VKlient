@@ -37,7 +37,7 @@ public class Account extends BuddyImpl {
         setOnlineStatus(Integer.parseInt(name.get("onlineStatus")));
         setStatus(name.get("status"));
         setAvatarURL(name.get("avatarURL"));
-        setFriends();
+//        setFriends();
 //        updateInfo();
         longPollConnection();
     }
