@@ -1,6 +1,7 @@
 package ru.trett.vkauth;
 
 import com.vdurmont.emoji.EmojiParser;
+import org.apache.http.client.ClientProtocolException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.trett.vklient.Account;
@@ -25,6 +26,8 @@ public class VKUtils {
         urlParameters.put("fields", "photo_50,online,status");
         Map<String, String> name = new HashMap<>();
         JSONObject obj = requestBuilder("users.get", urlParameters);
+        if (obj == null)
+            return null;
         JSONArray json = obj.getJSONArray("response");
         name.put("firstName", json.getJSONObject(0).getString("first_name"));
         name.put("lastName", json.getJSONObject(0).getString("last_name"));
@@ -40,6 +43,8 @@ public class VKUtils {
         urlParameters.put("access_token", token);
         urlParameters.put("fields", "first_name,last_name,photo_50,online,status");
         JSONObject obj = requestBuilder("friends.get", urlParameters);
+        if (obj == null)
+            return null;
         JSONArray json = obj.getJSONArray("response");
         ArrayList<BuddyImpl> buddies = new ArrayList<>();
         for (int i = 0; i < json.length(); ++i) {
@@ -62,6 +67,8 @@ public class VKUtils {
         urlParameters.put("user_id", Integer.toString(userId));
         urlParameters.put("rev", Integer.toString(rev));
         JSONObject obj = requestBuilder("messages.getHistory", urlParameters);
+        if (obj == null)
+            return null;
         JSONArray array = obj.getJSONArray("response");
         StringBuilder content = new StringBuilder();
         StringBuilder message = new StringBuilder();
@@ -70,9 +77,13 @@ public class VKUtils {
         for (int i = 1; i < array.length(); ++i) {
             date.setTime(array.getJSONObject(i).getLong("date") * 1000);
             if (array.getJSONObject(i).getInt("out") == 0) {
-                message.append("<div id='incomingMessage'>[" + sdf.format(date) + "] ");
+                message.append("<div id='incomingMessage'>[");
+                message.append(sdf.format(date));
+                message.append("] ");
             } else {
-                message.append("<div id='outcomingMessage'>[" + sdf.format(date) + "] ");
+                message.append("<div id='outcomingMessage'>[");
+                message.append(sdf.format(date));
+                message.append("] ");
             }
             if (array.getJSONObject(i).has("emoji")) {
                 message.append(EmojiParser.parseToHtmlDecimal(array.getJSONObject(i).getString("body")));
@@ -88,49 +99,62 @@ public class VKUtils {
     }
 
     public static HashMap<String, String> getLongPollServer(Account account) {
-        HashMap<String, String> urlParameters = new HashMap<>();
-        urlParameters.put("access_token", account.getAccessToken());
-        String url = Request.send("api.vk.com/method/", "messages.getLongPollServer", urlParameters);
-        System.out.println("Get Server:" + url);
-        JSONObject obj = new JSONObject(url);
-        HashMap<String, String> lpServerMap = new HashMap<>();
-        lpServerMap.put("server", obj.getJSONObject("response").getString("server"));
-        lpServerMap.put("key", obj.getJSONObject("response").getString("key"));
-        lpServerMap.put("ts", Integer.toString(obj.getJSONObject("response").getInt("ts")));
-        return lpServerMap;
+        try {
+            HashMap<String, String> urlParameters = new HashMap<>();
+            urlParameters.put("access_token", account.getAccessToken());
+            String url = Request.send("api.vk.com/method/", "messages.getLongPollServer", urlParameters);
+            System.out.println("Get Server:" + url);
+            if (url == null)
+                return null;
+            JSONObject obj = new JSONObject(url);
+            HashMap<String, String> lpServerMap = new HashMap<>();
+            lpServerMap.put("server", obj.getJSONObject("response").getString("server"));
+            lpServerMap.put("key", obj.getJSONObject("response").getString("key"));
+            lpServerMap.put("ts", Integer.toString(obj.getJSONObject("response").getInt("ts")));
+            return lpServerMap;
+        } catch (ClientProtocolException e) {
+            return null;
+        }
     }
 
     public static String getUpdates(String server, String key, String ts) {
-        HashMap<String, String> urlParameters = new HashMap<>();
-        urlParameters.put("act", "a_check");
-        urlParameters.put("key", key);
-        urlParameters.put("ts", ts);
-        urlParameters.put("wait", "25");
-        urlParameters.put("mode", "2");
-        String answer = Request.send(server, "", urlParameters);
-        return answer;
+        try {
+            HashMap<String, String> urlParameters = new HashMap<>();
+            urlParameters.put("act", "a_check");
+            urlParameters.put("key", key);
+            urlParameters.put("ts", ts);
+            urlParameters.put("wait", "25");
+            urlParameters.put("mode", "2");
+            return Request.send(server, "", urlParameters);
+        } catch (ClientProtocolException e) {
+            return null;
+        }
     }
 
     public static String sendMessage(Account account, int userId, String message) {
-        try {
             HashMap<String, String> urlParameters = new HashMap<>();
             urlParameters.put("user_id", Integer.toString(userId));
             urlParameters.put("access_token", account.getAccessToken());
             urlParameters.put("chat_id", "1");
             urlParameters.put("message", message);
-            String answer = requestBuilder("messages.send", urlParameters).toString();
-            return answer;
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
-        return null;
+            JSONObject answer = requestBuilder("messages.send", urlParameters);
+            if (answer == null)
+                return null;
+            return answer.toString();
     }
 
     private static JSONObject requestBuilder(String vkMethod, HashMap<String, String> urlParameters) {
-        String str = Request.send("api.vk.com/method/", vkMethod, urlParameters);
-        JSONObject receivedAnswer = new JSONObject(str);
-        System.out.println(urlParameters); //debug output
-        return receivedAnswer;
+        try {
+            String str = Request.send("api.vk.com/method/", vkMethod, urlParameters);
+            if (str == null)
+                return null;
+            JSONObject receivedAnswer = new JSONObject(str);
+            System.out.println(urlParameters); //debug output
+            return receivedAnswer;
+        } catch (ClientProtocolException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     public static class MessageFlags {

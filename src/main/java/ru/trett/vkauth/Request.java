@@ -21,7 +21,8 @@ import java.util.HashMap;
 
 public class Request {
 
-    public static String send(String targetUrl, String path, HashMap<String, String> urlParameters) {
+    public static String send(String targetUrl, String path, HashMap<String, String> urlParameters)
+            throws ClientProtocolException {
 
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             URIBuilder uriBuilder = new URIBuilder();

@@ -94,6 +94,8 @@ public class Account extends BuddyImpl {
                             JSONArray array = json.getJSONArray("updates");
                             update(array);
                         }
+                    } else {
+                        getLongPollConnection();
                     }
                 }
             }
