@@ -14,8 +14,6 @@ import javafx.stage.Stage;
 import ru.trett.vkauth.AuthHelper;
 
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 
 public class VKlient extends Application {
 
@@ -39,16 +37,15 @@ public class VKlient extends Application {
 //        Platform.setImplicitExit(false);
         if (config.getValue("access_token") != null) {
             Account account = new Account();
-            Timer timer = new Timer();
-            TimerTask timerTask = new TimerTask() {
-                @Override
-                public void run() {
+//            Timer timer = new Timer();
+//            TimerTask timerTask = new TimerTask() {
+//                @Override
+//                public void run() {
                     account.setFriends();
                     Platform.runLater(() -> roster.setAccount(account));
-                    account.setOnlineStatus(1);
-                }
-            };
-            timer.schedule(timerTask, 3000);
+//                }
+//            };
+//            timer.schedule(timerTask, 3000);
         } else {
             showAuthWindow();
         }
@@ -71,7 +68,6 @@ public class VKlient extends Application {
                     account.setFriends();
                     s.close();
                     roster.setAccount(account);
-                    account.setOnlineStatus(1); //TODO: create ENUM for statusOnline
                 });
         s.show();
     }

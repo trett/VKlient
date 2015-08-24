@@ -31,17 +31,21 @@ public class Account extends BuddyImpl {
         userId = Integer.parseInt(config.getValue("user_id"));
         accessToken = config.getValue("access_token");
         Map<String, String> name = VKUtils.getBuddy(userId, accessToken);
-        setFirstName(name.get("firstName"));
-        setLastName(name.get("lastName"));
-        setOnlineStatus(Integer.parseInt(name.get("onlineStatus")));
-        setStatus(name.get("status"));
-        setAvatarURL(name.get("avatarURL"));
+        if (name != null) {
+            setFirstName(name.get("firstName"));
+            setLastName(name.get("lastName"));
+            setStatus(name.get("status"));
+            setAvatarURL(name.get("avatarURL"));
 //        setFriends();
-        longPollConnection();
-        onlineStatusProperty().addListener(
-                (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-                    System.out.println("Account change state to " + newValue.intValue());
-                });
+            onlineStatusProperty().addListener(
+                    (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
+                        System.out.println("Account change state to " + newValue.intValue());
+                    });
+            setOnlineStatus(1);
+            longPollConnection();
+        } else {
+            throw new RuntimeException();
+        }
     }
 
     @Override
@@ -52,6 +56,24 @@ public class Account extends BuddyImpl {
     @Override
     public void setUserId(int userId) {
         this.userId = userId;
+    }
+
+    @Override
+    public void setOnlineStatus(int online) {
+        Timer timer = new Timer();
+        if (online == 1) {
+            setOnlineStatusProperty(1);
+            TimerTask timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    VKUtils.setOnline(Account.this);
+                }
+            };
+            timer.schedule(timerTask, 5000, 900000);
+        } else {
+            setOnlineStatusProperty(0);
+            timer.cancel();
+        }
     }
 
     public String getAccessToken() {
@@ -72,6 +94,7 @@ public class Account extends BuddyImpl {
 
     private void getLongPollConnection() {
         HashMap<String, String> longPollServer = VKUtils.getLongPollServer(Account.this);
+        assert (longPollServer == null);
         lpServer = longPollServer.get("server");
         lpServerKey = longPollServer.get("key");
         ts = longPollServer.get("ts");
@@ -83,7 +106,7 @@ public class Account extends BuddyImpl {
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                while (getOnlineStatusProperty() ==1) {
+                while (getOnlineStatusProperty() == 1) {
                     String answer = VKUtils.getUpdates(lpServer, lpServerKey, ts);
                     if (answer != null) {
                         JSONObject json = new JSONObject(answer);

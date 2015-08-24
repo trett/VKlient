@@ -132,15 +132,25 @@ public class VKUtils {
     }
 
     public static String sendMessage(Account account, int userId, String message) {
-            HashMap<String, String> urlParameters = new HashMap<>();
-            urlParameters.put("user_id", Integer.toString(userId));
-            urlParameters.put("access_token", account.getAccessToken());
-            urlParameters.put("chat_id", "1");
-            urlParameters.put("message", message);
-            JSONObject answer = requestBuilder("messages.send", urlParameters);
-            if (answer == null)
-                return null;
-            return answer.toString();
+        HashMap<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("user_id", Integer.toString(userId));
+        urlParameters.put("access_token", account.getAccessToken());
+        urlParameters.put("chat_id", "1");
+        urlParameters.put("message", message);
+        JSONObject answer = requestBuilder("messages.send", urlParameters);
+        if (answer == null)
+            return null;
+        return answer.toString();
+    }
+
+    public static void setOnline(Account account) {
+        HashMap<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("access_token", account.getAccessToken());
+        JSONObject answer = requestBuilder("account.setOnline", urlParameters);
+        if (answer != null && answer.getInt("response") == 1)
+            return;
+        else
+            System.out.println("Online status error: " + answer.getInt("response"));
     }
 
     private static JSONObject requestBuilder(String vkMethod, HashMap<String, String> urlParameters) {
