@@ -10,7 +10,6 @@ import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import ru.trett.vkauth.AuthHelper;
 import ru.trett.vkauth.Buddy;
 import ru.trett.vkauth.BuddyImpl;
 import ru.trett.vkauth.VKUtils;
@@ -28,10 +27,9 @@ public class Account extends BuddyImpl {
     private String ts = null;
 
     public Account() {
-        AuthHelper helper = new AuthHelper();
-        Map<String, String> userData = helper.getToken();
-        userId = Integer.parseInt(userData.get("user_id"));
-        accessToken = userData.get("access_token");
+        Config config = new Config();
+        userId = Integer.parseInt(config.getValue("user_id"));
+        accessToken = config.getValue("access_token");
         Map<String, String> name = VKUtils.getBuddy(userId, accessToken);
         setFirstName(name.get("firstName"));
         setLastName(name.get("lastName"));

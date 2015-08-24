@@ -11,13 +11,11 @@ import javafx.beans.value.ObservableValue;
 import javafx.scene.layout.Region;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import ru.trett.vklient.VKlient;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -55,18 +53,10 @@ public class AuthHelper {
         return CLIENT_ID;
     }
 
-    public Map<String, String> getToken() {
-        if(VKlient.getConfig("access_token") != null) {
-            Map<String, String> list = new HashMap<>();
-            list.put("access_token", VKlient.getConfig("access_token"));
-            list.put("user_id", VKlient.getConfig("user_id"));
-            return list;
-        }
+    public Map<String, String> getAnswer() {
         if (!answer.toString().isEmpty()) {
             try {
                 Map<String, String> list = AuthHelper.splitQuery(answer);
-                VKlient.setConfig("access_token", list.get("access_token"));
-                VKlient.setConfig("user_id", list.get("user_id"));
                 return list;
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();

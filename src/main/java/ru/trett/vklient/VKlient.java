@@ -13,11 +13,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import ru.trett.vkauth.AuthHelper;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.Properties;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -30,34 +26,10 @@ public class VKlient extends Application {
         launch(args);
     }
 
-    public static void setConfig(String key, String value) {
-        try {
-            Properties config = new Properties();
-            config.load(new FileInputStream("vklient.properties"));
-            config.put(key, value);
-            FileOutputStream out = new FileOutputStream("vklient.properties");
-            config.store(out, "account settings");
-            out.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static String getConfig(String key) {
-        try {
-            Properties config = new Properties();
-            config.load(new FileInputStream("vklient.properties"));
-            String value = config.getProperty(key);
-            return value;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
     @Override
     public void start(Stage primaryStage) throws Exception {
-        checkConfig();
+        Config config = new Config();
+        config.checkStore();
         setUserAgentStylesheet(STYLESHEET_MODENA);
         mainStage = primaryStage;
         mainStage.setTitle("VKlient");
@@ -65,7 +37,7 @@ public class VKlient extends Application {
         mainStage.setScene(new Scene(roster.getRoot(), 300, 500));
         mainStage.getScene().getStylesheets().add("css/main.css");
 //        Platform.setImplicitExit(false);
-        if (getConfig("access_token") != null) {
+        if (config.getValue("access_token") != null) {
             Account account = new Account();
             Timer timer = new Timer();
             TimerTask timerTask = new TimerTask() {
@@ -91,7 +63,12 @@ public class VKlient extends Application {
         s.setScene(new Scene(helper.getAuthWindow(), 750, 500, Color.web("#666970")));
         helper.recievedAnswerProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
+                    Config config = new Config();
+                    Map<String, String> list = helper.getAnswer();
+                    config.setValue("access_token", list.get("access_token"));
+                    config.setValue("user_id", list.get("user_id"));
                     Account account = new Account();
+                    account.setFriends();
                     s.close();
                     roster.setAccount(account);
                     account.setOnlineStatus(1); //TODO: create ENUM for statusOnline
@@ -99,14 +76,4 @@ public class VKlient extends Application {
         s.show();
     }
 
-    private void checkConfig() {
-        File configFile = new File("vklient.properties");
-        if (!configFile.exists()) {
-            try {
-                configFile.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }
