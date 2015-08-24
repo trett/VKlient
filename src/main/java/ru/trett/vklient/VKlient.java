@@ -6,7 +6,6 @@ package ru.trett.vklient;
  */
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
@@ -37,15 +36,7 @@ public class VKlient extends Application {
 //        Platform.setImplicitExit(false);
         if (config.getValue("access_token") != null) {
             Account account = new Account();
-//            Timer timer = new Timer();
-//            TimerTask timerTask = new TimerTask() {
-//                @Override
-//                public void run() {
-                    account.setFriends();
-                    Platform.runLater(() -> roster.setAccount(account));
-//                }
-//            };
-//            timer.schedule(timerTask, 3000);
+            roster.setAccount(account);
         } else {
             showAuthWindow();
         }
@@ -65,7 +56,6 @@ public class VKlient extends Application {
                     config.setValue("access_token", list.get("access_token"));
                     config.setValue("user_id", list.get("user_id"));
                     Account account = new Account();
-                    account.setFriends();
                     s.close();
                     roster.setAccount(account);
                 });

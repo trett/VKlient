@@ -36,13 +36,16 @@ public class Account extends BuddyImpl {
             setLastName(name.get("lastName"));
             setStatus(name.get("status"));
             setAvatarURL(name.get("avatarURL"));
-//        setFriends();
+            setFriends();
             onlineStatusProperty().addListener(
                     (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                         System.out.println("Account change state to " + newValue.intValue());
+                        if (newValue.intValue() == 1)
+                            longPollConnection();
+                        else
+                            setOnlineStatus(0);
                     });
             setOnlineStatus(1);
-            longPollConnection();
         } else {
             throw new RuntimeException();
         }
