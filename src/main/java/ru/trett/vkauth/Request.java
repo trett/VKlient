@@ -8,12 +8,14 @@ package ru.trett.vkauth;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
+import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
@@ -39,12 +41,23 @@ public class Request {
                 System.out.println("SSLException");
                 return true;
             }
+
+            if (exception instanceof ConnectTimeoutException) {
+                // Connection refused
+                return true;
+            }
+
+            if (exception instanceof NoHttpResponseException) {
+                // Retry if the server dropped connection on us
+                return true;
+            }
+
             HttpClientContext clientContext = HttpClientContext.adapt(context);
             HttpRequest request = clientContext.getRequest();
             boolean idempotent = !(request instanceof HttpEntityEnclosingRequest);
             if (idempotent) {
                 // Retry if the request is considered idempotent
-                return true;
+                return false;
             }
             return false;
         };
