@@ -21,13 +21,14 @@ import java.util.*;
 
 public class Account extends BuddyImpl {
 
-    BooleanProperty tokenExpire = new SimpleBooleanProperty(true);
     private int userId = 0;
     private String accessToken = null;
     private ArrayList<BuddyImpl> friends = null;
     private String lpServer = null;
     private String lpServerKey = null;
     private String ts = null;
+    private Timer onlineTimer = new Timer();
+    BooleanProperty tokenExpire = new SimpleBooleanProperty(true);
 
     public Account() {
         Config config = new Config();
@@ -50,10 +51,8 @@ public class Account extends BuddyImpl {
                         System.out.println("Account change state to " + newValue.intValue());
                         if (newValue.intValue() == 1)
                             longPollConnection();
-                        else
-                            setOnlineStatus(0);
                     });
-            setOnlineStatus(1);
+            setOnlineStatus(VKUtils.OnlineStatus.ONLINE);
         } else {
             setTokenExpire(false);
         }
@@ -71,7 +70,6 @@ public class Account extends BuddyImpl {
 
     @Override
     public void setOnlineStatus(int online) {
-        Timer timer = new Timer();
         if (online == 1) {
             setOnlineStatusProperty(1);
             TimerTask timerTask = new TimerTask() {
@@ -80,10 +78,10 @@ public class Account extends BuddyImpl {
                     VKUtils.setOnline(Account.this);
                 }
             };
-            timer.schedule(timerTask, 5000, 900000);
+            onlineTimer.schedule(timerTask, 5000, 900000);
         } else {
             setOnlineStatusProperty(0);
-            timer.cancel();
+            onlineTimer.cancel();
         }
     }
 

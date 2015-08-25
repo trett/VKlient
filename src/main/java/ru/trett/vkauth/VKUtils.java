@@ -147,9 +147,7 @@ public class VKUtils {
         HashMap<String, String> urlParameters = new HashMap<>();
         urlParameters.put("access_token", account.getAccessToken());
         JSONObject answer = requestBuilder("account.setOnline", urlParameters);
-        if (answer != null && answer.getInt("response") == 1)
-            return;
-        else
+        if (answer == null && answer.getInt("response") != 1)
             System.out.println("Online status error: " + answer.getInt("response"));
     }
 
@@ -188,6 +186,12 @@ public class VKUtils {
         public static final int DELЕTЕD = 128;
         public static final int FIXED = 256;
         public static final int MEDIA = 512;
+
+    }
+
+    public static class OnlineStatus  {
+        public static final int OFFLINE = 0;
+        public static final int ONLINE = 1;
 
     }
 

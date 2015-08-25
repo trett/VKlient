@@ -19,6 +19,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import ru.trett.vkauth.Buddy;
+import ru.trett.vkauth.VKUtils;
 
 import java.io.IOException;
 
@@ -46,7 +47,7 @@ public class Roster {
         acc.setGraphic(getIcon());
         MenuItem quit = new MenuItem("Quit");
         quit.setOnAction((ActionEvent event) -> {
-            account.setOnlineStatus(0);
+            account.setOnlineStatus(VKUtils.OnlineStatus.OFFLINE);
             Platform.exit();
         });
         acc.getItems().add(quit);
@@ -89,9 +90,8 @@ public class Roster {
                             updateItems();
                         });
                 friendsNode.getChildren().add(buddy);
-                friendsNode.getChildren().sort((o1, o2) -> {
-                    return o1.getValue().getFirstName().compareTo(o2.getValue().getFirstName());
-                });
+                friendsNode.getChildren().sort((o1, o2) ->
+                        o1.getValue().getFirstName().compareTo(o2.getValue().getFirstName()));
             } catch (IOException e) {
                 e.printStackTrace();
             }
