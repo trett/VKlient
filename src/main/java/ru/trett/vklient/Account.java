@@ -5,7 +5,6 @@ package ru.trett.vklient;
  * @since 15.08.2015
  */
 
-import com.vdurmont.emoji.EmojiParser;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -14,6 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.trett.vkauth.Buddy;
 import ru.trett.vkauth.BuddyImpl;
+import ru.trett.vkauth.Message;
 import ru.trett.vkauth.VKUtils;
 
 import java.text.SimpleDateFormat;
@@ -174,14 +174,14 @@ public class Account extends BuddyImpl {
                     Platform.runLater(() -> {
                         int flag = (int) list.get(2);
                         if ((flag & VKUtils.MessageFlags.OUTBOX) != VKUtils.MessageFlags.OUTBOX) {
+                            Message message = new Message();
                             Date date = new Date((int) list.get(4) * 1000);
                             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-                            StringBuilder message = new StringBuilder(
-                                    EmojiParser.parseToHtmlDecimal(list.get(6).toString())
-                            );
-                            message.insert(0, "[" + sdf.format(date) + "] ");
+                            message.setDate(sdf.format(date));
+                            message.setBody(list.get(6).toString());
+                            message.setDirection("in");
                             ChatWindowFactory.getNewInstance(this, (int) list.get(3)).
-                                    appendMessage(message.toString(), true);
+                                    appendMessage(message);
                         }
                     });
                     break;

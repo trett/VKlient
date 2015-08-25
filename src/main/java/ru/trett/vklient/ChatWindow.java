@@ -6,6 +6,8 @@
 
 package ru.trett.vklient;
 
+import ru.trett.vkauth.Message;
+
 /**
  *  Chat Window Interface.
  *
@@ -44,7 +46,7 @@ public interface ChatWindow {
      * Append message to chat
      * @param message
      */
-    void appendMessage(String message, boolean incoming);
+    void appendMessage(Message message);
 
     /**
      * Show Chat window

@@ -1,16 +1,12 @@
 package ru.trett.vkauth;
 
-import com.vdurmont.emoji.EmojiParser;
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.trett.vklient.Account;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Roman Tretyakov
@@ -60,7 +56,7 @@ public class VKUtils {
         return buddies;
     }
 
-    public static String getMessagesHistory(Account account, int userId, int count, int rev) {
+    public static ArrayList<Message> getMessagesHistory(Account account, int userId, int count, int rev) {
         HashMap<String, String> urlParameters = new HashMap<>();
         urlParameters.put("access_token", account.getAccessToken());
         urlParameters.put("count", Integer.toString(count));
@@ -70,32 +66,23 @@ public class VKUtils {
         if (obj == null)
             return null;
         JSONArray array = obj.getJSONArray("response");
-        StringBuilder content = new StringBuilder();
-        StringBuilder message = new StringBuilder();
+        ArrayList<Message> messages = new ArrayList<>();
         Date date = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         for (int i = 1; i < array.length(); ++i) {
+            Message m = new Message();
             date.setTime(array.getJSONObject(i).getLong("date") * 1000);
             if (array.getJSONObject(i).getInt("out") == 0) {
-                message.append("<div id='incomingMessage'>[");
-                message.append(sdf.format(date));
-                message.append("] ");
+                m.setDirection("out");
             } else {
-                message.append("<div id='outcomingMessage'>[");
-                message.append(sdf.format(date));
-                message.append("] ");
+                m.setDirection("in");
             }
-            if (array.getJSONObject(i).has("emoji")) {
-                message.append(EmojiParser.parseToHtmlDecimal(array.getJSONObject(i).getString("body")));
-
-            } else {
-                message.append(array.getJSONObject(i).getString("body"));
-            }
-            message.append("</div>");
-            content.insert(0, message.toString());
-            message.setLength(0);
+            m.setBody(array.getJSONObject(i).getString("body"));
+            m.setDate(sdf.format(date));
+            messages.add(m);
         }
-        return content.toString();
+        Collections.reverse(messages);
+        return messages;
     }
 
     public static HashMap<String, String> getLongPollServer(Account account) {
@@ -131,12 +118,12 @@ public class VKUtils {
         }
     }
 
-    public static String sendMessage(Account account, int userId, String message) {
+    public static String sendMessage(Account account, int userId, Message message) {
         HashMap<String, String> urlParameters = new HashMap<>();
         urlParameters.put("user_id", Integer.toString(userId));
         urlParameters.put("access_token", account.getAccessToken());
         urlParameters.put("chat_id", "1");
-        urlParameters.put("message", message);
+        urlParameters.put("message", message.getBody());
         JSONObject answer = requestBuilder("messages.send", urlParameters);
         if (answer == null)
             return null;

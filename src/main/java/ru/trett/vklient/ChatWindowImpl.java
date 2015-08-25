@@ -12,6 +12,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import ru.trett.vkauth.Buddy;
+import ru.trett.vkauth.Message;
 
 import java.io.IOException;
 
@@ -40,7 +41,6 @@ public class ChatWindowImpl implements ChatWindow {
             stage.setTitle("Chat with " + user.getFirstName() + " " + user.getLastName());
             stage.setScene(new Scene(root, 450, 450));
             stage.show();
-            chatWindowController.showHistory();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -67,8 +67,8 @@ public class ChatWindowImpl implements ChatWindow {
     }
 
     @Override
-    public void appendMessage(String message, boolean incoming) {
-        chatWindowController.appendMessage(message, incoming);
+    public void appendMessage(Message message) {
+        chatWindowController.appendMessage(message);
     }
 
     @Override

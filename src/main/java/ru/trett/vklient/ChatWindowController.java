@@ -15,9 +15,14 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import ru.trett.vkauth.Message;
 import ru.trett.vkauth.VKUtils;
 
+import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 
 
@@ -59,11 +64,18 @@ public class ChatWindowController {
     @FXML
     private void initialize() {
         engine = view.getEngine();
+        URL htmlPath = getClass().getClassLoader().getResource("chatStyle/chat.html");
+        if (htmlPath == null)
+            throw new RuntimeException("HTML Template was not found");
+        engine.load(htmlPath.toExternalForm());
         engine.getLoadWorker().stateProperty().addListener(
                 (ObservableValue<? extends Worker.State> observable, Worker.State oldValue, Worker.State newValue) -> {
-                    if (newValue == Worker.State.SUCCEEDED)
-                        engine.executeScript("window.scrollTo(0, document.body.scrollHeight);");
-        });
+                    if (newValue == Worker.State.SUCCEEDED) {
+//                        engine.executeScript("if (!document.getElementById('FirebugLite')){E = document['createElement' + 'NS'] && document.documentElement.namespaceURI;E = E ? document['createElement' + 'NS'](E, 'script') : document['createElement']('script');E['setAttribute']('id', 'FirebugLite');E['setAttribute']('src', 'https://getfirebug.com/' + 'firebug-lite.js' + '#startOpened');E['setAttribute']('FirebugLite', '4');(document['getElementsByTagName']('head')[0] || document['getElementsByTagName']('body')[0]).appendChild(E);E = new Image;E['setAttribute']('src', 'https://getfirebug.com/' + '#startOpened');}");
+                        showHistory();
+                        engine.executeScript("scroll();");
+                    }
+                });
     }
 
 
@@ -72,35 +84,34 @@ public class ChatWindowController {
             String timeStamp = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
             if (!area.getText().isEmpty()) {
                 String text = area.getText();
-                String messageId = VKUtils.sendMessage(account, userId, text);
-                appendMessage("[" + timeStamp + "] " + text, false);
+                Message m = new Message();
+                m.setDate(timeStamp);
+                m.setBody(text);
+                m.setDirection("out");
+                String messageId = VKUtils.sendMessage(account, userId, m);
+                appendMessage(m);
                 area.setText("");
                 keyEvent.consume();
             }
         }
     }
 
-    public void showHistory() {
-        String m = VKUtils.getMessagesHistory(account, userId, 50, 0);
-        StringBuilder messages = new StringBuilder(m);
-        messages.insert(0, style); //temporary
-        messages.append("</div></body>");
-        engine.loadContent(messages.toString());
+    private void showHistory() {
+        ArrayList<Message> messages = VKUtils.getMessagesHistory(account, userId, 50, 0);
+        if (messages != null)
+            messages.forEach(x -> appendMessage(x));
     }
 
-    public void appendMessage(String message, boolean incoming) {
-        String direction = incoming ? "incomingMessage" : "outcomingMessage";
-        message = message.replace("'", "\\'");
-        message = message.replace(System.getProperty("line.separator"), "\\n");
-        message = message.replace("\n", "\\n");
-        message = message.replace("\r", "\\n");
-        engine.executeScript(
-                "var newDiv = document.createElement('div');" +
-                        "newDiv.setAttribute('id', '" + direction + "');" +
-                        "newDiv.innerHTML ='" + message + "';" +
-                        "document.getElementById('chat').appendChild(newDiv);" +
-                        "window.scrollTo(0, document.body.scrollHeight);"
-        );
+    public void appendMessage(Message message) {
+        Document doc = engine.getDocument();
+        Element el = doc.createElement("div");
+        if (message.getDirection() == "out")
+            el.setAttribute("id", "outcomingMessage");
+        else
+            el.setAttribute("id", "incomingMessage");
+        el.setTextContent("[" + message.getDate() + "] " + message.getBody());
+        doc.getElementById("chat").appendChild(el);
+        engine.executeScript("scroll();");
     }
 
 }
