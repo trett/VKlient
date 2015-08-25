@@ -7,6 +7,8 @@ package ru.trett.vklient;
 
 import com.vdurmont.emoji.EmojiParser;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -19,6 +21,7 @@ import java.util.*;
 
 public class Account extends BuddyImpl {
 
+    BooleanProperty tokenExpire = new SimpleBooleanProperty(true);
     private int userId = 0;
     private String accessToken = null;
     private ArrayList<BuddyImpl> friends = null;
@@ -37,6 +40,11 @@ public class Account extends BuddyImpl {
             setStatus(name.get("status"));
             setAvatarURL(name.get("avatarURL"));
             setFriends();
+            tokenExpireProperty().addListener(
+                    (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
+                        if (newValue)
+                            System.out.println("Token is expire");
+                    });
             onlineStatusProperty().addListener(
                     (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                         System.out.println("Account change state to " + newValue.intValue());
@@ -47,7 +55,7 @@ public class Account extends BuddyImpl {
                     });
             setOnlineStatus(1);
         } else {
-            throw new RuntimeException();
+            setTokenExpire(false);
         }
     }
 
@@ -85,6 +93,18 @@ public class Account extends BuddyImpl {
 
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
+    }
+
+    public boolean getTokenExpire() {
+        return tokenExpire.get();
+    }
+
+    public void setTokenExpire(boolean tokenExpire) {
+        this.tokenExpire.set(tokenExpire);
+    }
+
+    public BooleanProperty tokenExpireProperty() {
+        return tokenExpire;
     }
 
     public void setFriends() {

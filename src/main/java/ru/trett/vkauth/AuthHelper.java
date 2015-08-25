@@ -8,9 +8,12 @@ package ru.trett.vkauth;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.scene.Scene;
 import javafx.scene.layout.Region;
+import javafx.scene.paint.Color;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import javafx.stage.Stage;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -65,7 +68,7 @@ public class AuthHelper {
         return null;
     }
 
-    public AuthWindow getAuthWindow() {
+    public AuthWindow showAuthWindow() {
         return new AuthWindow();
     }
 
@@ -75,6 +78,9 @@ public class AuthHelper {
         final WebEngine webEngine = browser.getEngine();
 
         public AuthWindow() {
+            Stage s = new Stage();
+            s.setTitle("VKlient Authorization");
+            s.setScene(new Scene(this, 750, 500, Color.web("#666970")));
             getStyleClass().add("browser");
             StringBuilder url = new StringBuilder("https://oauth.vk.com/authorize");
             url.append("?client_id=" + getClient_id());
@@ -93,7 +99,7 @@ public class AuthHelper {
                             }
                         }
                     });
-
+            s.show();
         }
     }
 }

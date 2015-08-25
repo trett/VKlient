@@ -26,7 +26,7 @@ public class VKUtils {
         urlParameters.put("fields", "photo_50,online,status");
         Map<String, String> name = new HashMap<>();
         JSONObject obj = requestBuilder("users.get", urlParameters);
-        if (obj == null)
+        if (obj == null || obj.has("error"))
             return null;
         JSONArray json = obj.getJSONArray("response");
         name.put("firstName", json.getJSONObject(0).getString("first_name"));
@@ -151,6 +151,15 @@ public class VKUtils {
             return;
         else
             System.out.println("Online status error: " + answer.getInt("response"));
+    }
+
+    public static boolean checkToken(String token) {
+        HashMap<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("access_token", token);
+        JSONObject obj = requestBuilder("users.get", urlParameters);
+        if (obj == null || obj.has("error"))
+            return false;
+        return true;
     }
 
     private static JSONObject requestBuilder(String vkMethod, HashMap<String, String> urlParameters) {
