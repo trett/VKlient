@@ -28,11 +28,6 @@ import java.util.Calendar;
 
 public class ChatWindowController {
 
-    final String style = "<head><style>" +
-            "body {font: 10pt \"Liberation Sans\" \"Times New Roman\", Times, serif; -webkit-font-smoothing: antialiased; }" +
-            "#incomingMessage { color: #008B00 }" +
-            "#outcomingMessage { color: #191970}" +
-            "</style></head><body><div id='chat'>";
     @FXML
     private WebView view;
     @FXML
