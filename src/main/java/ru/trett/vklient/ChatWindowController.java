@@ -67,8 +67,8 @@ public class ChatWindowController {
                 String text = area.getText();
                 String messageId = VKUtils.sendMessage(account, userId, text);
                 appendMessage("[" + timeStamp + "] " + text, false);
-                area.clear();
-                area.positionCaret(0); //TODO: it seems doesn't work
+                area.setText("");
+                keyEvent.consume();
             }
         }
     }
@@ -83,6 +83,10 @@ public class ChatWindowController {
 
     public void appendMessage(String message, boolean incoming) {
         String direction = incoming ? "incomingMessage" : "outcomingMessage";
+        message = message.replace("'", "\\'");
+        message = message.replace(System.getProperty("line.separator"), "\\n");
+        message = message.replace("\n", "\\n");
+        message = message.replace("\r", "\\n");
         engine.executeScript(
                 "var newDiv = document.createElement('div');" +
                         "newDiv.setAttribute('id', '" + direction + "');" +
