@@ -7,6 +7,8 @@
 
 package ru.trett.vklient;
 
+import javafx.beans.value.ObservableValue;
+import javafx.concurrent.Worker;
 import javafx.fxml.FXML;
 import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
@@ -57,6 +59,11 @@ public class ChatWindowController {
     @FXML
     private void initialize() {
         engine = view.getEngine();
+        engine.getLoadWorker().stateProperty().addListener(
+                (ObservableValue<? extends Worker.State> observable, Worker.State oldValue, Worker.State newValue) -> {
+                    if (newValue == Worker.State.SUCCEEDED)
+                        engine.executeScript("window.scrollTo(0, document.body.scrollHeight);");
+        });
     }
 
 
@@ -91,6 +98,9 @@ public class ChatWindowController {
                 "var newDiv = document.createElement('div');" +
                         "newDiv.setAttribute('id', '" + direction + "');" +
                         "newDiv.innerHTML ='" + message + "';" +
-                        "document.getElementById('chat').appendChild(newDiv);");
+                        "document.getElementById('chat').appendChild(newDiv);" +
+                        "window.scrollTo(0, document.body.scrollHeight);"
+        );
     }
+
 }

@@ -28,7 +28,7 @@ public class Account extends BuddyImpl {
     private String lpServerKey = null;
     private String ts = null;
     private Timer onlineTimer = new Timer();
-    BooleanProperty tokenExpire = new SimpleBooleanProperty(true);
+    private BooleanProperty tokenExpire = new SimpleBooleanProperty(true);
 
     public Account() {
         Config config = new Config();
