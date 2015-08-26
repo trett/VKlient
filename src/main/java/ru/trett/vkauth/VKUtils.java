@@ -77,7 +77,7 @@ public class VKUtils {
             for (int i = 1; i < array.length(); ++i) {
                 Message m = new Message();
                 date.setTime(array.getJSONObject(i).getLong("date") * 1000);
-                if (array.getJSONObject(i).getInt("out") == 0) {
+                if (array.getJSONObject(i).getInt("out") == 1) {
                     m.setDirection("out");
                 } else {
                     m.setDirection("in");
