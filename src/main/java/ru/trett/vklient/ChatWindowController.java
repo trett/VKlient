@@ -100,7 +100,7 @@ public class ChatWindowController {
     public void appendMessage(Message message) {
         Document doc = engine.getDocument();
         Element el = doc.createElement("div");
-        if (message.getDirection() == "out")
+        if (message.getDirection().equals("out"))
             el.setAttribute("id", "outcomingMessage");
         else
             el.setAttribute("id", "incomingMessage");

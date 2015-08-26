@@ -10,6 +10,7 @@ package ru.trett.vklient;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 import ru.trett.vkauth.Buddy;
 import ru.trett.vkauth.Message;
@@ -39,6 +40,8 @@ public class ChatWindowImpl implements ChatWindow {
             Buddy user = account.getFriendById(account.getFriends(), userId);
             stage = new Stage();
             stage.setTitle("Chat with " + user.getFirstName() + " " + user.getLastName());
+            ImageView n = (ImageView) AvatarLoader.getImageFromUrl(user.getAvatarURL());
+            stage.getIcons().add(n.getImage());
             stage.setScene(new Scene(root, 450, 450));
             stage.show();
         } catch (IOException e) {
