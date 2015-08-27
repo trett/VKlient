@@ -5,7 +5,6 @@ package ru.trett.vkauth;
  * @since 15.08.2015
  */
 
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.NoHttpResponseException;
@@ -16,9 +15,9 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 
 import javax.net.ssl.SSLException;
 import java.io.IOException;
@@ -72,15 +71,16 @@ public class Request {
 
             System.out.println("Executing request " + httpget.getRequestLine());
 
-            ResponseHandler<String> responseHandler = response -> {
-                int status = response.getStatusLine().getStatusCode();
-                if (status >= 200 && status < 300) {
-                    HttpEntity entity = response.getEntity();
-                    return entity != null ? EntityUtils.toString(entity) : null;
-                } else {
-                    throw new ClientProtocolException("Unexpected response status: " + status);
-                }
-            };
+//            ResponseHandler<String> responseHandler = response -> {
+//                int status = response.getStatusLine().getStatusCode();
+//                if (status >= 200 && status < 300) {
+//                    HttpEntity entity = response.getEntity();
+//                    return entity != null ? EntityUtils.toString(entity) : null;
+//                } else {
+//                    throw new ClientProtocolException("Unexpected response status: " + status);
+//                }
+//            };
+            ResponseHandler<String> responseHandler = new BasicResponseHandler();
             String responseBody = httpclient.execute(httpget, responseHandler);
             System.out.println(responseBody);
             httpclient.close();

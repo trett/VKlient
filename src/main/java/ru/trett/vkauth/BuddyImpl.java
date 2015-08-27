@@ -26,13 +26,13 @@ public class BuddyImpl implements Buddy {
     }
 
     @Override
-    public IntegerProperty onlineStatusProperty() {
-        return onlineStatusProperty;
+    public final void setOnlineStatusProperty(int onlineStatusProperty) {
+        this.onlineStatusProperty.set(onlineStatusProperty);
     }
 
     @Override
-    public final void setOnlineStatusProperty(int onlineStatusProperty) {
-        this.onlineStatusProperty.set(onlineStatusProperty);
+    public IntegerProperty onlineStatusProperty() {
+        return onlineStatusProperty;
     }
 
     @Override
@@ -102,19 +102,24 @@ public class BuddyImpl implements Buddy {
     }
 
     @Override
+    public void setNewMessages(int newMessages) {
+        this.newMessages.set(newMessages);
+    }
+
+    @Override
     public IntegerProperty newMessagesProperty() {
         return newMessages;
     }
 
     @Override
-    public void setNewMessages(int newMessages) {
-        this.newMessages.set(newMessages);
+    public int compareTo(Buddy b) {
+        if (this.getOnlineStatusProperty() > b.getOnlineStatusProperty()) {
+            return -1;
+        } else if (this.getOnlineStatusProperty() < b.getOnlineStatusProperty()) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
-
-    // TODO: Create sort by online Status
-//    public int compareTo(BuddyImpl b) {
-//        int onlineProp = b.getOnlineStatusProperty();
-//        return this.onlineStatusProperty().intValue() - onlineProp;
-//    }
 
 }

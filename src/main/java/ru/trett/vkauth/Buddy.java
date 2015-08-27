@@ -49,4 +49,6 @@ public interface Buddy {
 
     void setNewMessages(int newMessages);
 
+    int compareTo(Buddy b);
+
 }

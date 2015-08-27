@@ -7,9 +7,6 @@
 
 package ru.trett.vkauth;
 
-/**
- * Created by maat on 26.08.15.
- */
 public class RequestReturnNullException extends Exception{
 
     public RequestReturnNullException() {

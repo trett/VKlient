@@ -73,6 +73,7 @@ public class Roster {
                     (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                         System.out.println(x.getFirstName() + " change status to " + newValue.intValue());
                         buddy.getGraphic().setEffect(effect(newValue.intValue()));
+                        friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue()));
                         updateItems();
                     });
             x.newMessagesProperty().addListener(
@@ -84,8 +85,9 @@ public class Roster {
                         updateItems();
                     });
             friendsNode.getChildren().add(buddy);
-            friendsNode.getChildren().sort((o1, o2) ->
-                    o1.getValue().getFirstName().compareTo(o2.getValue().getFirstName()));
+//            friendsNode.getChildren().sort((o1, o2) ->
+//                    o1.getValue().getFirstName().compareTo(o2.getValue().getFirstName()));
+            friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue()));
         });
 
         friendsNode.setExpanded(true);
