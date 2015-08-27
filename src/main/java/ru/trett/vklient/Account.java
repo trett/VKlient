@@ -40,7 +40,6 @@ public class Account extends BuddyImpl {
             setLastName(name.get("lastName"));
             setStatus(name.get("status"));
             setAvatarURL(name.get("avatarURL"));
-            setFriends();
             tokenExpireProperty().addListener(
                     (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
                         if (newValue)
@@ -72,6 +71,7 @@ public class Account extends BuddyImpl {
     public void setOnlineStatus(int online) {
         if (online == 1) {
             setOnlineStatusProperty(1);
+            setFriends();
             TimerTask timerTask = new TimerTask() {
                 @Override
                 public void run() {
