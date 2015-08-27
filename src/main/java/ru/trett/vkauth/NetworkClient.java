@@ -67,8 +67,8 @@ public class NetworkClient {
         };
 
         RequestConfig requestConfig = RequestConfig.custom().
-                setConnectionRequestTimeout(26000).
-                setSocketTimeout(26000).
+                setConnectionRequestTimeout(request.timeout).
+                setSocketTimeout(request.timeout).
                 build();
         try (CloseableHttpClient httpclient = HttpClients.custom().
                 setRetryHandler(myRetryHandler).
