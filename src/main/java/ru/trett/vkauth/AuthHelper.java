@@ -82,10 +82,10 @@ public class AuthHelper {
             s.setTitle("VKlient Authorization");
             s.setScene(new Scene(this, 750, 500, Color.web("#666970")));
             getStyleClass().add("browser");
-            StringBuilder url = new StringBuilder("https://oauth.vk.com/authorize");
-            url.append("?client_id=" + getClient_id());
-            url.append("&response_type=token&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=4098");
-            webEngine.load(url.toString());
+            String url = "https://oauth.vk.com/authorize" +
+                    "?client_id=" + getClient_id() +
+                    "&response_type=token&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=4098";
+            webEngine.load(url);
             getChildren().add(browser);
             webEngine.locationProperty().addListener(
                     (ObservableValue<? extends String> observable, String oldValue, String newValue) -> {

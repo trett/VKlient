@@ -98,7 +98,12 @@ public class VKUtils {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
             urlParameters.put("access_token", account.getAccessToken());
-            String url = Request.send("api.vk.com/method/", "messages.getLongPollServer", urlParameters);
+            Request request = new RequestBuilder().
+                    host("api.vk.com/method/").
+                    path("messages.getLongPollServer").
+                    query(urlParameters).
+                    build();
+            String url = NetworkClient.send(request);
             System.out.println("Get Server:" + url);
             if (url == null)
                 return null;
@@ -121,7 +126,12 @@ public class VKUtils {
             urlParameters.put("ts", ts);
             urlParameters.put("wait", "25");
             urlParameters.put("mode", "2");
-            return Request.send(server, "", urlParameters);
+            Request request = new RequestBuilder().
+                    host(server).
+                    query(urlParameters).
+                    timeout(26000).
+                    build();
+            return NetworkClient.send(request);
         } catch (ClientProtocolException e) {
             return null;
         }
@@ -169,18 +179,20 @@ public class VKUtils {
     private static JSONObject requestBuilder(String vkMethod, HashMap<String, String> urlParameters)
             throws RequestReturnNullException, RequestReturnErrorException {
         try {
-            String str = Request.send("api.vk.com/method/", vkMethod, urlParameters);
+            Request request = new RequestBuilder().host("api.vk.com/method/").
+                    path(vkMethod).query(urlParameters).build();
+            String str = NetworkClient.send(request);
             if (str == null)
-                throw new RequestReturnNullException("Request return null");
+                throw new RequestReturnNullException("NetworkClient return null");
             JSONObject receivedAnswer = new JSONObject(str);
             if (receivedAnswer.has("error")) {
                 throw new RequestReturnErrorException(
-                        "Request return error: " + receivedAnswer.getJSONObject("error").toString());
+                        "NetworkClient return error: " + receivedAnswer.getJSONObject("error").toString());
             }
             System.out.println(urlParameters); //debug output
             return receivedAnswer;
         } catch (ClientProtocolException e) {
-            throw new RequestReturnNullException("Request return null.", e);
+            throw new RequestReturnNullException("NetworkClient return null.", e);
         }
     }
 
