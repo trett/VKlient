@@ -70,16 +70,7 @@ public class Request {
             HttpGet httpget = new HttpGet(uri);
 
             System.out.println("Executing request " + httpget.getRequestLine());
-
-//            ResponseHandler<String> responseHandler = response -> {
-//                int status = response.getStatusLine().getStatusCode();
-//                if (status >= 200 && status < 300) {
-//                    HttpEntity entity = response.getEntity();
-//                    return entity != null ? EntityUtils.toString(entity) : null;
-//                } else {
-//                    throw new ClientProtocolException("Unexpected response status: " + status);
-//                }
-//            };
+            
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
             String responseBody = httpclient.execute(httpget, responseHandler);
             System.out.println(responseBody);

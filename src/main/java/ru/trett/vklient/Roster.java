@@ -85,8 +85,6 @@ public class Roster {
                         updateItems();
                     });
             friendsNode.getChildren().add(buddy);
-//            friendsNode.getChildren().sort((o1, o2) ->
-//                    o1.getValue().getFirstName().compareTo(o2.getValue().getFirstName()));
             friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue()));
         });
 
@@ -120,8 +118,10 @@ public class Roster {
         private ContextMenu addMenu = new ContextMenu();
 
         BuddyCellFactoryImpl() {
+            setPrefWidth(250);
             MenuItem addMenuItem = new MenuItem("Send Message");
             addMenu.getItems().add(addMenuItem);
+            setTextOverrun(OverrunStyle.WORD_ELLIPSIS);
 //            addMenuItem.setOnAction(new EventHandler() {
 //                public void handle(Event t) {
 //
