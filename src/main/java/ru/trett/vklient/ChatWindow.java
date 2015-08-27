@@ -54,4 +54,10 @@ public interface ChatWindow {
      */
     void showWindow();
 
+    /**
+     * Return true if windows are showing
+     * @return
+     */
+    public boolean isShowing();
+
 }

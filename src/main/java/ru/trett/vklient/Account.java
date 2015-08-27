@@ -180,8 +180,15 @@ public class Account extends BuddyImpl {
                             message.setDate(sdf.format(date));
                             message.setBody(list.get(6).toString());
                             message.setDirection("in");
-                            ChatWindowFactory.getNewInstance(this, (int) list.get(3)).
-                                    appendMessage(message);
+                            ChatWindow chatWindow = ChatWindowFactory.getInstance(this, (int) list.get(3));
+                            if (chatWindow != null && chatWindow.isShowing()) {
+                                chatWindow.appendMessage(message);
+                            } else if (chatWindow != null) {
+                                getFriendById(friends, (int) list.get(3)).setNewMessages(1);
+                                chatWindow.appendMessage(message);
+                            } else {
+                                getFriendById(friends, (int) list.get(3)).setNewMessages(1);
+                            }
                         }
                     });
                     break;

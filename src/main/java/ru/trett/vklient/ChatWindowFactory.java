@@ -15,15 +15,24 @@ public class ChatWindowFactory {
         return chatWindows;
     }
 
-    public static ChatWindow getNewInstance(Account account, int userId) {
-        if (chatWindows == null)
-            chatWindows = new ArrayList<>();
-        if (chatWindows.size() > 0) {
+    /**
+     * @param account
+     * @param userId
+     * @return existing window or null
+     */
+    public static ChatWindow getInstance(Account account, int userId) {
+        if (chatWindows != null && chatWindows.size() > 0) {
             for (ChatWindow cw : chatWindows) {
                 if (account == cw.getAccount() && userId == cw.getUserId())
                     return cw;
             }
         }
+        return null;
+    }
+
+    public static ChatWindow createInstance(Account account, int userId) {
+        if(chatWindows == null)
+            chatWindows = new ArrayList<>();
         ChatWindowImpl chatWindow = new ChatWindowImpl(account, userId);
         chatWindows.add(chatWindow);
         return chatWindow;

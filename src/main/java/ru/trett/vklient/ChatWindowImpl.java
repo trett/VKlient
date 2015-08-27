@@ -40,7 +40,7 @@ public class ChatWindowImpl implements ChatWindow {
             Buddy user = account.getFriendById(account.getFriends(), userId);
             stage = new Stage();
             stage.setTitle("Chat with " + user.getFirstName() + " " + user.getLastName());
-            ImageView n = (ImageView) AvatarLoader.getImageFromUrl(user.getAvatarURL());
+            ImageView n = (ImageView) IconLoader.getImageFromUrl(user.getAvatarURL());
             stage.getIcons().add(n.getImage());
             stage.setScene(new Scene(root, 450, 450));
             stage.show();
@@ -78,6 +78,10 @@ public class ChatWindowImpl implements ChatWindow {
     public void showWindow() {
         if (!stage.isShowing())
             stage.show();
+    }
+
+    public boolean isShowing() {
+        return stage.isShowing();
     }
 
 }
