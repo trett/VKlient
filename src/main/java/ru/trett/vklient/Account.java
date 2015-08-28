@@ -175,7 +175,7 @@ public class Account extends BuddyImpl {
                         int flag = (int) list.get(2);
                         if ((flag & VKUtils.MessageFlags.OUTBOX) != VKUtils.MessageFlags.OUTBOX) {
                             Message message = new Message();
-                            Date date = new Date((int) list.get(4) * 1000);
+                            Date date = new Date(Long.parseLong(list.get(4).toString()) * 1000);
                             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
                             message.setDate(sdf.format(date));
                             message.setBody(list.get(6).toString());
