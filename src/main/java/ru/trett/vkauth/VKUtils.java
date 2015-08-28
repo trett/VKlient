@@ -15,6 +15,14 @@ import java.util.*;
 
 public class VKUtils {
 
+    private static NetworkClient networkClient;
+    private static NetworkClient longPollClient;
+
+    static {
+        networkClient = new NetworkClient(5000);
+        longPollClient = new NetworkClient(26000);
+    }
+
     public static Map<String, String> getBuddy(int userId, String token) {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
@@ -103,7 +111,7 @@ public class VKUtils {
                     path("messages.getLongPollServer").
                     query(urlParameters).
                     build();
-            String url = NetworkClient.send(request);
+            String url = networkClient.send(request);
             System.out.println("Get Server:" + url);
             if (url == null)
                 return null;
@@ -129,9 +137,8 @@ public class VKUtils {
             Request request = new RequestBuilder().
                     host(server).
                     query(urlParameters).
-                    timeout(26000).
                     build();
-            return NetworkClient.send(request);
+            return longPollClient.send(request);
         } catch (ClientProtocolException e) {
             return null;
         }
@@ -181,7 +188,7 @@ public class VKUtils {
         try {
             Request request = new RequestBuilder().host("api.vk.com/method/").
                     path(vkMethod).query(urlParameters).build();
-            String str = NetworkClient.send(request);
+            String str = networkClient.send(request);
             if (str == null)
                 throw new RequestReturnNullException("NetworkClient return null");
             JSONObject receivedAnswer = new JSONObject(str);

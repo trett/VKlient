@@ -28,10 +28,11 @@ import java.net.URISyntaxException;
 
 public class NetworkClient {
 
-    //    public static String send(String targetUrl, String path, HashMap<String, String> urlParameters)
-    public static String send(Request request)
-            throws ClientProtocolException {
-        HttpRequestRetryHandler myRetryHandler = (exception, executionCount, context) -> {
+    private RequestConfig requestConfig;
+    private HttpRequestRetryHandler customRetryHandler;
+
+    NetworkClient(int timeout) {
+        customRetryHandler = (exception, executionCount, context) -> {
             if (executionCount >= 5) {
                 // Do not retry if over max retry count
                 return false;
@@ -66,12 +67,17 @@ public class NetworkClient {
             return false;
         };
 
-        RequestConfig requestConfig = RequestConfig.custom().
-                setConnectionRequestTimeout(request.timeout).
-                setSocketTimeout(request.timeout).
+        requestConfig = RequestConfig.custom().
+                setConnectionRequestTimeout(timeout).
+                setSocketTimeout(timeout).
                 build();
+
+    }
+
+    public String send(Request request)
+            throws ClientProtocolException {
         try (CloseableHttpClient httpclient = HttpClients.custom().
-                setRetryHandler(myRetryHandler).
+                setRetryHandler(customRetryHandler).
                 setDefaultRequestConfig(requestConfig).
                 build()) {
             URIBuilder uriBuilder = new URIBuilder();
@@ -81,12 +87,11 @@ public class NetworkClient {
                 request.query.forEach((key, value) -> uriBuilder.addParameter(key, value));
             URI uri = uriBuilder.build();
             HttpGet httpget = new HttpGet(uri);
-            System.out.println("Executing request " + httpget.getRequestLine());
-
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
             String responseBody = httpclient.execute(httpget, responseHandler);
-            System.out.println(responseBody);
+            System.out.println("Executing request " + httpget.getRequestLine());
             httpclient.close();
+            System.out.println(responseBody);
             return responseBody;
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();

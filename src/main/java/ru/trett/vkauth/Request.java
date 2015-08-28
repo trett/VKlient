@@ -14,15 +14,13 @@ public class Request {
     String host;
     String path;
     HashMap<String, String> query;
-    int timeout;
 
     Request() {}
 
-    Request(String host, String path, HashMap<String, String> query, int timeout) {
+    Request(String host, String path, HashMap<String, String> query) {
         this.host = host;
         this.path = path;
         this.query = query;
-        this.timeout = timeout;
     }
 
 }
@@ -38,7 +36,7 @@ class RequestBuilder {
     }
 
     public Request build() {
-        return new Request(_host, _path, _query, _timeout);
+        return new Request(_host, _path, _query);
     }
 
     public RequestBuilder host(String _host) {
@@ -53,11 +51,6 @@ class RequestBuilder {
 
     public RequestBuilder query(HashMap<String, String> _query) {
         this._query = _query;
-        return this;
-    }
-
-    public RequestBuilder timeout(int _timeout) {
-        this._timeout = _timeout;
         return this;
     }
 
