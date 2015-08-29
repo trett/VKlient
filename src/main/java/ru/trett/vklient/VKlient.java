@@ -8,6 +8,7 @@ package ru.trett.vklient;
 import javafx.application.Application;
 import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import ru.trett.vkauth.AuthHelper;
 import ru.trett.vkauth.VKUtils;
@@ -32,6 +33,12 @@ public class VKlient extends Application {
         mainStage.setTitle("VKlient");
         roster = new Roster();
         mainStage.setScene(new Scene(roster.getRoot(), 300, 500));
+        try {
+            Image appIcon = new Image(getClass().getClassLoader().getResourceAsStream("vklient.png"));
+            mainStage.getIcons().add(appIcon);
+        } catch (NullPointerException e) {
+            System.out.println("Application icon not found");
+        }
         mainStage.getScene().getStylesheets().add("css/main.css");
         if (config.getValue("access_token") != null &&
                 VKUtils.checkToken(config.getValue("access_token"))) {
