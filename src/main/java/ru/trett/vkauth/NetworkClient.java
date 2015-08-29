@@ -70,6 +70,7 @@ public class NetworkClient {
         requestConfig = RequestConfig.custom().
                 setConnectionRequestTimeout(timeout).
                 setSocketTimeout(timeout).
+                setConnectTimeout(timeout).
                 build();
 
     }
@@ -95,8 +96,8 @@ public class NetworkClient {
             return responseBody;
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
 }

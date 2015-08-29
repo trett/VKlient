@@ -42,7 +42,7 @@ public class ChatWindowImpl implements ChatWindow {
             stage.setTitle("Chat with " + user.getFirstName() + " " + user.getLastName());
             ImageView n = (ImageView) IconLoader.getImageFromUrl(user.getAvatarURL());
             stage.getIcons().add(n.getImage());
-            stage.setScene(new Scene(root, 450, 450));
+            stage.setScene(new Scene(root, 600, 700));
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

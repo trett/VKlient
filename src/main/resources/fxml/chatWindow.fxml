@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.web.*?>
-<?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0"
-          xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8" fx:controller="ru.trett.vklient.ChatWindowController">
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="700.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.trett.vklient.ChatWindowController">
   <columnConstraints>
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
@@ -18,15 +17,14 @@
     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
   </rowConstraints>
    <children>
-      <WebView fx:id="view" prefHeight="321.0" prefWidth="600.0" GridPane.columnSpan="2" GridPane.rowSpan="2" GridPane.vgrow="SOMETIMES">
+      <WebView fx:id="view" minHeight="-1.0" minWidth="-1.0" prefHeight="400.0" prefWidth="590.0" GridPane.columnSpan="2" GridPane.rowSpan="2">
          <GridPane.margin>
-            <Insets />
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </GridPane.margin>
       </WebView>
-      <TextArea fx:id="area" prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="2"
-              onKeyPressed="#enterKeyPressed">
+      <TextArea fx:id="area" cacheHint="QUALITY" onKeyPressed="#enterKeyPressed" prefHeight="140.0" prefWidth="590.0" wrapText="true" GridPane.columnSpan="2" GridPane.rowIndex="2" GridPane.vgrow="SOMETIMES">
          <GridPane.margin>
-            <Insets />
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
          </GridPane.margin>
       </TextArea>
    </children>

@@ -1,6 +1,13 @@
+.root{
+    -fx-font-smoothing-type: gray;
+    -fx-font-family: "Liberation Sans", "Courier New";
+}
+
+
 .tree-cell {
     -fx-font-smoothing-type: gray;
-    -fx-font-size: 0.9em;
+    -fx-font-family: "Liberation Sans", "Courier New";
+/*    -fx-font-size: 0.9em; */
 /*    -fx-background-color: linear-gradient(#ffffff 0%, #f6f6f6 47%, #ededed 100%);*/
     
 } 
@@ -14,8 +21,6 @@
 
 .tree-cell:even {
     -fx-background-color: #ededed;
-    
-    
 } 
 
 /*.tree-cell:highlighted {
