@@ -24,7 +24,14 @@
             window.scrollTo(0, document.body.scrollHeight);
         }
 
-
+        function appendMessage(message, direction) {
+            var chat = document.getElementById("chat");
+            var newDiv = document.createElement("div");
+            newDiv.setAttribute("id", direction === "out" ? "outcomingMessage" : "incomingMessage");
+            newDiv.innerHTML += message;
+            chat.appendChild(newDiv);
+            scroll();
+        }
     </script>
 </head>
 <body>

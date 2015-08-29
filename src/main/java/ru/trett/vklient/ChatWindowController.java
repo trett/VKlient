@@ -15,8 +15,6 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import ru.trett.vkauth.Message;
 import ru.trett.vkauth.VKUtils;
 
@@ -24,6 +22,8 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+
+import static org.apache.commons.lang3.StringEscapeUtils.unescapeHtml4;
 
 
 public class ChatWindowController {
@@ -98,15 +98,8 @@ public class ChatWindowController {
     }
 
     public void appendMessage(Message message) {
-        Document doc = engine.getDocument();
-        Element el = doc.createElement("div");
-        if (message.getDirection().equals("out"))
-            el.setAttribute("id", "outcomingMessage");
-        else
-            el.setAttribute("id", "incomingMessage");
-        el.setTextContent("[" + message.getDate() + "] " + message.getBody());
-        doc.getElementById("chat").appendChild(el);
-        engine.executeScript("scroll();");
+        String m = unescapeHtml4("[" + message.getDate() + "] " + message.getBody());
+        engine.executeScript("appendMessage('" + m + "','" + message.getDirection() + "')");
     }
 
 }
