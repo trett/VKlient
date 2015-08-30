@@ -12,6 +12,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
@@ -30,6 +31,8 @@ public class NetworkClient {
 
     private RequestConfig requestConfig;
     private HttpRequestRetryHandler customRetryHandler;
+    private CloseableHttpClient httpclient;
+    private CloseableHttpResponse httpResponse;
 
     NetworkClient(int timeout) {
         customRetryHandler = (exception, executionCount, context) -> {
@@ -72,15 +75,15 @@ public class NetworkClient {
                 setSocketTimeout(timeout).
                 setConnectTimeout(timeout).
                 build();
-
     }
 
     public String send(Request request)
             throws ClientProtocolException {
-        try (CloseableHttpClient httpclient = HttpClients.custom().
+        httpclient = HttpClients.custom().
                 setRetryHandler(customRetryHandler).
                 setDefaultRequestConfig(requestConfig).
-                build()) {
+                build();
+        try {
             URIBuilder uriBuilder = new URIBuilder();
             uriBuilder.setScheme("https").setHost(request.host).
                     setPath(request.path);
@@ -89,14 +92,27 @@ public class NetworkClient {
             URI uri = uriBuilder.build();
             HttpGet httpget = new HttpGet(uri);
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
-            String responseBody = httpclient.execute(httpget, responseHandler);
             System.out.println("Executing request " + httpget.getRequestLine());
+            httpResponse = httpclient.execute(httpget);
+            String responseBody = responseHandler.handleResponse(httpResponse);
             httpclient.close();
             System.out.println(responseBody);
             return responseBody;
         } catch (IOException | URISyntaxException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
             return null;
+        } finally {
+            abort();
+        }
+    }
+
+    public void abort() {
+        try {
+            if (httpResponse != null)
+                httpResponse.close();
+            httpclient.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

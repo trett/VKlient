@@ -82,6 +82,7 @@ public class Account extends BuddyImpl {
         } else {
             setOnlineStatusProperty(0);
             onlineTimer.cancel();
+            VKUtils.abortAllConnections();
         }
     }
 

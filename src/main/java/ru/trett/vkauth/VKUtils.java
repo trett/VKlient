@@ -203,6 +203,11 @@ public class VKUtils {
         }
     }
 
+    public static void abortAllConnections() {
+        networkClient.abort();
+        longPollClient.abort();
+    }
+
     public static class MessageFlags {
 
         public static final int UNREAD = 1;
