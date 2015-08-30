@@ -1,7 +1,15 @@
 /*
- *  *
- *  @author Roman Tretyakov
- *  @since 15.08.2015
+ * (C) Copyright Tretyakov Roman.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
  *
  */
 
@@ -12,14 +20,25 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
 /**
- * Created by maat on 27.08.15.
+ * @author Roman Tretyakov
+ * @since 15.08.2015
  */
+
 public class IconLoader {
 
     private ClassLoader classLoader;
 
     IconLoader() {
-           classLoader = getClass().getClassLoader();
+        classLoader = getClass().getClassLoader();
+    }
+
+    public static Node getImageFromUrl(String url) {
+        ImageView image = new ImageView(new Image(url));
+        image.setFitWidth(32);
+        image.setPreserveRatio(true);
+        image.setSmooth(true);
+        image.setCache(true);
+        return image;
     }
 
     public Node getIcon(String iconName, int width) {
@@ -31,15 +50,6 @@ public class IconLoader {
         icon.setSmooth(true);
         icon.setCache(true);
         return icon;
-    }
-
-    public static Node getImageFromUrl(String url) {
-        ImageView image = new ImageView(new Image(url));
-        image.setFitWidth(32);
-        image.setPreserveRatio(true);
-        image.setSmooth(true);
-        image.setCache(true);
-        return image;
     }
 
 }

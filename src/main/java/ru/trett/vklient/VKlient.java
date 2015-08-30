@@ -1,9 +1,19 @@
-package ru.trett.vklient;
-
-/**
- * @author Roman Tretyakov
- * @since 15.08.2015
+/*
+ * (C) Copyright Tretyakov Roman.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
  */
+
+package ru.trett.vklient;
 
 import javafx.application.Application;
 import javafx.beans.value.ObservableValue;
@@ -15,9 +25,14 @@ import ru.trett.vkauth.VKUtils;
 
 import java.util.Map;
 
+
+/**
+ * @author Roman Tretyakov
+ * @since 15.08.2015
+ */
+
 public class VKlient extends Application {
 
-    private Stage mainStage;
     private Roster roster;
 
     public static void main(String[] args) {
@@ -29,17 +44,16 @@ public class VKlient extends Application {
         Config config = new Config();
         config.checkStore();
         setUserAgentStylesheet(STYLESHEET_MODENA);
-        mainStage = primaryStage;
-        mainStage.setTitle("VKlient");
+        primaryStage.setTitle("VKlient");
         roster = new Roster();
-        mainStage.setScene(new Scene(roster.getRoot(), 300, 500));
+        primaryStage.setScene(new Scene(roster.getRoot(), 300, 500));
         try {
             Image appIcon = new Image(getClass().getClassLoader().getResourceAsStream("vklient.png"));
-            mainStage.getIcons().add(appIcon);
+            primaryStage.getIcons().add(appIcon);
         } catch (NullPointerException e) {
             System.out.println("Application icon not found");
         }
-        mainStage.getScene().getStylesheets().add("css/main.css");
+        primaryStage.getScene().getStylesheets().add("css/main.css");
         if (config.getValue("access_token") != null &&
                 VKUtils.checkToken(config.getValue("access_token"))) {
             Account account = new Account();
@@ -47,7 +61,7 @@ public class VKlient extends Application {
         } else {
             authWindow();
         }
-        mainStage.show();
+        primaryStage.show();
     }
 
     private void authWindow() {

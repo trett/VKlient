@@ -1,9 +1,19 @@
-package ru.trett.vklient;
-
-/**
- * @author Roman Tretyakov
- * @since 15.08.2015
+/*
+ * (C) Copyright Tretyakov Roman.
+ *
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser General Public License
+ * (LGPL) version 2.1 which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/lgpl-2.1.html
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
  */
+
+package ru.trett.vklient;
 
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
@@ -18,6 +28,11 @@ import ru.trett.vkauth.VKUtils;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+/**
+ * @author Roman Tretyakov
+ * @since 15.08.2015
+ */
 
 public class Account extends BuddyImpl {
 
@@ -116,7 +131,8 @@ public class Account extends BuddyImpl {
 
     private void getLongPollConnection() {
         HashMap<String, String> longPollServer = VKUtils.getLongPollServer(Account.this);
-        assert (longPollServer == null);
+        if(longPollServer == null)
+            throw new RuntimeException("Can't get long poll server.");
         lpServer = longPollServer.get("server");
         lpServerKey = longPollServer.get("key");
         ts = longPollServer.get("ts");
