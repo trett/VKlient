@@ -29,32 +29,32 @@ import ru.trett.vkauth.Message;
 public interface ChatWindow {
 
     /**
-     * Return User ID of reciever
+     * Return User ID
      *
-     * @return int
+     * @return int User ID
      */
     int getUserId();
 
     /**
-     * Set the User ID of reciver
+     * Set the Buddy for given user_id
      *
-     * @param userId
+     * @param userId int user_id
      */
 
     void setUserId(int userId);
 
     /**
-     * Return sender's account
+     * Return self account
      *
-     * @return Account
+     * @return Account Me
      */
 
     Account getAccount();
 
     /**
-     * Set account for sender
+     * Set account
      *
-     * @param account
+     * @param account Account me
      */
 
     void setAccount(Account account);
@@ -62,7 +62,7 @@ public interface ChatWindow {
     /**
      * Append message to chat
      *
-     * @param message
+     * @param message Message
      */
     void appendMessage(Message message);
 
@@ -74,7 +74,7 @@ public interface ChatWindow {
     /**
      * Return true if windows are showing
      *
-     * @return
+     * @return boolean isShowing
      */
     public boolean isShowing();
 

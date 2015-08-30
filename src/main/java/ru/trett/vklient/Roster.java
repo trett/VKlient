@@ -69,10 +69,18 @@ public class Roster {
         friendsNode = new TreeItem<>();
     }
 
+    /**
+     * @return Stage Root
+     */
     public GridPane getRoot() {
         return root;
     }
 
+    /**
+     * Sets Account Me
+     *
+     * @param account Me
+     */
     public void setAccount(Account account) {
         me = new TreeItem<>(account, IconLoader.getImageFromUrl(account.getAvatarURL()));
         me.setExpanded(true);
@@ -80,7 +88,7 @@ public class Roster {
         fillFriendsNode();
     }
 
-    public void fillFriendsNode() {
+    private void fillFriendsNode() {
         me.getChildren().add(friendsNode);
         account.getFriends().forEach(x -> {
             TreeItem<Buddy> buddy = new TreeItem<>(x, IconLoader.getImageFromUrl(x.getAvatarURL()));

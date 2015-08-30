@@ -37,9 +37,17 @@ public class ChatWindowImpl implements ChatWindow {
     private Stage stage;
     private ChatWindowController chatWindowController;
 
+    ChatWindowImpl() {
+        create();
+    }
+
     ChatWindowImpl(Account account, int userId) {
         this.userId = userId;
         this.account = account;
+        create();
+    }
+
+    private void create() {
         Parent root;
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource("fxml/chatWindow.fxml"));

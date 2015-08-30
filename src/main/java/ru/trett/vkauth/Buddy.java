@@ -28,28 +28,84 @@ import javafx.beans.property.IntegerProperty;
  */
 public interface Buddy {
 
+    /**
+     * Return user_id
+     *
+     * @return int user_id
+     */
     int getUserId();
 
+    /**
+     * Set user_id
+     *
+     * @param userId int user_id
+     */
     void setUserId(int userId);
 
+    /**
+     * @return String Buddy last name
+     */
     String getLastName();
 
+    /**
+     * Sets Buddy last name
+     *
+     * @param lastName String last name
+     */
     void setLastName(String lastName);
 
+    /**
+     * @return String first name
+     */
     String getFirstName();
 
+    /**
+     * Sets Buddy last name
+     *
+     * @param firstName String first name
+     */
     void setFirstName(String firstName);
 
+    /**
+     * Return URL contains avatar
+     *
+     * @return URL with avatar Image
+     */
     String getAvatarURL();
 
+    /**
+     * Sets avatar location
+     *
+     * @param avatarURL String location
+     */
     void setAvatarURL(String avatarURL);
 
+    /**
+     * Return online status
+     *
+     * @return String "online" or "offline"
+     */
     String getOnlineStatus();
 
+    /**
+     * Sets online status <br>
+     * 0 or VKUtils.OnlineStatus.OFFLINE <br>
+     * 1 or VKUtils.OnlineStatus.ONLINE
+     *
+     * @param online int
+     */
     void setOnlineStatus(int online);
 
+    /**
+     * @return String status
+     */
     String getStatus();
 
+    /**
+     * Sets status
+     *
+     * @param status String status
+     */
     void setStatus(String status);
 
     int getOnlineStatusProperty();
@@ -64,6 +120,12 @@ public interface Buddy {
 
     IntegerProperty newMessagesProperty();
 
+    /**
+     * Sort by online status
+     *
+     * @param b Buddy
+     * @return int
+     */
     int compareTo(Buddy b);
 
 }

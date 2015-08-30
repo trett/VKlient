@@ -131,7 +131,7 @@ public class Account extends BuddyImpl {
 
     private void getLongPollConnection() {
         HashMap<String, String> longPollServer = VKUtils.getLongPollServer(Account.this);
-        if(longPollServer == null)
+        if (longPollServer == null)
             throw new RuntimeException("Can't get long poll server.");
         lpServer = longPollServer.get("server");
         lpServerKey = longPollServer.get("key");

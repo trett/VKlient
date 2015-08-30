@@ -42,8 +42,15 @@ public class AuthHelper {
     public static URL answer = null;
     // Application ID
     private final int CLIENT_ID = 5029224;
-    private BooleanProperty recievedAnswer = new SimpleBooleanProperty(false);
+    private BooleanProperty isAnswerReceived = new SimpleBooleanProperty(false);
 
+    /**
+     * Split URL by key and value and return <b>Map&lt;key, value&gt;</b>
+     *
+     * @param url URL location
+     * @return <b>Map&lt;key, value&gt;</b>
+     * @throws UnsupportedEncodingException
+     */
     public static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
         Map<String, String> queryPairs = new LinkedHashMap<>();
         String query = url.getRef();
@@ -55,22 +62,26 @@ public class AuthHelper {
         return queryPairs;
     }
 
-    public final boolean getRecievedAnswer() {
-        return recievedAnswer.get();
+    public final boolean getIsAnswerReceived() {
+        return isAnswerReceived.get();
     }
 
-    public final void setRecievedAnswer(boolean recievedAnswer) {
-        this.recievedAnswer.set(recievedAnswer);
+    public final void setIsAnswerReceived(boolean isAnswerReceived) {
+        this.isAnswerReceived.set(isAnswerReceived);
     }
 
-    public BooleanProperty recievedAnswerProperty() {
-        return recievedAnswer;
+
+    public BooleanProperty isAnswerReceivedProperty() {
+        return isAnswerReceived;
     }
 
-    public int getClient_id() {
+    private int getClient_id() {
         return CLIENT_ID;
     }
 
+    /**
+     * @return <b>Map&lt;key, value&gt;</b>
+     */
     public Map<String, String> getAnswer() {
         if (!answer.toString().isEmpty()) {
             try {
@@ -83,7 +94,10 @@ public class AuthHelper {
         return null;
     }
 
-    public AuthWindow showAuthWindow() {
+    /**
+     * @return Browser window for authentication
+     */
+    public AuthWindow createAuthWindow() {
         return new AuthWindow();
     }
 
@@ -108,7 +122,7 @@ public class AuthHelper {
                             try {
                                 answer = new URL(webEngine.getLocation()); //TODO: timer on expires_in
                                 System.out.println(answer);
-                                setRecievedAnswer(true);
+                                setIsAnswerReceived(true);
                             } catch (MalformedURLException e) {
                                 e.printStackTrace();
                             }

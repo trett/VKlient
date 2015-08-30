@@ -66,8 +66,8 @@ public class VKlient extends Application {
 
     private void authWindow() {
         AuthHelper helper = new AuthHelper();
-        helper.showAuthWindow();
-        helper.recievedAnswerProperty().addListener(
+        helper.createAuthWindow();
+        helper.isAnswerReceivedProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
                     Config config = new Config();
                     Map<String, String> list = helper.getAnswer();

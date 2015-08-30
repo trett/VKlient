@@ -31,8 +31,10 @@ public class ChatWindowFactory {
     }
 
     /**
-     * @param account
-     * @param userId
+     * Return Chat Window if exist
+     *
+     * @param account Me
+     * @param userId  Buddy user_id
      * @return existing window or null
      */
     public static ChatWindow getInstance(Account account, int userId) {
@@ -45,6 +47,13 @@ public class ChatWindowFactory {
         return null;
     }
 
+    /**
+     * Create new Chat Window for given parameters
+     *
+     * @param account Me
+     * @param userId  Buddy user_id
+     * @return new ChatWindow instance
+     */
     public static ChatWindow createInstance(Account account, int userId) {
         if (chatWindows == null)
             chatWindows = new ArrayList<>();

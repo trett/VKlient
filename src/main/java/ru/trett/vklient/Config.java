@@ -28,7 +28,9 @@ import java.util.Properties;
 
 public class Config {
 
-
+    /**
+     * Checking existing file for store and create new one if not
+     */
     public void checkStore() {
         File configFile = new File("vklient.properties");
         if (!configFile.exists()) {
@@ -40,6 +42,12 @@ public class Config {
         }
     }
 
+    /**
+     * Set new properties
+     *
+     * @param key   Key for property
+     * @param value Property value
+     */
     public void setValue(String key, String value) {
         try {
             Properties config = new Properties();
@@ -53,6 +61,12 @@ public class Config {
         }
     }
 
+    /**
+     * Get value of property by key
+     *
+     * @param key Property key
+     * @return String property value
+     */
     public String getValue(String key) {
         try {
             Properties config = new Properties();

@@ -32,6 +32,12 @@ public class IconLoader {
         classLoader = getClass().getClassLoader();
     }
 
+    /**
+     * Get image bu URI
+     *
+     * @param url String URI
+     * @return Node Graphic
+     */
     public static Node getImageFromUrl(String url) {
         ImageView image = new ImageView(new Image(url));
         image.setFitWidth(32);
@@ -41,6 +47,13 @@ public class IconLoader {
         return image;
     }
 
+    /**
+     * Get icon my name and resize to given width
+     *
+     * @param iconName Icon name without format
+     * @param width    Preferred with
+     * @return Node Graphic
+     */
     public Node getIcon(String iconName, int width) {
         ImageView icon = new ImageView(
                 new Image(classLoader.getResourceAsStream(iconName + ".png"))
