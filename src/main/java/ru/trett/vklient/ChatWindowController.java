@@ -23,6 +23,9 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Text;
 import ru.trett.vkauth.Message;
 import ru.trett.vkauth.VKUtils;
 
@@ -88,17 +91,21 @@ public class ChatWindowController {
 
     public void enterKeyPressed(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ENTER) {
-            String timeStamp = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
-            if (!area.getText().isEmpty()) {
-                String text = area.getText();
-                Message m = new Message();
-                m.setDate(timeStamp);
-                m.setBody(text);
-                m.setDirection("out");
-                String messageId = VKUtils.sendMessage(account, userId, m);
-                appendMessage(m);
-                area.setText("");
-                keyEvent.consume();
+            if (keyEvent.isShiftDown()) {
+                area.appendText(System.getProperty("line.separator"));
+            } else {
+                String timeStamp = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
+                if (!area.getText().isEmpty()) {
+                    String text = area.getText();
+                    Message m = new Message();
+                    m.setDate(timeStamp);
+                    m.setBody(text.replaceAll("\\r?\\n", "<br>"));
+                    m.setDirection("out");
+                    String messageId = VKUtils.sendMessage(account, userId, m);
+                    appendMessage(m);
+                    area.setText("");
+                    keyEvent.consume();
+                }
             }
         }
     }
@@ -110,8 +117,19 @@ public class ChatWindowController {
     }
 
     public void appendMessage(Message message) {
-        String m = unescapeHtml4("[" + message.getDate() + "] " + message.getBody());
-        engine.executeScript("appendMessage('" + m + "','" + message.getDirection() + "')");
+        Document doc = engine.getDocument();
+        Element el = doc.createElement("div");
+        el.setAttribute("id", message.getDirection().contains("in") ? "incomingMessage" : "outcomingMessage");
+        String[] splitString = message.getBody().split("<br>");
+        Text date = doc.createTextNode("[" + message.getDate() + "] ");
+        el.appendChild(date);
+        for (String part : splitString) {
+            Text m = doc.createTextNode(unescapeHtml4(part));
+            el.appendChild(m);
+            el.appendChild(doc.createElement("br"));
+        }
+        doc.getElementById("chat").appendChild(el);
+        engine.executeScript("scroll()");
     }
 
 }
