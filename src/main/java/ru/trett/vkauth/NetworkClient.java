@@ -58,7 +58,6 @@ public class NetworkClient {
 
             if (exception instanceof SSLException) {
                 // SSL handshake exception
-                System.out.println("SSLException");
                 return true;
             }
 

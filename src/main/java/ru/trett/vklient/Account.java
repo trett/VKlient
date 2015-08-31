@@ -190,25 +190,28 @@ public class Account extends BuddyImpl {
                 case 4:
                     Platform.runLater(() -> {
                         int flag = (int) list.get(2);
-                        if ((flag & VKUtils.MessageFlags.OUTBOX) != VKUtils.MessageFlags.OUTBOX) {
-                            Message message = new Message();
-                            Date date = new Date(Long.parseLong(list.get(4).toString()) * 1000);
-                            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-                            message.setDate(sdf.format(date));
-                            message.setBody(list.get(6).toString());
-                            message.setDirection("in");
-                            ChatWindow chatWindow = ChatWindowFactory.getInstance(this, (int) list.get(3));
-                            if (chatWindow != null && chatWindow.isShowing()) {
-                                chatWindow.appendMessage(message);
-                            } else if (chatWindow != null) {
-                                getFriendById(friends, (int) list.get(3)).setNewMessages(1);
-                                chatWindow.appendMessage(message);
-                            } else {
-                                getFriendById(friends, (int) list.get(3)).setNewMessages(1);
-                            }
+
+                        Message message = new Message();
+                        Date date = new Date(Long.parseLong(list.get(4).toString()) * 1000);
+                        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+                        message.setDate(sdf.format(date));
+                        message.setBody(list.get(6).toString());
+                        message.setDirection(
+                                (flag & VKUtils.MessageFlags.OUTBOX) == VKUtils.MessageFlags.OUTBOX ?
+                                        "out" : "in"
+                        );
+                        ChatWindow chatWindow = ChatWindowFactory.getInstance(this, (int) list.get(3));
+                        if (chatWindow != null && chatWindow.isShowing()) {
+                            chatWindow.appendMessage(message);
+                        } else if (chatWindow != null) {
+                            getFriendById(friends, (int) list.get(3)).setNewMessages(1);
+                            chatWindow.appendMessage(message);
+                        } else {
+                            getFriendById(friends, (int) list.get(3)).setNewMessages(1);
                         }
                     });
                     break;
+
                 default:
                     break;
             }

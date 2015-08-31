@@ -34,7 +34,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
-import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 import static org.apache.commons.lang3.StringEscapeUtils.unescapeHtml4;
 
 /**
@@ -97,13 +96,11 @@ public class ChatWindowController {
             } else {
                 String timeStamp = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
                 if (!area.getText().isEmpty()) {
-                    String text = escapeHtml4(area.getText());
                     Message m = new Message();
                     m.setDate(timeStamp);
-                    m.setBody(text.replaceAll("\\r?\\n", "<br>"));
+                    m.setBody(area.getText()); // TODO: parse <br>
                     m.setDirection("out");
                     String messageId = VKUtils.sendMessage(account, userId, m);
-                    appendMessage(m);
                     area.setText("");
                     keyEvent.consume();
                 }
