@@ -32,6 +32,7 @@ public class VKUtils {
 
     private static NetworkClient networkClient;
     private static NetworkClient longPollClient;
+    private static final double API_VERSION = 5.37;
 
     static {
         networkClient = new NetworkClient(5000);
@@ -65,12 +66,12 @@ public class VKUtils {
             urlParameters.put("user_id", Integer.toString(userId));
             urlParameters.put("access_token", token);
             urlParameters.put("fields", "first_name,last_name,photo_50,online,status");
-            JSONObject obj = requestBuilder("friends.get", urlParameters);
-            JSONArray json = obj.getJSONArray("response");
+            JSONObject obj = requestBuilder("friends.get", urlParameters).getJSONObject("response");
+            JSONArray json = obj.getJSONArray("items");
             ArrayList<BuddyImpl> buddies = new ArrayList<>();
             for (int i = 0; i < json.length(); ++i) {
                 BuddyImpl buddy = new BuddyImpl();
-                buddy.setUserId(json.getJSONObject(i).getInt("user_id"));
+                buddy.setUserId(json.getJSONObject(i).getInt("id"));
                 buddy.setFirstName(json.getJSONObject(i).getString("first_name"));
                 buddy.setLastName(json.getJSONObject(i).getString("last_name"));
                 buddy.setAvatarURL(json.getJSONObject(i).getString("photo_50"));
@@ -92,12 +93,12 @@ public class VKUtils {
             urlParameters.put("count", Integer.toString(count));
             urlParameters.put("user_id", Integer.toString(userId));
             urlParameters.put("rev", Integer.toString(rev));
-            JSONObject obj = requestBuilder("messages.getHistory", urlParameters);
-            JSONArray array = obj.getJSONArray("response");
+            JSONObject obj = requestBuilder("messages.getHistory", urlParameters).getJSONObject("response");
+            JSONArray array = obj.getJSONArray("items");
             ArrayList<Message> messages = new ArrayList<>();
             Date date = new Date();
             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-            for (int i = 1; i < array.length(); ++i) {
+            for (int i = 0; i < array.length(); ++i) {
                 Message m = new Message();
                 date.setTime(array.getJSONObject(i).getLong("date") * 1000);
                 if (array.getJSONObject(i).getInt("out") == 1) {
@@ -121,6 +122,7 @@ public class VKUtils {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
             urlParameters.put("access_token", account.getAccessToken());
+            urlParameters.put("v", Double.toString(API_VERSION));
             Request request = new RequestBuilder().
                     host("api.vk.com/method/").
                     path("messages.getLongPollServer").
@@ -201,6 +203,7 @@ public class VKUtils {
     private static JSONObject requestBuilder(String vkMethod, HashMap<String, String> urlParameters)
             throws RequestReturnNullException, RequestReturnErrorException {
         try {
+            urlParameters.put("v", Double.toString(API_VERSION));
             Request request = new RequestBuilder().host("api.vk.com/method/").
                     path(vkMethod).query(urlParameters).build();
             String str = networkClient.send(request);

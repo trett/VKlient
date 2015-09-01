@@ -50,6 +50,7 @@ public class ChatWindowController {
     private WebEngine engine;
     private Account account = null;
     private int userId = 0;
+    private Document doc;
 
 
     public ChatWindowController() {
@@ -98,7 +99,7 @@ public class ChatWindowController {
                 if (!area.getText().isEmpty()) {
                     Message m = new Message();
                     m.setDate(timeStamp);
-                    m.setBody(area.getText()); // TODO: parse <br>
+                    m.setBody(area.getText().replaceAll("<br>", "&lt;br&gt;"));
                     m.setDirection("out");
                     String messageId = VKUtils.sendMessage(account, userId, m);
                     area.setText("");
@@ -115,15 +116,16 @@ public class ChatWindowController {
     }
 
     public void appendMessage(Message message) {
-        Document doc = engine.getDocument();
+        doc = engine.getDocument();
+        String body = message.getBody().replaceAll("<br>", "\n"); // God fuck them all. Wrong character from LongPoll server
         Element el = doc.createElement("div");
         el.setAttribute("id", message.getDirection().contains("in") ? "incomingMessage" : "outcomingMessage");
-        String[] splitString = message.getBody().split("<br>");
+        String[] splitString = body.split("\n");
         Text date = doc.createTextNode("[" + message.getDate() + "] ");
         el.appendChild(date);
         for (String part : splitString) {
-            Text m = doc.createTextNode(unescapeHtml4(part));
-            el.appendChild(m);
+            Text textNode = doc.createTextNode(unescapeHtml4(part));
+            el.appendChild(textNode);
             el.appendChild(doc.createElement("br"));
         }
         doc.getElementById("chat").appendChild(el);
