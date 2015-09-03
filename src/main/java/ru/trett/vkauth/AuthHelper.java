@@ -113,14 +113,14 @@ public class AuthHelper {
             getStyleClass().add("browser");
             String url = "https://oauth.vk.com/authorize" +
                     "?client_id=" + getClient_id() +
-                    "&response_type=token&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=4098";
+                    "&response_type=token&display=page&redirect_uri=https://oauth.vk.com/blank.html&scope=69634";
             webEngine.load(url);
             getChildren().add(browser);
             webEngine.locationProperty().addListener(
                     (ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
                         if (newValue.contains("access_token")) {
                             try {
-                                answer = new URL(webEngine.getLocation()); //TODO: timer on expires_in
+                                answer = new URL(webEngine.getLocation());
                                 System.out.println(answer);
                                 setIsAnswerReceived(true);
                             } catch (MalformedURLException e) {
