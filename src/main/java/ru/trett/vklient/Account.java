@@ -204,10 +204,14 @@ public class Account extends BuddyImpl {
                         if (chatWindow != null && chatWindow.isShowing()) {
                             chatWindow.appendMessage(message);
                         } else if (chatWindow != null) {
-                            getFriendById(friends, (int) list.get(3)).setNewMessages(1);
+                            Buddy b = getFriendById(friends, (int) list.get(3));
+                            b.setNewMessages(1);
                             chatWindow.appendMessage(message);
+                            NotificationProvider.showNotification(b.getFirstName() + " " + b.getLastName());
                         } else {
-                            getFriendById(friends, (int) list.get(3)).setNewMessages(1);
+                            Buddy b = getFriendById(friends, (int) list.get(3));
+                            b.setNewMessages(1);
+                            NotificationProvider.showNotification(b.getFirstName() + " " + b.getLastName());
                         }
                     });
                     break;
