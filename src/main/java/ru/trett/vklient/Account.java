@@ -196,6 +196,10 @@ public class Account extends BuddyImpl {
                         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
                         message.setDate(sdf.format(date));
                         message.setBody(list.get(6).toString());
+                        if (!new JSONObject(list.get(7).toString()).isNull("attach1")) {
+                            JSONObject attachment = new JSONObject(list.get(7).toString());
+                            message.addAttachment(attachment, true);
+                        }
                         message.setDirection(
                                 (flag & VKUtils.MessageFlags.OUTBOX) == VKUtils.MessageFlags.OUTBOX ?
                                         "out" : "in"

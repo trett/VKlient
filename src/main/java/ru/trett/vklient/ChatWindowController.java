@@ -128,6 +128,12 @@ public class ChatWindowController {
             el.appendChild(textNode);
             el.appendChild(doc.createElement("br"));
         }
+        if(message.getAttachments() != null)
+            for (Message.Attachment a : message.getAttachments()) {
+                Text attachment = doc.createTextNode(a.getDescription());
+                el.appendChild(attachment);
+                el.appendChild(doc.createElement("br"));
+            }
         doc.getElementById("chat").appendChild(el);
         engine.executeScript("scroll()");
     }
