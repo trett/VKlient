@@ -17,7 +17,11 @@ package ru.trett.vklient;
 
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.control.*;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.input.MouseEvent;
@@ -27,6 +31,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import ru.trett.vkauth.Buddy;
 import ru.trett.vkauth.VKUtils;
+
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * @author Roman Tretyakov
@@ -40,6 +47,8 @@ public class Roster {
     TreeItem<Buddy> friendsNode;
     TreeView<Buddy> tree;
     IconLoader iconLoader;
+    ObservableList<TreeItem<Buddy>> friendsModel;
+    boolean showOffline = true;
 
     Roster() {
         root = new GridPane();
@@ -62,9 +71,15 @@ public class Roster {
             account.setOnlineStatus(VKUtils.OnlineStatus.OFFLINE);
             Platform.exit();
         });
-        acc.getItems().add(quit);
-        Menu set = new Menu("Settings");
-        mbar.getMenus().addAll(acc, set);
+        CheckMenuItem checkMenuItem = new CheckMenuItem("Hide Offline");
+        checkMenuItem.setOnAction((ActionEvent event) -> {
+            if (checkMenuItem.isSelected())
+                hideOffline();
+            else
+                showOffline();
+        });
+        acc.getItems().addAll(checkMenuItem, quit);
+        mbar.getMenus().addAll(acc);
         root.add(mbar, 0, 0);
         friendsNode = new TreeItem<>();
     }
@@ -90,27 +105,38 @@ public class Roster {
 
     private void fillFriendsNode() {
         me.getChildren().add(friendsNode);
-        account.getFriends().forEach(x -> {
-            TreeItem<Buddy> buddy = new TreeItem<>(x, IconLoader.getImageFromUrl(x.getAvatarURL()));
-            x.onlineStatusProperty().addListener(
+
+        friendsModel = FXCollections.observableArrayList();
+        account.getFriends().forEach(x ->
+                        friendsModel.add(new TreeItem<>(x, IconLoader.getImageFromUrl(x.getAvatarURL())))
+        );
+        friendsNode.getChildren().addAll(friendsModel);
+        friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue()));
+        friendsNode.getChildren().forEach(x -> {
+            x.getValue().onlineStatusProperty().addListener(
                     (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-                        System.out.println(x.getFirstName() + " change status to " + newValue.intValue());
-                        buddy.getGraphic().setEffect(effect(newValue.intValue()));
+                        System.out.println(x.getValue().getFirstName() + " change status to " + newValue.intValue());
+                        if (showOffline) {
+                            Platform.runLater(() ->
+                                            x.getGraphic().setEffect(effect(newValue.intValue()))
+                            );
+                        } else if (newValue.intValue() == 1) {
+                            friendsNode.getChildren().add(x);
+                        } else {
+                            friendsNode.getChildren().remove(x);
+                        }
                         friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue()));
                         updateItems();
                     });
-            x.newMessagesProperty().addListener(
+            x.getValue().newMessagesProperty().addListener(
                     (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                         if (newValue.intValue() > 0)
-                            buddy.setGraphic(iconLoader.getIcon("unread", 32));
+                            x.setGraphic(iconLoader.getIcon("unread", 32));
                         else
-                            buddy.setGraphic(IconLoader.getImageFromUrl(buddy.getValue().getAvatarURL()));
+                            x.setGraphic(IconLoader.getImageFromUrl(x.getValue().getAvatarURL()));
                         updateItems();
                     });
-            friendsNode.getChildren().add(buddy);
-            friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue()));
         });
-
         friendsNode.setExpanded(true);
         tree = new TreeView<>(me);
         updateItems();
@@ -118,9 +144,7 @@ public class Roster {
     }
 
     private void updateItems() {
-        tree.setCellFactory(call -> {
-            return new BuddyCellFactoryImpl();
-        });
+        tree.setCellFactory(call -> new BuddyCellFactoryImpl());
     }
 
     private ColorAdjust effect(int online) {
@@ -135,13 +159,26 @@ public class Roster {
         return colorAdjust;
     }
 
+    private void hideOffline() {
+        showOffline = false;
+        friendsNode.getChildren().removeIf(buddyTreeItem -> buddyTreeItem.getValue().getOnlineStatus().contains("offline"));
+    }
+
+    private void showOffline() {
+        showOffline = true;
+        friendsModel.forEach(x -> {
+            if (x.getValue().getOnlineStatus().contains("offline"))
+                friendsNode.getChildren().add(x);
+        });
+    }
+
     private final class BuddyCellFactoryImpl extends TreeCell<Buddy> {
 
         private TextField textField;
         private ContextMenu addMenu = new ContextMenu();
 
         BuddyCellFactoryImpl() {
-            setPrefWidth(250);
+            setPrefWidth(150);
             MenuItem addMenuItem = new MenuItem("Send Message");
             addMenu.getItems().add(addMenuItem);
             setTextOverrun(OverrunStyle.WORD_ELLIPSIS);

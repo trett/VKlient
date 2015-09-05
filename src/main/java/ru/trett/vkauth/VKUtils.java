@@ -108,6 +108,11 @@ public class VKUtils {
                 }
                 m.setBody(array.getJSONObject(i).getString("body"));
                 m.setDate(sdf.format(date));
+                if (array.getJSONObject(i).has("attachments")) {
+                    JSONArray attachments = array.getJSONObject(i).getJSONArray("attachments");
+                    for (int j = 0; j < attachments.length(); ++j)
+                        m.addAttachment(attachments.getJSONObject(j), false);
+                }
                 messages.add(m);
             }
             Collections.reverse(messages);

@@ -46,7 +46,7 @@ public class VKlient extends Application {
         setUserAgentStylesheet(STYLESHEET_MODENA);
         primaryStage.setTitle("VKlient");
         roster = new Roster();
-        primaryStage.setScene(new Scene(roster.getRoot(), 300, 500));
+        primaryStage.setScene(new Scene(roster.getRoot(), 200, 400));
         try {
             Image appIcon = new Image(getClass().getClassLoader().getResourceAsStream("vklient.png"));
             primaryStage.getIcons().add(appIcon);

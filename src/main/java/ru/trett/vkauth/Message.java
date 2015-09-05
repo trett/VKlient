@@ -37,12 +37,33 @@ public class Message {
 
     public void addAttachment(JSONObject attachment, boolean isLongPoll) {
         attachments = new ArrayList<>();
+        Attachment a = new Attachment();
         if (isLongPoll) {
-            Attachment a = new Attachment();
             a.setPhoto(attachment.getString("attach1_photo"));
             a.setTitle(attachment.getString("attach1_title"));
             a.setUrl(attachment.getString("attach1_url"));
             a.setDescription(attachment.getString("attach1_desc"));
+            this.attachments.add(a);
+        } else {
+            switch (attachment.optString("type")) {
+                case AttachmentType.LINK:
+                    a.setUrl(attachment.getJSONObject("link").getString("url"));
+                    a.setDescription(attachment.getJSONObject("link").getString("description"));
+                    a.setTitle(attachment.getJSONObject("link").getString("title"));
+                    break;
+                case AttachmentType.GIFT:
+                    a.setPhoto(attachment.getJSONObject("gift").getString("thumb_48"));
+                    break;
+                case AttachmentType.PHOTO:
+                    //TODO: parse something
+                    break;
+                case AttachmentType.WALL:
+                    //TODO: parse
+                    break;
+                case AttachmentType.STICKER:
+                    a.setPhoto(attachment.getJSONObject("sticker").getString("photo_64"));
+                    break;
+            }
             this.attachments.add(a);
         }
     }
@@ -109,6 +130,14 @@ public class Message {
         public void setTitle(String title) {
             this.title = title;
         }
+    }
+
+    public final class AttachmentType {
+        public static final String LINK = "link";
+        public static final String STICKER = "sticker";
+        public static final String PHOTO = "photo";
+        public static final String WALL = "wall";
+        public static final String GIFT = "gift";
     }
 
 }

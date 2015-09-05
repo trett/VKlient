@@ -1,0 +1,45 @@
+body {
+    font: 10pt "Liberation Sans", Arial, sans;
+    margin: 0;
+}
+#incomingMessage {
+    margin: 2%
+}
+
+#outgoingMessage {
+    margin: 2%
+}
+
+#incomingMessage > span {
+    background:url('./downarrow.png') no-repeat bottom left ;
+    display: inline-block;
+    margin-right: 5px;
+    margin-bottom: -3px;
+    height: 16px;
+    width: 16px;
+}
+
+#outgoingMessage > span {
+    background: url('./uparrow.png') no-repeat bottom left;
+    display: inline-block;
+    margin-right: 5px;
+    margin-bottom: -3px;
+    height: 16px;
+    width: 16px;
+}
+
+#attachment {
+    font-weight: bold;
+    padding-left: 20px;
+    margin: 2px;
+}
+
+#title {
+    display: block;
+    padding: 2px;
+}
+
+#description {
+    display: block;
+    padding: 2px;
+}

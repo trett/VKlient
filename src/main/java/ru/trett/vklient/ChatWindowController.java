@@ -82,9 +82,9 @@ public class ChatWindowController {
         engine.getLoadWorker().stateProperty().addListener(
                 (ObservableValue<? extends Worker.State> observable, Worker.State oldValue, Worker.State newValue) -> {
                     if (newValue == Worker.State.SUCCEEDED) {
-//                        engine.executeScript("if (!document.getElementById('FirebugLite')){E = document['createElement' + 'NS'] && document.documentElement.namespaceURI;E = E ? document['createElement' + 'NS'](E, 'script') : document['createElement']('script');E['setAttribute']('id', 'FirebugLite');E['setAttribute']('src', 'https://getfirebug.com/' + 'firebug-lite.js' + '#startOpened');E['setAttribute']('FirebugLite', '4');(document['getElementsByTagName']('head')[0] || document['getElementsByTagName']('body')[0]).appendChild(E);E = new Image;E['setAttribute']('src', 'https://getfirebug.com/' + '#startOpened');}");
                         showHistory();
                         engine.executeScript("scroll();");
+//                        engine.executeScript("if (!document.getElementById('FirebugLite')){E = document['createElement' + 'NS'] && document.documentElement.namespaceURI;E = E ? document['createElement' + 'NS'](E, 'script') : document['createElement']('script');E['setAttribute']('id', 'FirebugLite');E['setAttribute']('src', 'https://getfirebug.com/' + 'firebug-lite.js' + '#startOpened');E['setAttribute']('FirebugLite', '4');(document['getElementsByTagName']('head')[0] || document['getElementsByTagName']('body')[0]).appendChild(E);E = new Image;E['setAttribute']('src', 'https://getfirebug.com/' + '#startOpened');}");
                     }
                 });
     }
@@ -119,7 +119,8 @@ public class ChatWindowController {
         doc = engine.getDocument();
         String body = message.getBody().replaceAll("<br>", "\n"); // God fuck them all. Wrong character from LongPoll server
         Element el = doc.createElement("div");
-        el.setAttribute("id", message.getDirection().contains("in") ? "incomingMessage" : "outcomingMessage");
+        el.setAttribute("id", message.getDirection().contains("in") ? "incomingMessage" : "outgoingMessage");
+        el.appendChild(doc.createElement("span"));
         String[] splitString = body.split("\n");
         Text date = doc.createTextNode("[" + message.getDate() + "] ");
         el.appendChild(date);
@@ -128,12 +129,35 @@ public class ChatWindowController {
             el.appendChild(textNode);
             el.appendChild(doc.createElement("br"));
         }
-        if(message.getAttachments() != null)
+        if (message.getAttachments() != null) {
+            Element div = doc.createElement("div");
+            div.setAttribute("id", "attachment");
             for (Message.Attachment a : message.getAttachments()) {
-                Text attachment = doc.createTextNode(a.getDescription());
-                el.appendChild(attachment);
-                el.appendChild(doc.createElement("br"));
+                if (a.getTitle() != null) {
+                    Element title = doc.createElement("span");
+                    title.setAttribute("id", "title");
+                    title.setTextContent(a.getTitle());
+                    div.appendChild(title);
+                }
+                if (a.getPhoto() != null) {
+                    Element image = doc.createElement("img");
+                    image.setAttribute("src", a.getPhoto());
+                    div.appendChild(image);
+                }
+                if (a.getUrl() != null) {
+                    Element url = doc.createElement("a");
+                    url.setAttribute("href", a.getUrl());
+                    url.appendChild(doc.createTextNode(a.getUrl()));
+                    div.appendChild(url);
+                }
+                if (a.getDescription() != null) {
+                    Element description = doc.createElement("span");
+                    description.setAttribute("id", "description");
+                    div.appendChild(description);
+                }
             }
+            el.appendChild(div);
+        }
         doc.getElementById("chat").appendChild(el);
         engine.executeScript("scroll()");
     }
