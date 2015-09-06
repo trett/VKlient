@@ -192,18 +192,21 @@ public class Account extends BuddyImpl {
                         int flag = (int) list.get(2);
 
                         Message message = new Message();
-                        Date date = new Date(Long.parseLong(list.get(4).toString()) * 1000);
-                        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-                        message.setDate(sdf.format(date));
-                        message.setBody(list.get(6).toString());
+                        /* if message have attachment get message from server by id cause long poll return useless answer */
                         if (!new JSONObject(list.get(7).toString()).isNull("attach1")) {
-                            JSONObject attachment = new JSONObject(list.get(7).toString());
-                            message.addAttachment(attachment, true);
+                            ArrayList<Message> messages = VKUtils.getMessagesById(this, (int) list.get(1));
+                            if (messages != null)
+                                message = messages.get(0);
+                        } else {
+                            Date date = new Date(Long.parseLong(list.get(4).toString()) * 1000);
+                            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+                            message.setDate(sdf.format(date));
+                            message.setBody(list.get(6).toString());
+                            message.setDirection(
+                                    (flag & VKUtils.MessageFlags.OUTBOX) == VKUtils.MessageFlags.OUTBOX ?
+                                            "out" : "in"
+                            );
                         }
-                        message.setDirection(
-                                (flag & VKUtils.MessageFlags.OUTBOX) == VKUtils.MessageFlags.OUTBOX ?
-                                        "out" : "in"
-                        );
                         ChatWindow chatWindow = ChatWindowFactory.getInstance(this, (int) list.get(3));
                         if (chatWindow != null && chatWindow.isShowing()) {
                             chatWindow.appendMessage(message);

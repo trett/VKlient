@@ -35,37 +35,40 @@ public class Message {
         return attachments;
     }
 
-    public void addAttachment(JSONObject attachment, boolean isLongPoll) {
+    public void addAttachment(JSONObject attachment) {
         attachments = new ArrayList<>();
         Attachment a = new Attachment();
-        if (isLongPoll) {
-            a.setPhoto(attachment.getString("attach1_photo"));
-            a.setTitle(attachment.getString("attach1_title"));
-            a.setUrl(attachment.getString("attach1_url"));
-            a.setDescription(attachment.getString("attach1_desc"));
-            this.attachments.add(a);
-        } else {
-            switch (attachment.optString("type")) {
-                case AttachmentType.LINK:
-                    a.setUrl(attachment.getJSONObject("link").getString("url"));
-                    a.setDescription(attachment.getJSONObject("link").getString("description"));
-                    a.setTitle(attachment.getJSONObject("link").getString("title"));
-                    break;
-                case AttachmentType.GIFT:
-                    a.setPhoto(attachment.getJSONObject("gift").getString("thumb_48"));
-                    break;
-                case AttachmentType.PHOTO:
-                    //TODO: parse something
-                    break;
-                case AttachmentType.WALL:
-                    //TODO: parse
-                    break;
-                case AttachmentType.STICKER:
-                    a.setPhoto(attachment.getJSONObject("sticker").getString("photo_64"));
-                    break;
-            }
-            this.attachments.add(a);
+        switch (attachment.optString("type")) {
+            case AttachmentType.LINK:
+                a.setUrl(attachment.getJSONObject("link").getString("url"));
+                a.setDescription(attachment.getJSONObject("link").getString("description"));
+                a.setTitle(attachment.getJSONObject("link").getString("title"));
+                break;
+            case AttachmentType.GIFT:
+                a.setPhoto(attachment.getJSONObject("gift").getString("thumb_48"));
+                break;
+            case AttachmentType.PHOTO:
+                a.setPhoto(attachment.getJSONObject("photo").getString("photo_75"));
+                break;
+            case AttachmentType.WALL:
+                //TODO: parse
+                break;
+            case AttachmentType.STICKER:
+                a.setPhoto(attachment.getJSONObject("sticker").getString("photo_64"));
+                break;
+            case AttachmentType.AUDIO:
+                //TODO:
+                break;
+            case AttachmentType.VIDEO:
+                a.setDescription(attachment.getJSONObject("video").getString("description"));
+                a.setTitle(attachment.getJSONObject("video").getString("title"));
+                a.setPhoto(attachment.getJSONObject("video").getString("photo_130"));
+                break;
+            case AttachmentType.DOC:
+                //TODO:
+                break;
         }
+        this.attachments.add(a);
     }
 
     public String getDate() {
@@ -138,6 +141,9 @@ public class Message {
         public static final String PHOTO = "photo";
         public static final String WALL = "wall";
         public static final String GIFT = "gift";
+        public static final String VIDEO = "video";
+        public static final String AUDIO = "audio";
+        public static final String DOC = "doc";
     }
 
 }

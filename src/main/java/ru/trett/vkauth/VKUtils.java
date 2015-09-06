@@ -46,7 +46,7 @@ public class VKUtils {
             urlParameters.put("access_token", token);
             urlParameters.put("fields", "photo_50,online,status");
             Map<String, String> name = new HashMap<>();
-            JSONObject obj = requestBuilder("users.get", urlParameters);
+            JSONObject obj = sendRequest("users.get", urlParameters);
             JSONArray json = obj.getJSONArray("response");
             name.put("firstName", json.getJSONObject(0).getString("first_name"));
             name.put("lastName", json.getJSONObject(0).getString("last_name"));
@@ -66,7 +66,7 @@ public class VKUtils {
             urlParameters.put("user_id", Integer.toString(userId));
             urlParameters.put("access_token", token);
             urlParameters.put("fields", "first_name,last_name,photo_50,online,status");
-            JSONObject obj = requestBuilder("friends.get", urlParameters).getJSONObject("response");
+            JSONObject obj = sendRequest("friends.get", urlParameters).getJSONObject("response");
             JSONArray json = obj.getJSONArray("items");
             ArrayList<BuddyImpl> buddies = new ArrayList<>();
             for (int i = 0; i < json.length(); ++i) {
@@ -93,30 +93,8 @@ public class VKUtils {
             urlParameters.put("count", Integer.toString(count));
             urlParameters.put("user_id", Integer.toString(userId));
             urlParameters.put("rev", Integer.toString(rev));
-            JSONObject obj = requestBuilder("messages.getHistory", urlParameters).getJSONObject("response");
-            JSONArray array = obj.getJSONArray("items");
-            ArrayList<Message> messages = new ArrayList<>();
-            Date date = new Date();
-            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-            for (int i = 0; i < array.length(); ++i) {
-                Message m = new Message();
-                date.setTime(array.getJSONObject(i).getLong("date") * 1000);
-                if (array.getJSONObject(i).getInt("out") == 1) {
-                    m.setDirection("out");
-                } else {
-                    m.setDirection("in");
-                }
-                m.setBody(array.getJSONObject(i).getString("body"));
-                m.setDate(sdf.format(date));
-                if (array.getJSONObject(i).has("attachments")) {
-                    JSONArray attachments = array.getJSONObject(i).getJSONArray("attachments");
-                    for (int j = 0; j < attachments.length(); ++j)
-                        m.addAttachment(attachments.getJSONObject(j), false);
-                }
-                messages.add(m);
-            }
-            Collections.reverse(messages);
-            return messages;
+            JSONObject obj = sendRequest("messages.getHistory", urlParameters).getJSONObject("response");
+            return answerToMessages(obj);
         } catch (RequestReturnNullException | RequestReturnErrorException e) {
             e.printStackTrace();
             return null;
@@ -173,7 +151,7 @@ public class VKUtils {
             urlParameters.put("access_token", account.getAccessToken());
             urlParameters.put("chat_id", "1");
             urlParameters.put("message", message.getBody());
-            JSONObject answer = requestBuilder("messages.send", urlParameters);
+            JSONObject answer = sendRequest("messages.send", urlParameters);
             return answer.toString();
         } catch (RequestReturnNullException | RequestReturnErrorException e) {
             e.printStackTrace();
@@ -185,7 +163,7 @@ public class VKUtils {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
             urlParameters.put("access_token", account.getAccessToken());
-            JSONObject answer = requestBuilder("account.setOnline", urlParameters);
+            JSONObject answer = sendRequest("account.setOnline", urlParameters);
             if (answer.getInt("response") != 1)
                 System.out.println("Online status error: " + answer.getInt("response"));
         } catch (RequestReturnNullException | RequestReturnErrorException e) {
@@ -197,7 +175,7 @@ public class VKUtils {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
             urlParameters.put("access_token", token);
-            JSONObject obj = requestBuilder("users.get", urlParameters);
+            JSONObject obj = sendRequest("users.get", urlParameters);
             return true;
         } catch (RequestReturnNullException | RequestReturnErrorException e) {
             e.printStackTrace();
@@ -205,7 +183,20 @@ public class VKUtils {
         }
     }
 
-    private static JSONObject requestBuilder(String vkMethod, HashMap<String, String> urlParameters)
+    public static ArrayList<Message> getMessagesById(Account account, int messageId) {
+        try {
+            HashMap<String, String> urlParameters = new HashMap<>();
+            urlParameters.put("access_token", account.getAccessToken());
+            urlParameters.put("message_ids", Integer.toString(messageId));
+            JSONObject obj = sendRequest("messages.getById", urlParameters).getJSONObject("response");
+            return answerToMessages(obj);
+        } catch (RequestReturnErrorException | RequestReturnNullException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private static JSONObject sendRequest(String vkMethod, HashMap<String, String> urlParameters)
             throws RequestReturnNullException, RequestReturnErrorException {
         try {
             urlParameters.put("v", Double.toString(API_VERSION));
@@ -224,6 +215,32 @@ public class VKUtils {
         } catch (ClientProtocolException e) {
             throw new RequestReturnNullException("NetworkClient return null.", e);
         }
+    }
+
+    private static ArrayList<Message> answerToMessages(JSONObject object) {
+        JSONArray array = object.getJSONArray("items");
+        ArrayList<Message> messages = new ArrayList<>();
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+        for (int i = 0; i < array.length(); ++i) {
+            Message m = new Message();
+            date.setTime(array.getJSONObject(i).getLong("date") * 1000);
+            if (array.getJSONObject(i).getInt("out") == 1) {
+                m.setDirection("out");
+            } else {
+                m.setDirection("in");
+            }
+            m.setBody(array.getJSONObject(i).getString("body"));
+            m.setDate(sdf.format(date));
+            if (array.getJSONObject(i).has("attachments")) {
+                JSONArray attachments = array.getJSONObject(i).getJSONArray("attachments");
+                for (int j = 0; j < attachments.length(); ++j)
+                    m.addAttachment(attachments.getJSONObject(j));
+            }
+            messages.add(m);
+        }
+        Collections.reverse(messages);
+        return messages;
     }
 
     public static void abortAllConnections() {
