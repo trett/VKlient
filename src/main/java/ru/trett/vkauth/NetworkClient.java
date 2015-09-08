@@ -17,25 +17,30 @@ package ru.trett.vkauth;
 
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
+import org.apache.http.NameValuePair;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
 
 import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Roman Tretyakov
@@ -101,13 +106,15 @@ public class NetworkClient {
             URIBuilder uriBuilder = new URIBuilder();
             uriBuilder.setScheme("https").setHost(request.host).
                     setPath(request.path);
-            if (request.query != null)
-                request.query.forEach((key, value) -> uriBuilder.addParameter(key, value));
             URI uri = uriBuilder.build();
-            HttpGet httpget = new HttpGet(uri);
+            HttpPost httpPost = new HttpPost(uri);
+            List<NameValuePair> list = new ArrayList<>();
+            if (request.query != null)
+                request.query.forEach((key, value) -> list.add(new BasicNameValuePair(key, value)));
+            httpPost.setEntity(new UrlEncodedFormEntity(list, "UTF-8"));
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
-            System.out.println("Executing request " + httpget.getRequestLine());
-            httpResponse = httpclient.execute(httpget);
+            System.out.println("Executing request " + httpPost.getRequestLine());
+            httpResponse = httpclient.execute(httpPost);
             String responseBody = responseHandler.handleResponse(httpResponse);
             httpclient.close();
             System.out.println(responseBody);
