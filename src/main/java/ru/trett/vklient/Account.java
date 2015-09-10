@@ -15,19 +15,17 @@
 
 package ru.trett.vklient;
 
-import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.trett.vkauth.Buddy;
 import ru.trett.vkauth.BuddyImpl;
-import ru.trett.vkauth.Message;
 import ru.trett.vkauth.VKUtils;
 
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * @author Roman Tretyakov
@@ -38,7 +36,7 @@ public class Account extends BuddyImpl {
 
     private int userId = 0;
     private String accessToken = null;
-    private ArrayList<BuddyImpl> friends = null;
+    private ArrayList<Buddy> friends = null;
     private String lpServer = null;
     private String lpServerKey = null;
     private String ts = null;
@@ -48,12 +46,15 @@ public class Account extends BuddyImpl {
         Config config = new Config();
         userId = Integer.parseInt(config.getValue("user_id"));
         accessToken = config.getValue("access_token");
-        Map<String, String> data = VKUtils.getBuddy(userId, accessToken);
-        if (data != null) {
-            setFirstName(data.get("firstName"));
-            setLastName(data.get("lastName"));
-            setStatus(data.get("status"));
-            setAvatarURL(data.get("avatarURL"));
+        ArrayList<Buddy> buddies = VKUtils.getBuddies(new ArrayList<Integer>() {{
+            add(userId);
+        }}, accessToken);
+        if (buddies != null) {
+            Buddy buddy = buddies.get(0);
+            setFirstName(buddy.getFirstName());
+            setLastName(buddy.getLastName());
+            setStatus(buddy.getStatus());
+            setAvatarURL(buddy.getAvatarURL());
             onlineStatusProperty().addListener(
                     (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                         System.out.println("Account change state to " + newValue.intValue());
@@ -106,7 +107,7 @@ public class Account extends BuddyImpl {
         friends = VKUtils.getFriends(userId, accessToken);
     }
 
-    public ArrayList<BuddyImpl> getFriends() {
+    public ArrayList<Buddy> getFriends() {
         return friends;
     }
 
@@ -145,8 +146,8 @@ public class Account extends BuddyImpl {
         timer.schedule(timerTask, 5000);
     }
 
-    public Buddy getFriendById(ArrayList<BuddyImpl> friends, int userId) {
-        for (BuddyImpl friend : friends) {
+    public Buddy getFriendById(ArrayList<Buddy> friends, int userId) {
+        for (Buddy friend : friends) {
             if (friend.getUserId() == userId)
                 return friend;
         }

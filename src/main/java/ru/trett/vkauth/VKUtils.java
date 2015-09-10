@@ -22,6 +22,7 @@ import ru.trett.vklient.Account;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Roman Tretyakov
@@ -30,37 +31,42 @@ import java.util.*;
 
 public class VKUtils {
 
+    private static final double API_VERSION = 5.37;
     private static NetworkClient networkClient;
     private static NetworkClient longPollClient;
-    private static final double API_VERSION = 5.37;
 
     static {
         networkClient = new NetworkClient(5000);
         longPollClient = new NetworkClient(26000);
     }
 
-    public static Map<String, String> getBuddy(int userId, String token) {
+    public static ArrayList<Buddy> getBuddies(List<Integer> userIds, String token) {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
-            urlParameters.put("user_id", Integer.toString(userId));
+            String ids = userIds.stream().map(x -> x.toString()).collect(Collectors.joining(","));
+            urlParameters.put("user_ids", ids);
             urlParameters.put("access_token", token);
             urlParameters.put("fields", "photo_50,online,status");
-            Map<String, String> name = new HashMap<>();
             JSONObject obj = sendRequest("users.get", urlParameters);
             JSONArray json = obj.getJSONArray("response");
-            name.put("firstName", json.getJSONObject(0).getString("first_name"));
-            name.put("lastName", json.getJSONObject(0).getString("last_name"));
-            name.put("avatarURL", json.getJSONObject(0).getString("photo_50"));
-            name.put("onlineStatus", Integer.toString(json.getJSONObject(0).getInt("online")));
-            name.put("status", json.getJSONObject(0).getString("status"));
-            return name;
+            ArrayList<Buddy> buddies = new ArrayList<>();
+            for (int i = 0; i < json.length(); ++i) {
+                Buddy buddy = new BuddyImpl();
+                buddy.setFirstName(json.getJSONObject(i).getString("first_name"));
+                buddy.setLastName(json.getJSONObject(i).getString("first_name"));
+                buddy.setAvatarURL(json.getJSONObject(i).getString("photo_50"));
+                buddy.setOnlineStatus(json.getJSONObject(i).getInt("online"));
+                buddy.setStatus(json.getJSONObject(i).getString("status"));
+                buddies.add(buddy);
+            }
+            return buddies;
         } catch (RequestReturnNullException | RequestReturnErrorException e) {
             e.printStackTrace();
             return null;
         }
     }
 
-    public static ArrayList<BuddyImpl> getFriends(int userId, String token) {
+    public static ArrayList<Buddy> getFriends(int userId, String token) {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
             urlParameters.put("user_id", Integer.toString(userId));
@@ -68,7 +74,7 @@ public class VKUtils {
             urlParameters.put("fields", "first_name,last_name,photo_50,online,status");
             JSONObject obj = sendRequest("friends.get", urlParameters).getJSONObject("response");
             JSONArray json = obj.getJSONArray("items");
-            ArrayList<BuddyImpl> buddies = new ArrayList<>();
+            ArrayList<Buddy> buddies = new ArrayList<>();
             for (int i = 0; i < json.length(); ++i) {
                 BuddyImpl buddy = new BuddyImpl();
                 buddy.setUserId(json.getJSONObject(i).getInt("id"));
@@ -264,6 +270,7 @@ public class VKUtils {
     }
 
     public static class OnlineStatus {
+        
         public static final int OFFLINE = 0;
         public static final int ONLINE = 1;
 

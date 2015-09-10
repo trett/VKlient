@@ -16,14 +16,9 @@
 package ru.trett.vklient;
 
 import javafx.application.Application;
-import javafx.beans.value.ObservableValue;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import ru.trett.vkauth.AuthHelper;
-import ru.trett.vkauth.VKUtils;
-
-import java.util.Map;
 
 
 /**
@@ -45,6 +40,8 @@ public class VKlient extends Application {
         primaryStage.setTitle("VKlient");
         Roster roster = new Roster();
         primaryStage.setScene(new Scene(roster.getRoot(), 200, 400));
+        primaryStage.setMinHeight(200);
+        primaryStage.setMinWidth(200);
         try {
             Image appIcon = new Image(getClass().getClassLoader().getResourceAsStream("vklient.png"));
             primaryStage.getIcons().add(appIcon);

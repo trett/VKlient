@@ -31,7 +31,6 @@ import ru.trett.vkauth.AuthHelper;
 import ru.trett.vkauth.Buddy;
 import ru.trett.vkauth.VKUtils;
 
-import javax.swing.*;
 import java.util.Map;
 
 /**
@@ -56,9 +55,10 @@ public class Roster {
         column.setHgrow(Priority.ALWAYS);
         root.getColumnConstraints().add(column);
         RowConstraints row = new RowConstraints();
-        RowConstraints row2 = new RowConstraints(200, 300, Double.MAX_VALUE);
+        RowConstraints row2 = new RowConstraints(50, 200, Double.MAX_VALUE);
         row2.setVgrow(Priority.ALWAYS);
-        root.getRowConstraints().addAll(row, row2);
+        RowConstraints row3 = new RowConstraints();
+        root.getRowConstraints().addAll(row, row2, row3);
         MenuBar mbar = new MenuBar();
         Menu main = new Menu();
         iconLoader = new IconLoader();
@@ -84,7 +84,7 @@ public class Roster {
         statusBox.getItems().addAll(status);
         statusBox.setValue(BoxStatus.OFFLINE);
         root.add(mbar, 0, 0);
-        root.add(statusBox, 0, 3);
+        root.add(statusBox, 0, 2);
         friendsNode = new TreeItem<>();
         statusBox.valueProperty().addListener(
                 (ObservableValue<? extends BoxStatus> observable, BoxStatus oldValue, BoxStatus newValue) -> {
