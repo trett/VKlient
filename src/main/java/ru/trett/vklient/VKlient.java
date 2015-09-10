@@ -33,8 +33,6 @@ import java.util.Map;
 
 public class VKlient extends Application {
 
-    private Roster roster;
-
     public static void main(String[] args) {
         launch(args);
     }
@@ -45,7 +43,7 @@ public class VKlient extends Application {
         config.checkStore();
         setUserAgentStylesheet(STYLESHEET_MODENA);
         primaryStage.setTitle("VKlient");
-        roster = new Roster();
+        Roster roster = new Roster();
         primaryStage.setScene(new Scene(roster.getRoot(), 200, 400));
         try {
             Image appIcon = new Image(getClass().getClassLoader().getResourceAsStream("vklient.png"));
@@ -54,27 +52,6 @@ public class VKlient extends Application {
             System.out.println("Application icon not found");
         }
         primaryStage.getScene().getStylesheets().add("css/main.css");
-        if (config.getValue("access_token") != null &&
-                VKUtils.checkToken(config.getValue("access_token"))) {
-            Account account = new Account();
-            roster.setAccount(account);
-        } else {
-            authWindow();
-        }
         primaryStage.show();
-    }
-
-    private void authWindow() {
-        AuthHelper helper = new AuthHelper();
-        helper.createAuthWindow();
-        helper.isAnswerReceivedProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
-                    Config config = new Config();
-                    Map<String, String> list = helper.getAnswer();
-                    config.setValue("access_token", list.get("access_token"));
-                    config.setValue("user_id", list.get("user_id"));
-                    Account account = new Account();
-                    roster.setAccount(account);
-                });
     }
 }

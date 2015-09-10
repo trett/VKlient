@@ -18,10 +18,8 @@ package ru.trett.vklient;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.control.*;
 import javafx.scene.effect.ColorAdjust;
 import javafx.scene.input.MouseEvent;
@@ -29,11 +27,11 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
+import ru.trett.vkauth.AuthHelper;
 import ru.trett.vkauth.Buddy;
 import ru.trett.vkauth.VKUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Map;
 
 /**
  * @author Roman Tretyakov
@@ -49,17 +47,15 @@ public class Roster {
     IconLoader iconLoader;
     ObservableList<TreeItem<Buddy>> friendsModel;
     boolean showOffline = true;
+    Config config = new Config();
 
     Roster() {
         root = new GridPane();
-        root.setGridLinesVisible(true);
-        root.setHgap(2);
-        root.setVgap(2);
         ColumnConstraints column = new ColumnConstraints(200, 300, Double.MAX_VALUE);
         column.setHgrow(Priority.ALWAYS);
         root.getColumnConstraints().add(column);
         RowConstraints row = new RowConstraints();
-        RowConstraints row2 = new RowConstraints(400, 500, Double.MAX_VALUE);
+        RowConstraints row2 = new RowConstraints(200, 300, Double.MAX_VALUE);
         row2.setVgrow(Priority.ALWAYS);
         root.getRowConstraints().addAll(row, row2);
         MenuBar mbar = new MenuBar();
@@ -80,8 +76,36 @@ public class Roster {
         });
         acc.getItems().addAll(checkMenuItem, quit);
         mbar.getMenus().addAll(acc);
+        final ComboBox<String> statusBox = new ComboBox<>();
+        statusBox.setMinWidth(column.getMinWidth());
+        statusBox.setPrefWidth(Double.MAX_VALUE);
+        ObservableList<String> status = FXCollections.observableArrayList("Online", "Offline");
+        statusBox.getItems().addAll(status);
+        statusBox.setValue("Offline");
         root.add(mbar, 0, 0);
+        root.add(statusBox, 0, 3);
         friendsNode = new TreeItem<>();
+        statusBox.valueProperty().addListener(
+                (ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
+                    if (newValue.contains("Online")) {
+                        if (config.getValue("access_token") != null &&
+                                VKUtils.checkToken(config.getValue("access_token"))) {
+                            addAccount(account);
+                        } else {
+                            AuthHelper helper = new AuthHelper();
+                            helper.createAuthWindow();
+                            helper.isAnswerReceivedProperty().addListener(
+                                    (ObservableValue<? extends Boolean> answer, Boolean oldAnswer, Boolean newAnswer) -> {
+                                        Config config = new Config();
+                                        Map<String, String> list = helper.getAnswer();
+                                        config.setValue("access_token", list.get("access_token"));
+                                        config.setValue("user_id", list.get("user_id"));
+                                        addAccount(account);
+                                    });
+                        }
+                    } else
+                        account.setOnlineStatus(VKUtils.OnlineStatus.OFFLINE);
+                });
     }
 
     /**
@@ -96,7 +120,11 @@ public class Roster {
      *
      * @param account Me
      */
-    public void setAccount(Account account) {
+    public void addAccount(Account account) {
+        if (account == null) {
+            account = new Account();
+        }
+        account.setOnlineStatus(VKUtils.OnlineStatus.ONLINE);
         me = new TreeItem<>(account, IconLoader.getImageFromUrl(account.getAvatarURL()));
         me.setExpanded(true);
         this.account = account;
@@ -140,7 +168,7 @@ public class Roster {
         friendsNode.setExpanded(true);
         tree = new TreeView<>(me);
         updateItems();
-        root.add(tree, 0, 1, 1, 3);
+        root.add(tree, 0, 1);
     }
 
     private void updateItems() {

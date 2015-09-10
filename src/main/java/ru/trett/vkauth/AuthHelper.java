@@ -24,6 +24,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
+import ru.trett.vklient.Account;
+import ru.trett.vklient.Config;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
