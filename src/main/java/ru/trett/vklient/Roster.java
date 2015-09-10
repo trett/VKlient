@@ -31,6 +31,7 @@ import ru.trett.vkauth.AuthHelper;
 import ru.trett.vkauth.Buddy;
 import ru.trett.vkauth.VKUtils;
 
+import javax.swing.*;
 import java.util.Map;
 
 /**
@@ -59,9 +60,9 @@ public class Roster {
         row2.setVgrow(Priority.ALWAYS);
         root.getRowConstraints().addAll(row, row2);
         MenuBar mbar = new MenuBar();
-        Menu acc = new Menu();
+        Menu main = new Menu();
         iconLoader = new IconLoader();
-        acc.setGraphic(iconLoader.getIcon("vkontakte", 16));
+        main.setGraphic(iconLoader.getIcon("vkontakte", 16));
         MenuItem quit = new MenuItem("Quit");
         quit.setOnAction((ActionEvent event) -> {
             account.setOnlineStatus(VKUtils.OnlineStatus.OFFLINE);
@@ -74,43 +75,52 @@ public class Roster {
             else
                 showOffline();
         });
-        acc.getItems().addAll(checkMenuItem, quit);
-        mbar.getMenus().addAll(acc);
-        final ComboBox<String> statusBox = new ComboBox<>();
+        main.getItems().addAll(checkMenuItem, quit);
+        mbar.getMenus().addAll(main);
+        final ComboBox<BoxStatus> statusBox = new ComboBox<>();
         statusBox.setMinWidth(column.getMinWidth());
         statusBox.setPrefWidth(Double.MAX_VALUE);
-        ObservableList<String> status = FXCollections.observableArrayList("Online", "Offline");
+        ObservableList<BoxStatus> status = FXCollections.observableArrayList(BoxStatus.values());
         statusBox.getItems().addAll(status);
-        statusBox.setValue("Offline");
+        statusBox.setValue(BoxStatus.OFFLINE);
         root.add(mbar, 0, 0);
         root.add(statusBox, 0, 3);
         friendsNode = new TreeItem<>();
         statusBox.valueProperty().addListener(
-                (ObservableValue<? extends String> observable, String oldValue, String newValue) -> {
-                    if (newValue.contains("Online")) {
-                        if (config.getValue("access_token") != null &&
-                                VKUtils.checkToken(config.getValue("access_token"))) {
-                            addAccount(account);
-                        } else {
-                            AuthHelper helper = new AuthHelper();
-                            helper.createAuthWindow();
-                            helper.isAnswerReceivedProperty().addListener(
-                                    (ObservableValue<? extends Boolean> answer, Boolean oldAnswer, Boolean newAnswer) -> {
-                                        Config config = new Config();
-                                        Map<String, String> list = helper.getAnswer();
-                                        config.setValue("access_token", list.get("access_token"));
-                                        config.setValue("user_id", list.get("user_id"));
-                                        addAccount(account);
-                                    });
-                        }
-                    } else
-                        account.setOnlineStatus(VKUtils.OnlineStatus.OFFLINE);
+                (ObservableValue<? extends BoxStatus> observable, BoxStatus oldValue, BoxStatus newValue) -> {
+                    switch (newValue) {
+                        case ONLINE:
+                            if (config.getValue("access_token") != null &&
+                                    VKUtils.checkToken(config.getValue("access_token"))) {
+                                addAccount(account);
+                            } else {
+                                AuthHelper helper = new AuthHelper();
+                                helper.createAuthWindow();
+                                helper.isAnswerReceivedProperty().addListener(
+                                        (ObservableValue<? extends Boolean> answer, Boolean oldAnswer, Boolean newAnswer) -> {
+                                            Config config = new Config();
+                                            Map<String, String> list = helper.getAnswer();
+                                            config.setValue("access_token", list.get("access_token"));
+                                            config.setValue("user_id", list.get("user_id"));
+                                            addAccount(account);
+                                        });
+                            }
+                            break;
+                        case OFFLINE:
+                            account.setOnlineStatus(VKUtils.OnlineStatus.OFFLINE);
+                            //TODO: remove account from roster
+                            break;
+                        case INVISIBLE:
+                            //TODO: stop account timer and send offline status for account
+                            break;
+                    }
                 });
     }
 
     /**
      * @return Stage Root
      */
+
     public GridPane getRoot() {
         return root;
     }
@@ -259,6 +269,10 @@ public class Roster {
                         System.getProperty("line.separator") + getItem().getStatus();
             return "";
         }
+    }
+
+    private enum BoxStatus {
+        OFFLINE, ONLINE, INVISIBLE
     }
 
 }

@@ -43,32 +43,25 @@ public class Account extends BuddyImpl {
     private String lpServerKey = null;
     private String ts = null;
     private Timer onlineTimer = new Timer();
-    private BooleanProperty tokenExpire = new SimpleBooleanProperty(true);
 
     public Account() {
         Config config = new Config();
         userId = Integer.parseInt(config.getValue("user_id"));
         accessToken = config.getValue("access_token");
-        Map<String, String> name = VKUtils.getBuddy(userId, accessToken);
-        if (name != null) {
-            setFirstName(name.get("firstName"));
-            setLastName(name.get("lastName"));
-            setStatus(name.get("status"));
-            setAvatarURL(name.get("avatarURL"));
-            tokenExpireProperty().addListener(
-                    (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
-                        if (newValue)
-                            System.out.println("Token is expire");
-                    });
+        Map<String, String> data = VKUtils.getBuddy(userId, accessToken);
+        if (data != null) {
+            setFirstName(data.get("firstName"));
+            setLastName(data.get("lastName"));
+            setStatus(data.get("status"));
+            setAvatarURL(data.get("avatarURL"));
             onlineStatusProperty().addListener(
                     (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                         System.out.println("Account change state to " + newValue.intValue());
                         if (newValue.intValue() == 1)
                             longPollConnection();
                     });
-            setOnlineStatus(VKUtils.OnlineStatus.ONLINE);
         } else {
-            setTokenExpire(false);
+            throw new RuntimeException("Impossible to create Account");
         }
     }
 
@@ -109,18 +102,6 @@ public class Account extends BuddyImpl {
         this.accessToken = accessToken;
     }
 
-    public boolean getTokenExpire() {
-        return tokenExpire.get();
-    }
-
-    public void setTokenExpire(boolean tokenExpire) {
-        this.tokenExpire.set(tokenExpire);
-    }
-
-    public BooleanProperty tokenExpireProperty() {
-        return tokenExpire;
-    }
-
     public void setFriends() {
         friends = VKUtils.getFriends(userId, accessToken);
     }
@@ -138,7 +119,7 @@ public class Account extends BuddyImpl {
         ts = longPollServer.get("ts");
     }
 
-    public void longPollConnection() {
+    private void longPollConnection() {
         getLongPollConnection();
         Timer timer = new Timer();
         TimerTask timerTask = new TimerTask() {
@@ -153,7 +134,7 @@ public class Account extends BuddyImpl {
                         } else {
                             ts = json.optString("ts");
                             JSONArray array = json.getJSONArray("updates");
-                            update(array);
+                            UpdatesHandler.update(array, Account.this);
                         }
                     } else {
                         getLongPollConnection();
@@ -165,68 +146,11 @@ public class Account extends BuddyImpl {
     }
 
     public Buddy getFriendById(ArrayList<BuddyImpl> friends, int userId) {
-        for (int i = 0; i < friends.size(); ++i) {
-            if (friends.get(i).getUserId() == userId)
-                return friends.get(i);
+        for (BuddyImpl friend : friends) {
+            if (friend.getUserId() == userId)
+                return friend;
         }
         return null;
-    }
-
-    private void update(JSONArray array) {
-        for (int i = 0; i < array.length(); ++i) {
-            JSONArray temp = array.getJSONArray(i);
-            ArrayList<Object> list = new ArrayList<>();
-            for (int j = 0; j < temp.length(); ++j) {
-                list.add(temp.get(j));
-            }
-            //TODO: parse all !!!
-            switch ((int) list.get(0)) {
-                case 8:
-                    getFriendById(friends, -(int) list.get(1)).setOnlineStatus(1); //TODO:parse to platform
-                    break;
-                case 9:
-                    getFriendById(friends, -(int) list.get(1)).setOnlineStatus(0);
-                    break;
-                case 4:
-                    Platform.runLater(() -> {
-                        int flag = (int) list.get(2);
-
-                        Message message = new Message();
-                        /* if message have attachment get message from server by id cause long poll return useless answer */
-                        if (!new JSONObject(list.get(7).toString()).isNull("attach1")) {
-                            ArrayList<Message> messages = VKUtils.getMessagesById(this, (int) list.get(1));
-                            if (messages != null)
-                                message = messages.get(0);
-                        } else {
-                            Date date = new Date(Long.parseLong(list.get(4).toString()) * 1000);
-                            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
-                            message.setDate(sdf.format(date));
-                            message.setBody(list.get(6).toString());
-                            message.setDirection(
-                                    (flag & VKUtils.MessageFlags.OUTBOX) == VKUtils.MessageFlags.OUTBOX ?
-                                            "out" : "in"
-                            );
-                        }
-                        ChatWindow chatWindow = ChatWindowFactory.getInstance(this, (int) list.get(3));
-                        if (chatWindow != null && chatWindow.isShowing()) {
-                            chatWindow.appendMessage(message);
-                        } else if (chatWindow != null) {
-                            Buddy b = getFriendById(friends, (int) list.get(3));
-                            b.setNewMessages(1);
-                            chatWindow.appendMessage(message);
-                            NotificationProvider.showNotification(b.getFirstName() + " " + b.getLastName());
-                        } else {
-                            Buddy b = getFriendById(friends, (int) list.get(3));
-                            b.setNewMessages(1);
-                            NotificationProvider.showNotification(b.getFirstName() + " " + b.getLastName());
-                        }
-                    });
-                    break;
-
-                default:
-                    break;
-            }
-        }
     }
 
 }
