@@ -29,7 +29,7 @@ import java.util.Properties;
 public class Config {
 
     /**
-     * Checking existing file for store and create new one if not
+     * Check existing file for store and create new one if not
      */
     public void checkStore() {
         File configFile = new File("vklient.properties");
@@ -43,7 +43,7 @@ public class Config {
     }
 
     /**
-     * Set new properties
+     * Set new property
      *
      * @param key   Key for property
      * @param value Property value
@@ -62,7 +62,7 @@ public class Config {
     }
 
     /**
-     * Get value of property by key
+     * Get value of the property by key
      *
      * @param key Property key
      * @return String property value

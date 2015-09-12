@@ -40,7 +40,14 @@ public class VKUtils {
         longPollClient = new NetworkClient(26000);
     }
 
-    public static ArrayList<Buddy> getBuddies(List<Integer> userIds, String token) {
+    /**
+     * Get users by id
+     *
+     * @param userIds List of Integer ids
+     * @param token   String
+     * @return ArrayList buddies
+     */
+    public static ArrayList<Buddy> getUsers(List<Integer> userIds, String token) {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
             String ids = userIds.stream().map(x -> x.toString()).collect(Collectors.joining(","));
@@ -53,7 +60,7 @@ public class VKUtils {
             for (int i = 0; i < json.length(); ++i) {
                 Buddy buddy = new BuddyImpl();
                 buddy.setFirstName(json.getJSONObject(i).getString("first_name"));
-                buddy.setLastName(json.getJSONObject(i).getString("first_name"));
+                buddy.setLastName(json.getJSONObject(i).getString("last_name"));
                 buddy.setAvatarURL(json.getJSONObject(i).getString("photo_50"));
                 buddy.setOnlineStatus(json.getJSONObject(i).getInt("online"));
                 buddy.setStatus(json.getJSONObject(i).getString("status"));
@@ -66,6 +73,13 @@ public class VKUtils {
         }
     }
 
+    /**
+     * Get friends for given user_id
+     *
+     * @param userId
+     * @param token
+     * @return ArrayList buddies
+     */
     public static ArrayList<Buddy> getFriends(int userId, String token) {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
@@ -92,6 +106,15 @@ public class VKUtils {
         }
     }
 
+    /**
+     * Get messages history
+     *
+     * @param account
+     * @param userId
+     * @param count
+     * @param rev
+     * @return ArrayList Messages
+     */
     public static ArrayList<Message> getMessagesHistory(Account account, int userId, int count, int rev) {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
@@ -177,15 +200,21 @@ public class VKUtils {
         }
     }
 
-    public static boolean checkToken(String token) {
+    /**
+     * Return user_id for given token
+     *
+     * @param token
+     * @return int user_id or 0 if token wrong
+     */
+    public static int getUsers(String token) {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
             urlParameters.put("access_token", token);
-            JSONObject obj = sendRequest("users.get", urlParameters);
-            return true;
+            JSONObject json = sendRequest("users.get", urlParameters);
+            return json.getJSONArray("response").getJSONObject(0).getInt("id");
         } catch (RequestReturnNullException | RequestReturnErrorException e) {
             e.printStackTrace();
-            return false;
+            return 0;
         }
     }
 
@@ -270,7 +299,7 @@ public class VKUtils {
     }
 
     public static class OnlineStatus {
-        
+
         public static final int OFFLINE = 0;
         public static final int ONLINE = 1;
 

@@ -46,7 +46,7 @@ public class Account extends BuddyImpl {
         Config config = new Config();
         userId = Integer.parseInt(config.getValue("user_id"));
         accessToken = config.getValue("access_token");
-        ArrayList<Buddy> buddies = VKUtils.getBuddies(new ArrayList<Integer>() {{
+        ArrayList<Buddy> buddies = VKUtils.getUsers(new ArrayList<Integer>() {{
             add(userId);
         }}, accessToken);
         if (buddies != null) {

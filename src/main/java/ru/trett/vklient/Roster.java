@@ -90,8 +90,9 @@ public class Roster {
                 (ObservableValue<? extends BoxStatus> observable, BoxStatus oldValue, BoxStatus newValue) -> {
                     switch (newValue) {
                         case ONLINE:
+                            // check if token is exists & active
                             if (config.getValue("access_token") != null &&
-                                    VKUtils.checkToken(config.getValue("access_token"))) {
+                                    VKUtils.getUsers(config.getValue("access_token")) > 0) {
                                 addAccount(account);
                             } else {
                                 AuthHelper helper = new AuthHelper();
@@ -210,6 +211,10 @@ public class Roster {
         });
     }
 
+    private enum BoxStatus {
+        OFFLINE, ONLINE, INVISIBLE
+    }
+
     private final class BuddyCellFactoryImpl extends TreeCell<Buddy> {
 
         private TextField textField;
@@ -269,10 +274,6 @@ public class Roster {
                         System.getProperty("line.separator") + getItem().getStatus();
             return "";
         }
-    }
-
-    private enum BoxStatus {
-        OFFLINE, ONLINE, INVISIBLE
     }
 
 }
