@@ -20,6 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.trett.vkauth.Buddy;
 import ru.trett.vkauth.BuddyImpl;
+import ru.trett.vkauth.OnlineStatus;
 import ru.trett.vkauth.VKUtils;
 
 import java.util.ArrayList;
@@ -77,21 +78,30 @@ public class Account extends BuddyImpl {
     }
 
     @Override
-    public void setOnlineStatus(int online) {
-        if (online == 1) {
-            setOnlineStatusProperty(1);
-            setFriends();
-            TimerTask timerTask = new TimerTask() {
-                @Override
-                public void run() {
-                    VKUtils.setOnline(Account.this);
-                }
-            };
-            onlineTimer.schedule(timerTask, 5000, 900000);
-        } else {
-            setOnlineStatusProperty(0);
-            onlineTimer.cancel();
-            VKUtils.abortAllConnections();
+    public void setOnlineStatus(OnlineStatus onlineStatus) {
+        switch (onlineStatus) {
+            case ONLINE:
+                setOnlineStatusProperty(OnlineStatus.ONLINE.ordinal());
+                setFriends();
+                TimerTask timerTask = new TimerTask() {
+                    @Override
+                    public void run() {
+                        VKUtils.setOnline(Account.this);
+                    }
+                };
+                onlineTimer.schedule(timerTask, 5000, 900000);
+                break;
+            case OFFLINE:
+                setOnlineStatusProperty(OnlineStatus.OFFLINE.ordinal());
+                VKUtils.setOffline(this);
+                onlineTimer.cancel();
+                VKUtils.abortAllConnections();
+                break;
+            case INVISIBLE:
+                setOnlineStatusProperty(OnlineStatus.ONLINE.ordinal());
+                onlineTimer.cancel();
+                VKUtils.setOffline(this);
+                break;
         }
     }
 

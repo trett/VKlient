@@ -29,7 +29,7 @@ public class BuddyImpl implements Buddy {
     private String firstName = "";
     private String lastName = "";
     private String avatarURL = "";
-    private int online = 0;
+    private OnlineStatus onlineStatus = OnlineStatus.OFFLINE;
     private String status = "";
     private IntegerProperty onlineStatusProperty = new SimpleIntegerProperty();
     private IntegerProperty newMessages = new SimpleIntegerProperty();
@@ -91,13 +91,13 @@ public class BuddyImpl implements Buddy {
 
     @Override
     public String getOnlineStatus() {
-        return online == 0 ? "offline" : "online";
+        return onlineStatus.ordinal() == 0 ? "offline" : "online";
     }
 
     @Override
-    public void setOnlineStatus(int online) {
-        this.setOnlineStatusProperty(online);
-        this.online = online;
+    public void setOnlineStatus(OnlineStatus onlineStatus) {
+        this.setOnlineStatusProperty(onlineStatus.ordinal());
+        this.onlineStatus = onlineStatus;
     }
 
     @Override

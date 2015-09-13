@@ -92,9 +92,9 @@ public interface Buddy {
      * 0 or VKUtils.OnlineStatus.OFFLINE <br>
      * 1 or VKUtils.OnlineStatus.ONLINE
      *
-     * @param online int
+     * @param onlineStatus int
      */
-    void setOnlineStatus(int online);
+    void setOnlineStatus(OnlineStatus onlineStatus);
 
     /**
      * @return String status

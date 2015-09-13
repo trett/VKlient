@@ -29,6 +29,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
 import ru.trett.vkauth.AuthHelper;
 import ru.trett.vkauth.Buddy;
+import ru.trett.vkauth.OnlineStatus;
 import ru.trett.vkauth.VKUtils;
 
 import java.util.Map;
@@ -65,7 +66,7 @@ public class Roster {
         main.setGraphic(iconLoader.getIcon("vkontakte", 16));
         MenuItem quit = new MenuItem("Quit");
         quit.setOnAction((ActionEvent event) -> {
-            account.setOnlineStatus(VKUtils.OnlineStatus.OFFLINE);
+            account.setOnlineStatus(OnlineStatus.OFFLINE);
             Platform.exit();
         });
         CheckMenuItem checkMenuItem = new CheckMenuItem("Hide Offline");
@@ -77,17 +78,17 @@ public class Roster {
         });
         main.getItems().addAll(checkMenuItem, quit);
         mbar.getMenus().addAll(main);
-        final ComboBox<BoxStatus> statusBox = new ComboBox<>();
+        final ComboBox<OnlineStatus> statusBox = new ComboBox<>();
         statusBox.setMinWidth(column.getMinWidth());
         statusBox.setPrefWidth(Double.MAX_VALUE);
-        ObservableList<BoxStatus> status = FXCollections.observableArrayList(BoxStatus.values());
+        ObservableList<OnlineStatus> status = FXCollections.observableArrayList(OnlineStatus.values());
         statusBox.getItems().addAll(status);
-        statusBox.setValue(BoxStatus.OFFLINE);
+        statusBox.setValue(OnlineStatus.OFFLINE);
         root.add(mbar, 0, 0);
         root.add(statusBox, 0, 2);
         friendsNode = new TreeItem<>();
         statusBox.valueProperty().addListener(
-                (ObservableValue<? extends BoxStatus> observable, BoxStatus oldValue, BoxStatus newValue) -> {
+                (ObservableValue<? extends OnlineStatus> observable, OnlineStatus oldValue, OnlineStatus newValue) -> {
                     switch (newValue) {
                         case ONLINE:
                             // check if token is exists & active
@@ -108,11 +109,10 @@ public class Roster {
                             }
                             break;
                         case OFFLINE:
-                            account.setOnlineStatus(VKUtils.OnlineStatus.OFFLINE);
-                            //TODO: remove account from roster
+                            account.setOnlineStatus(OnlineStatus.OFFLINE);
                             break;
                         case INVISIBLE:
-                            //TODO: stop account timer and send offline status for account
+                            account.setOnlineStatus(OnlineStatus.INVISIBLE);
                             break;
                     }
                 });
@@ -135,7 +135,7 @@ public class Roster {
         if (account == null) {
             account = new Account();
         }
-        account.setOnlineStatus(VKUtils.OnlineStatus.ONLINE);
+        account.setOnlineStatus(OnlineStatus.ONLINE);
         me = new TreeItem<>(account, IconLoader.getImageFromUrl(account.getAvatarURL()));
         me.setExpanded(true);
         this.account = account;
@@ -209,10 +209,6 @@ public class Roster {
             if (x.getValue().getOnlineStatus().contains("offline"))
                 friendsNode.getChildren().add(x);
         });
-    }
-
-    private enum BoxStatus {
-        OFFLINE, ONLINE, INVISIBLE
     }
 
     private final class BuddyCellFactoryImpl extends TreeCell<Buddy> {

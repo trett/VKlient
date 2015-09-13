@@ -20,6 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.trett.vkauth.Buddy;
 import ru.trett.vkauth.Message;
+import ru.trett.vkauth.OnlineStatus;
 import ru.trett.vkauth.VKUtils;
 
 import java.text.SimpleDateFormat;
@@ -48,10 +49,10 @@ public class UpdatesHandler {
             //TODO: parse all !!!
             switch ((int) list.get(0)) {
                 case 8:
-                    account.getFriendById(account.getFriends(), -(int) list.get(1)).setOnlineStatus(1); //TODO:parse to platform
+                    account.getFriendById(account.getFriends(), -(int) list.get(1)).setOnlineStatus(OnlineStatus.ONLINE); //TODO:parse to platform
                     break;
                 case 9:
-                    account.getFriendById(account.getFriends(), -(int) list.get(1)).setOnlineStatus(0);
+                    account.getFriendById(account.getFriends(), -(int) list.get(1)).setOnlineStatus(OnlineStatus.OFFLINE);
                     break;
                 case 4:
                     Platform.runLater(() -> {

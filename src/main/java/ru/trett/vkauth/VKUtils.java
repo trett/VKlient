@@ -62,7 +62,7 @@ public class VKUtils {
                 buddy.setFirstName(json.getJSONObject(i).getString("first_name"));
                 buddy.setLastName(json.getJSONObject(i).getString("last_name"));
                 buddy.setAvatarURL(json.getJSONObject(i).getString("photo_50"));
-                buddy.setOnlineStatus(json.getJSONObject(i).getInt("online"));
+                buddy.setOnlineStatus(json.getJSONObject(i).getInt("online") == 1 ? OnlineStatus.ONLINE : OnlineStatus.OFFLINE);
                 buddy.setStatus(json.getJSONObject(i).getString("status"));
                 buddies.add(buddy);
             }
@@ -95,7 +95,7 @@ public class VKUtils {
                 buddy.setFirstName(json.getJSONObject(i).getString("first_name"));
                 buddy.setLastName(json.getJSONObject(i).getString("last_name"));
                 buddy.setAvatarURL(json.getJSONObject(i).getString("photo_50"));
-                buddy.setOnlineStatus(json.getJSONObject(i).getInt("online"));
+                buddy.setOnlineStatus(json.getJSONObject(i).getInt("online") == 1 ? OnlineStatus.ONLINE : OnlineStatus.OFFLINE);
                 buddy.setStatus(json.getJSONObject(i).getString("status"));
                 buddies.add(buddy);
             }
@@ -200,6 +200,18 @@ public class VKUtils {
         }
     }
 
+    public static void setOffline(Account account) {
+        try {
+            HashMap<String, String> urlParameters = new HashMap<>();
+            urlParameters.put("access_token", account.getAccessToken());
+            JSONObject answer = sendRequest("account.setOffline", urlParameters);
+            if (answer.getInt("response") != 1)
+                System.out.println("Online status error: " + answer.getInt("response"));
+        } catch (RequestReturnNullException | RequestReturnErrorException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Return user_id for given token
      *
@@ -292,16 +304,9 @@ public class VKUtils {
         public static final int CHAT = 16;
         public static final int FRIENDS = 32;
         public static final int SPAM = 64;
-        public static final int DELЕTЕD = 128;
+        public static final int DELETED = 128;
         public static final int FIXED = 256;
         public static final int MEDIA = 512;
-
-    }
-
-    public static class OnlineStatus {
-
-        public static final int OFFLINE = 0;
-        public static final int ONLINE = 1;
 
     }
 
