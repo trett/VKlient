@@ -27,6 +27,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author Roman Tretyakov
@@ -41,7 +45,8 @@ public class Account extends BuddyImpl {
     private String lpServer = null;
     private String lpServerKey = null;
     private String ts = null;
-    private Timer onlineTimer = new Timer();
+    private ScheduledExecutorService scheduledTimer;
+    private Runnable stopTimer;
 
     public Account() {
         Config config = new Config();
@@ -82,24 +87,24 @@ public class Account extends BuddyImpl {
         switch (onlineStatus) {
             case ONLINE:
                 setOnlineStatusProperty(OnlineStatus.ONLINE.ordinal());
+                scheduledTimer = Executors.newSingleThreadScheduledExecutor();
+                ScheduledFuture<?> scheduledFuture = scheduledTimer.scheduleAtFixedRate(
+                        () -> VKUtils.setOnline(Account.this), 5, 90, TimeUnit.SECONDS
+                );
+                stopTimer = new StopOnlineTimer(scheduledFuture);
+                if (friends != null)
+                    break;
                 setFriends();
-                TimerTask timerTask = new TimerTask() {
-                    @Override
-                    public void run() {
-                        VKUtils.setOnline(Account.this);
-                    }
-                };
-                onlineTimer.schedule(timerTask, 5000, 900000);
                 break;
             case OFFLINE:
                 setOnlineStatusProperty(OnlineStatus.OFFLINE.ordinal());
                 VKUtils.setOffline(this);
-                onlineTimer.cancel();
+                scheduledTimer.submit(stopTimer);
                 VKUtils.abortAllConnections();
                 break;
             case INVISIBLE:
                 setOnlineStatusProperty(OnlineStatus.ONLINE.ordinal());
-                onlineTimer.cancel();
+                scheduledTimer.submit(stopTimer);
                 VKUtils.setOffline(this);
                 break;
         }
@@ -162,6 +167,20 @@ public class Account extends BuddyImpl {
                 return friend;
         }
         return null;
+    }
+
+    private final class StopOnlineTimer implements Runnable {
+        private ScheduledFuture<?> scheduledFuture;
+
+        StopOnlineTimer(ScheduledFuture<?> future) {
+            scheduledFuture = future;
+        }
+
+        @Override
+        public void run() {
+            scheduledFuture.cancel(true);
+            scheduledTimer.shutdown();
+        }
     }
 
 }

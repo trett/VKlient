@@ -49,6 +49,7 @@ public class Roster {
     ObservableList<TreeItem<Buddy>> friendsModel;
     boolean showOffline = true;
     Config config = new Config();
+    boolean friendsNodeIsFill = false; // temporary solution
 
     Roster() {
         root = new GridPane();
@@ -110,6 +111,8 @@ public class Roster {
                             break;
                         case OFFLINE:
                             account.setOnlineStatus(OnlineStatus.OFFLINE);
+                            friendsNode.getChildren().removeAll(friendsNode.getChildren());
+                            friendsNodeIsFill = false;
                             break;
                         case INVISIBLE:
                             account.setOnlineStatus(OnlineStatus.INVISIBLE);
@@ -134,17 +137,17 @@ public class Roster {
     public void addAccount(Account account) {
         if (account == null) {
             account = new Account();
+            me = new TreeItem<>(account, IconLoader.getImageFromUrl(account.getAvatarURL()));
+            me.setExpanded(true);
+            this.account = account;
         }
         account.setOnlineStatus(OnlineStatus.ONLINE);
-        me = new TreeItem<>(account, IconLoader.getImageFromUrl(account.getAvatarURL()));
-        me.setExpanded(true);
-        this.account = account;
-        fillFriendsNode();
+        if(!friendsNodeIsFill)
+            fillFriendsNode();
     }
 
     private void fillFriendsNode() {
         me.getChildren().add(friendsNode);
-
         friendsModel = FXCollections.observableArrayList();
         account.getFriends().forEach(x ->
                         friendsModel.add(new TreeItem<>(x, IconLoader.getImageFromUrl(x.getAvatarURL())))
@@ -180,6 +183,7 @@ public class Roster {
         tree = new TreeView<>(me);
         updateItems();
         root.add(tree, 0, 1);
+        friendsNodeIsFill = true;
     }
 
     private void updateItems() {
