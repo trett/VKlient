@@ -49,7 +49,6 @@ public class Roster {
     ObservableList<TreeItem<Buddy>> friendsModel;
     boolean showOffline = true;
     Config config = new Config();
-    boolean friendsNodeIsFill = false; // temporary solution
 
     Roster() {
         root = new GridPane();
@@ -61,16 +60,16 @@ public class Roster {
         row2.setVgrow(Priority.ALWAYS);
         RowConstraints row3 = new RowConstraints();
         root.getRowConstraints().addAll(row, row2, row3);
-        MenuBar mbar = new MenuBar();
-        Menu main = new Menu();
+        final MenuBar mbar = new MenuBar();
+        final Menu main = new Menu();
         iconLoader = new IconLoader();
         main.setGraphic(iconLoader.getIcon("vkontakte", 16));
-        MenuItem quit = new MenuItem("Quit");
+        final MenuItem quit = new MenuItem("Quit");
         quit.setOnAction((ActionEvent event) -> {
             account.setOnlineStatus(OnlineStatus.OFFLINE);
             Platform.exit();
         });
-        CheckMenuItem checkMenuItem = new CheckMenuItem("Hide Offline");
+        final CheckMenuItem checkMenuItem = new CheckMenuItem("Hide Offline");
         checkMenuItem.setOnAction((ActionEvent event) -> {
             if (checkMenuItem.isSelected())
                 hideOffline();
@@ -88,31 +87,35 @@ public class Roster {
         root.add(mbar, 0, 0);
         root.add(statusBox, 0, 2);
         friendsNode = new TreeItem<>();
+        // check if token is exists & active
+        if (config.getValue("access_token") != null &&
+                VKUtils.getUsers(config.getValue("access_token")) > 0) {
+            account = new Account();
+            addAccount(account);
+        } else {
+            AuthHelper helper = new AuthHelper();
+            helper.createAuthWindow();
+            helper.isAnswerReceivedProperty().addListener(
+                    (ObservableValue<? extends Boolean> answer, Boolean oldAnswer, Boolean newAnswer) -> {
+                        Config config = new Config();
+                        Map<String, String> list = helper.getAnswer();
+                        config.setValue("access_token", list.get("access_token"));
+                        config.setValue("user_id", list.get("user_id"));
+                        account = new Account();
+                        addAccount(account);
+                    });
+        }
         statusBox.valueProperty().addListener(
                 (ObservableValue<? extends OnlineStatus> observable, OnlineStatus oldValue, OnlineStatus newValue) -> {
                     switch (newValue) {
                         case ONLINE:
-                            // check if token is exists & active
-                            if (config.getValue("access_token") != null &&
-                                    VKUtils.getUsers(config.getValue("access_token")) > 0) {
-                                addAccount(account);
-                            } else {
-                                AuthHelper helper = new AuthHelper();
-                                helper.createAuthWindow();
-                                helper.isAnswerReceivedProperty().addListener(
-                                        (ObservableValue<? extends Boolean> answer, Boolean oldAnswer, Boolean newAnswer) -> {
-                                            Config config = new Config();
-                                            Map<String, String> list = helper.getAnswer();
-                                            config.setValue("access_token", list.get("access_token"));
-                                            config.setValue("user_id", list.get("user_id"));
-                                            addAccount(account);
-                                        });
-                            }
+                            account.setOnlineStatus(OnlineStatus.ONLINE);
+                            if (friendsNode.getChildren().isEmpty())
+                                fillFriendsNode();
                             break;
                         case OFFLINE:
                             account.setOnlineStatus(OnlineStatus.OFFLINE);
                             friendsNode.getChildren().removeAll(friendsNode.getChildren());
-                            friendsNodeIsFill = false;
                             break;
                         case INVISIBLE:
                             account.setOnlineStatus(OnlineStatus.INVISIBLE);
@@ -135,19 +138,15 @@ public class Roster {
      * @param account Me
      */
     public void addAccount(Account account) {
-        if (account == null) {
-            account = new Account();
-            me = new TreeItem<>(account, IconLoader.getImageFromUrl(account.getAvatarURL()));
-            me.setExpanded(true);
-            this.account = account;
-        }
-        account.setOnlineStatus(OnlineStatus.ONLINE);
-        if(!friendsNodeIsFill)
-            fillFriendsNode();
+        this.account = account;
+        me = new TreeItem<>(account, IconLoader.getImageFromUrl(account.getAvatarURL()));
+        tree = new TreeView<>(me);
+        root.add(tree, 0, 1);
+        me.setExpanded(true);
+        me.getChildren().add(friendsNode);
     }
 
     private void fillFriendsNode() {
-        me.getChildren().add(friendsNode);
         friendsModel = FXCollections.observableArrayList();
         account.getFriends().forEach(x ->
                         friendsModel.add(new TreeItem<>(x, IconLoader.getImageFromUrl(x.getAvatarURL())))
@@ -180,10 +179,7 @@ public class Roster {
                     });
         });
         friendsNode.setExpanded(true);
-        tree = new TreeView<>(me);
         updateItems();
-        root.add(tree, 0, 1);
-        friendsNodeIsFill = true;
     }
 
     private void updateItems() {
