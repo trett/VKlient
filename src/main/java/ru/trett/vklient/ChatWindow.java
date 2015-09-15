@@ -76,6 +76,6 @@ public interface ChatWindow {
      *
      * @return boolean isShowing
      */
-    public boolean isShowing();
+    boolean isShowing();
 
 }

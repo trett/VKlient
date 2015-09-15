@@ -71,8 +71,7 @@ public class Config {
         try {
             Properties config = new Properties();
             config.load(new FileInputStream("vklient.properties"));
-            String value = config.getProperty(key);
-            return value;
+            return config.getProperty(key);
         } catch (IOException e) {
             e.printStackTrace();
         }

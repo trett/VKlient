@@ -24,8 +24,6 @@ import javafx.scene.paint.Color;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.stage.Stage;
-import ru.trett.vklient.Account;
-import ru.trett.vklient.Config;
 
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -41,7 +39,7 @@ import java.util.Map;
 
 public class AuthHelper {
 
-    public static URL answer = null;
+    private static URL answer = null;
     // Application ID
     private final int CLIENT_ID = 5029224;
     private BooleanProperty isAnswerReceived = new SimpleBooleanProperty(false);
@@ -53,7 +51,7 @@ public class AuthHelper {
      * @return <b>Map&lt;key, value&gt;</b>
      * @throws UnsupportedEncodingException
      */
-    public static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
+    private static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
         Map<String, String> queryPairs = new LinkedHashMap<>();
         String query = url.getRef();
         String[] pairs = query.split("&");
@@ -87,8 +85,7 @@ public class AuthHelper {
     public Map<String, String> getAnswer() {
         if (!answer.toString().isEmpty()) {
             try {
-                Map<String, String> list = AuthHelper.splitQuery(answer);
-                return list;
+                return AuthHelper.splitQuery(answer);
             } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
