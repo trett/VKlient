@@ -85,12 +85,12 @@ public interface Buddy {
      *
      * @return String "online" or "offline"
      */
-    String getOnlineStatus();
+    OnlineStatus getOnlineStatus();
 
     /**
      * Sets online status <br>
-     * 0 or VKUtils.OnlineStatus.OFFLINE <br>
-     * 1 or VKUtils.OnlineStatus.ONLINE
+     * Possibble enum OnlineStatus
+     *
      *
      * @param onlineStatus int
      */

@@ -47,6 +47,7 @@ public class Account extends BuddyImpl {
     private String ts = null;
     private ScheduledExecutorService scheduledTimer;
     private Runnable stopTimer;
+    private OnlineStatus onlineStatus;
 
     public Account() {
         Config config = new Config();
@@ -83,7 +84,13 @@ public class Account extends BuddyImpl {
     }
 
     @Override
+    public OnlineStatus getOnlineStatus() {
+        return this.onlineStatus;
+    }
+
+    @Override
     public void setOnlineStatus(OnlineStatus onlineStatus) {
+        this.onlineStatus = onlineStatus;
         switch (onlineStatus) {
             case ONLINE:
                 setOnlineStatusProperty(OnlineStatus.ONLINE.ordinal());
@@ -99,12 +106,14 @@ public class Account extends BuddyImpl {
             case OFFLINE:
                 setOnlineStatusProperty(OnlineStatus.OFFLINE.ordinal());
                 VKUtils.setOffline(this);
-                scheduledTimer.submit(stopTimer);
+                if (scheduledTimer != null)
+                    scheduledTimer.submit(stopTimer);
                 VKUtils.abortAllConnections();
                 break;
             case INVISIBLE:
                 setOnlineStatusProperty(OnlineStatus.ONLINE.ordinal());
-                scheduledTimer.submit(stopTimer);
+                if (scheduledTimer != null)
+                    scheduledTimer.submit(stopTimer);
                 VKUtils.setOffline(this);
                 break;
         }
@@ -178,7 +187,8 @@ public class Account extends BuddyImpl {
 
         @Override
         public void run() {
-            scheduledFuture.cancel(true);
+            if (!scheduledFuture.isCancelled())
+                scheduledFuture.cancel(true);
             scheduledTimer.shutdown();
         }
     }

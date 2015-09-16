@@ -66,6 +66,7 @@ public class Roster {
         main.setGraphic(iconLoader.getIcon("vkontakte", 16));
         final MenuItem quit = new MenuItem("Quit");
         quit.setOnAction((ActionEvent event) -> {
+            saveSettings();
             account.setOnlineStatus(OnlineStatus.OFFLINE);
             Platform.exit();
         });
@@ -83,7 +84,6 @@ public class Roster {
         statusBox.setPrefWidth(Double.MAX_VALUE);
         ObservableList<OnlineStatus> status = FXCollections.observableArrayList(OnlineStatus.values());
         statusBox.getItems().addAll(status);
-        statusBox.setValue(OnlineStatus.OFFLINE);
         root.add(mbar, 0, 0);
         root.add(statusBox, 0, 2);
         friendsNode = new TreeItem<>();
@@ -122,6 +122,10 @@ public class Roster {
                             break;
                     }
                 });
+        statusBox.setValue(config.getValue("lastStatus") != null ?
+                        OnlineStatus.valueOf(config.getValue("lastStatus").toUpperCase()) :
+                        OnlineStatus.OFFLINE
+        );
     }
 
     /**
@@ -144,6 +148,7 @@ public class Roster {
         root.add(tree, 0, 1);
         me.setExpanded(true);
         me.getChildren().add(friendsNode);
+        updateItems();
     }
 
     private void fillFriendsNode() {
@@ -200,15 +205,21 @@ public class Roster {
 
     private void hideOffline() {
         showOffline = false;
-        friendsNode.getChildren().removeIf(buddyTreeItem -> buddyTreeItem.getValue().getOnlineStatus().contains("offline"));
+        friendsNode.getChildren().removeIf(
+                buddyTreeItem -> buddyTreeItem.getValue().getOnlineStatus().name().contains("OFFLINE")
+        );
     }
 
     private void showOffline() {
         showOffline = true;
         friendsModel.forEach(x -> {
-            if (x.getValue().getOnlineStatus().contains("offline"))
+            if (x.getValue().getOnlineStatus().name().contains("OFFLINE"))
                 friendsNode.getChildren().add(x);
         });
+    }
+
+    private void saveSettings() {
+        config.setValue("lastStatus", account.getOnlineStatus().name());
     }
 
     private final class BuddyCellFactoryImpl extends TreeCell<Buddy> {

@@ -90,8 +90,8 @@ public class BuddyImpl implements Buddy {
     }
 
     @Override
-    public String getOnlineStatus() {
-        return onlineStatus.ordinal() == 0 ? "offline" : "online";
+    public OnlineStatus getOnlineStatus() {
+        return onlineStatus;
     }
 
     @Override

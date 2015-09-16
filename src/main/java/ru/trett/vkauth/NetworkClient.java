@@ -131,7 +131,8 @@ public class NetworkClient {
         try {
             if (httpResponse != null)
                 httpResponse.close();
-            httpclient.close();
+            if (httpclient != null)
+                httpclient.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
