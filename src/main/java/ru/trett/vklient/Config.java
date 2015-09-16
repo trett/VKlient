@@ -35,7 +35,8 @@ public class Config {
         File configFile = new File("vklient.properties");
         if (!configFile.exists()) {
             try {
-                configFile.createNewFile();
+                if(!configFile.createNewFile())
+                    System.out.println("Unable to create config file.");
             } catch (IOException e) {
                 e.printStackTrace();
             }

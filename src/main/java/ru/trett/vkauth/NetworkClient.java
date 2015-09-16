@@ -22,6 +22,7 @@ import org.apache.http.NoHttpResponseException;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -93,6 +94,7 @@ public class NetworkClient {
                 setConnectionRequestTimeout(timeout).
                 setSocketTimeout(timeout).
                 setConnectTimeout(timeout).
+                setCookieSpec(CookieSpecs.STANDARD).
                 build();
     }
 
