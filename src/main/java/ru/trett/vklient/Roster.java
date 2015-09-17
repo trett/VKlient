@@ -107,20 +107,23 @@ public class Roster {
         }
         statusBox.valueProperty().addListener(
                 (ObservableValue<? extends OnlineStatus> observable, OnlineStatus oldValue, OnlineStatus newValue) -> {
-                    switch (newValue) {
-                        case ONLINE:
-                            account.setOnlineStatus(OnlineStatus.ONLINE);
-                            if (friendsNode.getChildren().isEmpty())
-                                fillFriendsNode();
-                            break;
-                        case OFFLINE:
-                            account.setOnlineStatus(OnlineStatus.OFFLINE);
-                            friendsNode.getChildren().removeAll(friendsNode.getChildren());
-                            break;
-                        case INVISIBLE:
-                            account.setOnlineStatus(OnlineStatus.INVISIBLE);
-                            break;
-                    }
+                    Thread thread = new Thread(() -> {
+                        switch (newValue) {
+                            case ONLINE:
+                                account.setOnlineStatus(OnlineStatus.ONLINE);
+                                if (friendsNode.getChildren().isEmpty())
+                                    fillFriendsNode();
+                                break;
+                            case OFFLINE:
+                                account.setOnlineStatus(OnlineStatus.OFFLINE);
+                                friendsNode.getChildren().removeAll(friendsNode.getChildren());
+                                break;
+                            case INVISIBLE:
+                                account.setOnlineStatus(OnlineStatus.INVISIBLE);
+                                break;
+                        }
+                    });
+                    thread.start();
                 });
         statusBox.setValue(config.getValue("lastStatus") != null ?
                         OnlineStatus.valueOf(config.getValue("lastStatus").toUpperCase()) :
