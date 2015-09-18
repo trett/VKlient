@@ -165,17 +165,18 @@ public class Roster {
             x.getValue().onlineStatusProperty().addListener(
                     (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                         System.out.println(x.getValue().getFirstName() + " change status to " + newValue.intValue());
-                        if (showOffline) {
-                            Platform.runLater(() ->
-                                            x.getGraphic().setEffect(effect(newValue.intValue()))
-                            );
-                        } else if (newValue.intValue() == 1) {
-                            friendsNode.getChildren().add(x);
-                        } else {
-                            friendsNode.getChildren().remove(x);
-                        }
-                        friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue()));
-                        updateItems();
+                        Platform.runLater(() -> {
+                                    if (showOffline) {
+                                        x.getGraphic().setEffect(effect(newValue.intValue()));
+                                    } else if (newValue.intValue() == 1) {
+                                        friendsNode.getChildren().add(x);
+                                    } else {
+                                        friendsNode.getChildren().remove(x);
+                                    }
+                                    friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue()));
+                                    updateItems();
+                                }
+                        );
                     });
             x.getValue().newMessagesProperty().addListener(
                     (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
