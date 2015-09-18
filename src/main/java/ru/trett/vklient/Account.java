@@ -18,10 +18,7 @@ package ru.trett.vklient;
 import javafx.beans.value.ObservableValue;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import ru.trett.vkauth.Buddy;
-import ru.trett.vkauth.BuddyImpl;
-import ru.trett.vkauth.OnlineStatus;
-import ru.trett.vkauth.VKUtils;
+import ru.trett.vkauth.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -150,9 +147,10 @@ public class Account extends BuddyImpl {
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                while (getOnlineStatusProperty() == 1) {
-                    String answer = VKUtils.getUpdates(lpServer, lpServerKey, ts);
-                    if (answer != null) {
+                while (onlineStatus != OnlineStatus.OFFLINE) {
+                    try {
+                        String answer = VKUtils.getUpdates(lpServer, lpServerKey, ts);
+                        assert answer != null;
                         JSONObject json = new JSONObject(answer);
                         if (json.has("failed")) {
                             getLongPollConnection();
@@ -161,8 +159,8 @@ public class Account extends BuddyImpl {
                             JSONArray array = json.getJSONArray("updates");
                             UpdatesHandler.update(array, Account.this);
                         }
-                    } else {
-                        getLongPollConnection();
+                    } catch (RequestReturnNullException e) {
+                        System.out.println(e.getMessage());
                     }
                 }
             }

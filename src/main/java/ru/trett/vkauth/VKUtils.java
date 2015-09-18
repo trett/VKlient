@@ -155,7 +155,8 @@ public class VKUtils {
         }
     }
 
-    public static String getUpdates(String server, String key, String ts) {
+    public static String getUpdates(String server, String key, String ts)
+            throws RequestReturnNullException {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
             urlParameters.put("act", "a_check");
@@ -167,7 +168,11 @@ public class VKUtils {
                     host(server).
                     query(urlParameters).
                     build();
-            return longPollClient.send(request);
+            String answer = longPollClient.send(request);
+            if(answer == null)
+                throw new RequestReturnNullException("Long Poll server return null");
+            else
+                return answer;
         } catch (ClientProtocolException e) {
             return null;
         }

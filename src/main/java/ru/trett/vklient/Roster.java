@@ -40,6 +40,7 @@ import java.util.Map;
  */
 
 public class Roster {
+
     private final GridPane root;
     TreeItem<Buddy> me;
     Account account;
