@@ -117,7 +117,8 @@ public class VKUtils {
         return answerToMessages(obj);
     }
 
-    public static HashMap<String, String> getLongPollServer(String token) {
+    public static HashMap<String, String> getLongPollServer(String token)
+            throws RequestReturnNullException {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
             urlParameters.put("access_token", token);
@@ -128,9 +129,9 @@ public class VKUtils {
                     query(urlParameters).
                     build();
             String url = networkClient.send(request);
-            System.out.println("Get Server:" + url);
             if (url == null)
-                return null;
+                throw new RequestReturnNullException("Can't get long poll server url.");
+            System.out.println("Get Server:" + url);
             JSONObject obj = new JSONObject(url);
             HashMap<String, String> lpServerMap = new HashMap<>();
             lpServerMap.put("server", obj.getJSONObject("response").getString("server"));
@@ -138,7 +139,7 @@ public class VKUtils {
             lpServerMap.put("ts", Integer.toString(obj.getJSONObject("response").getInt("ts")));
             return lpServerMap;
         } catch (ClientProtocolException e) {
-            return null;
+            throw new RequestReturnNullException(e.getCause());
         }
     }
 
@@ -164,7 +165,7 @@ public class VKUtils {
                         + obj.getJSONObject("error").toString());
             return obj;
         } catch (ClientProtocolException e) {
-            return null;
+            throw new RequestReturnNullException(e.getCause());
         }
     }
 
@@ -215,17 +216,13 @@ public class VKUtils {
         }
     }
 
-    public static ArrayList<Message> getMessagesById(String token, int messageId) {
-        try {
-            HashMap<String, String> urlParameters = new HashMap<>();
-            urlParameters.put("access_token", token);
-            urlParameters.put("message_ids", Integer.toString(messageId));
-            JSONObject obj = sendRequest("messages.getById", urlParameters).getJSONObject("response");
-            return answerToMessages(obj);
-        } catch (RequestReturnErrorException | RequestReturnNullException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public static ArrayList<Message> getMessagesById(String token, int messageId)
+            throws RequestReturnNullException, RequestReturnErrorException {
+        HashMap<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("access_token", token);
+        urlParameters.put("message_ids", Integer.toString(messageId));
+        JSONObject obj = sendRequest("messages.getById", urlParameters).getJSONObject("response");
+        return answerToMessages(obj);
     }
 
     private static JSONObject sendRequest(String vkMethod, HashMap<String, String> urlParameters)

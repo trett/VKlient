@@ -48,7 +48,6 @@ public class LongPollServer {
                     setHaveUpdates(false);
                     try {
                         JSONObject json = VKUtils.getUpdates(lpServer, lpServerKey, ts);
-                        assert json != null;
                         ts = json.optString("ts");
                         updates = json.getJSONArray("updates");
                         if (updates.length() > 0)
@@ -85,12 +84,14 @@ public class LongPollServer {
     }
 
     private void getLongPollConnection() {
-        HashMap<String, String> longPollServer = VKUtils.getLongPollServer(account.getAccessToken());
-        if (longPollServer == null)
-            throw new RuntimeException("Can't get long poll server.");
-        lpServer = longPollServer.get("server");
-        lpServerKey = longPollServer.get("key");
-        ts = longPollServer.get("ts");
+        try {
+            HashMap<String, String> longPollServer = VKUtils.getLongPollServer(account.getAccessToken());
+            lpServer = longPollServer.get("server");
+            lpServerKey = longPollServer.get("key");
+            ts = longPollServer.get("ts");
+        } catch (RequestReturnNullException e) {
+            e.printStackTrace();
+        }
     }
 
 }

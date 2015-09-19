@@ -72,7 +72,12 @@ public class UpdatesHandler {
                         Message message = new Message();
                         /* if message have attachment get message from server by id cause long poll return useless answer */
                         if (!new JSONObject(list.get(7).toString()).isNull("attach1")) {
-                            ArrayList<Message> messages = VKUtils.getMessagesById(account.getAccessToken(), (int) list.get(1));
+                            ArrayList<Message> messages = null;
+                            try {
+                                messages = VKUtils.getMessagesById(account.getAccessToken(), (int) list.get(1));
+                            } catch (RequestReturnNullException | RequestReturnErrorException e) {
+                                e.printStackTrace();
+                            }
                             if (messages != null)
                                 message = messages.get(0);
                         } else {
