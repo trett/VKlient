@@ -139,7 +139,7 @@ public class VKUtils {
             lpServerMap.put("ts", Integer.toString(obj.getJSONObject("response").getInt("ts")));
             return lpServerMap;
         } catch (ClientProtocolException e) {
-            throw new RequestReturnNullException(e.getCause());
+            throw new RequestReturnNullException("Can't get Long Poll server cause: ", e);
         }
     }
 
@@ -165,7 +165,7 @@ public class VKUtils {
                         + obj.getJSONObject("error").toString());
             return obj;
         } catch (ClientProtocolException e) {
-            throw new RequestReturnNullException(e.getCause());
+            throw new RequestReturnNullException("Can't get Long Poll server cause: ", e);
         }
     }
 
