@@ -81,7 +81,7 @@ public class UpdatesHandler {
                             message.setDate(sdf.format(date));
                             message.setBody(list.get(6).toString());
                             message.setDirection(
-                                    (flag & VKUtils.MessageFlags.OUTBOX) == VKUtils.MessageFlags.OUTBOX ?
+                                    (flag & Message.MessageFlags.OUTBOX) == Message.MessageFlags.OUTBOX ?
                                             "out" : "in"
                             );
                         }

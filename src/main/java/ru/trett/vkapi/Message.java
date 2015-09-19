@@ -95,6 +95,30 @@ public class Message {
         this.direction = direction;
     }
 
+    public static final class AttachmentType {
+        public static final String LINK = "link";
+        public static final String STICKER = "sticker";
+        public static final String PHOTO = "photo";
+        public static final String WALL = "wall";
+        public static final String GIFT = "gift";
+        public static final String VIDEO = "video";
+        public static final String AUDIO = "audio";
+        public static final String DOC = "doc";
+    }
+
+    public static final class MessageFlags {
+        public static final int UNREAD = 1;
+        public static final int OUTBOX = 2;
+        public static final int REPLIED = 4;
+        public static final int IMPORTANT = 8;
+        public static final int CHAT = 16;
+        public static final int FRIENDS = 32;
+        public static final int SPAM = 64;
+        public static final int DELETED = 128;
+        public static final int FIXED = 256;
+        public static final int MEDIA = 512;
+    }
+
     public class Attachment {
 
         String photo = null;
@@ -133,17 +157,6 @@ public class Message {
         public void setTitle(String title) {
             this.title = title;
         }
-    }
-
-    public final class AttachmentType {
-        public static final String LINK = "link";
-        public static final String STICKER = "sticker";
-        public static final String PHOTO = "photo";
-        public static final String WALL = "wall";
-        public static final String GIFT = "gift";
-        public static final String VIDEO = "video";
-        public static final String AUDIO = "audio";
-        public static final String DOC = "doc";
     }
 
 }
