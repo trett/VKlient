@@ -13,7 +13,7 @@
  *
  */
 
-package ru.trett.vkauth;
+package ru.trett.vkapi;
 
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;

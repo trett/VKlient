@@ -13,7 +13,7 @@
  *
  */
 
-package ru.trett.vkauth;
+package ru.trett.vkapi;
 
 /**
  * @author Roman Tretyakov

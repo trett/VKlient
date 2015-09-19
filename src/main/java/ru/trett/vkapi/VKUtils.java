@@ -13,12 +13,11 @@
  *
  */
 
-package ru.trett.vkauth;
+package ru.trett.vkapi;
 
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import ru.trett.vklient.Account;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -115,10 +114,10 @@ public class VKUtils {
      * @param rev
      * @return ArrayList Messages
      */
-    public static ArrayList<Message> getMessagesHistory(Account account, int userId, int count, int rev) {
+    public static ArrayList<Message> getMessagesHistory(String token, int userId, int count, int rev) {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
-            urlParameters.put("access_token", account.getAccessToken());
+            urlParameters.put("access_token", token);
             urlParameters.put("count", Integer.toString(count));
             urlParameters.put("user_id", Integer.toString(userId));
             urlParameters.put("rev", Integer.toString(rev));
@@ -130,10 +129,10 @@ public class VKUtils {
         }
     }
 
-    public static HashMap<String, String> getLongPollServer(Account account) {
+    public static HashMap<String, String> getLongPollServer(String token) {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
-            urlParameters.put("access_token", account.getAccessToken());
+            urlParameters.put("access_token", token);
             urlParameters.put("v", Double.toString(API_VERSION));
             Request request = new RequestBuilder().
                     host("api.vk.com/method/").
@@ -155,8 +154,8 @@ public class VKUtils {
         }
     }
 
-    public static String getUpdates(String server, String key, String ts)
-            throws RequestReturnNullException {
+    public static JSONObject getUpdates(String server, String key, String ts)
+            throws RequestReturnNullException, RequestReturnErrorException {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
             urlParameters.put("act", "a_check");
@@ -171,18 +170,21 @@ public class VKUtils {
             String answer = longPollClient.send(request);
             if(answer == null)
                 throw new RequestReturnNullException("Long Poll server return null");
-            else
-                return answer;
+            JSONObject obj = new JSONObject(answer);
+            if(obj.has("error"))
+                throw new RequestReturnErrorException("NetworkClient return error: "
+                        + obj.getJSONObject("error").toString());
+            return obj;
         } catch (ClientProtocolException e) {
             return null;
         }
     }
 
-    public static String sendMessage(Account account, int userId, Message message) {
+    public static String sendMessage(String token, int userId, Message message) {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
             urlParameters.put("user_id", Integer.toString(userId));
-            urlParameters.put("access_token", account.getAccessToken());
+            urlParameters.put("access_token", token);
             urlParameters.put("chat_id", "1");
             urlParameters.put("message", message.getBody());
             JSONObject answer = sendRequest("messages.send", urlParameters);
@@ -193,10 +195,10 @@ public class VKUtils {
         }
     }
 
-    public static void setOnline(Account account) {
+    public static void setOnline(String token) {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
-            urlParameters.put("access_token", account.getAccessToken());
+            urlParameters.put("access_token", token);
             JSONObject answer = sendRequest("account.setOnline", urlParameters);
             if (answer.getInt("response") != 1)
                 System.out.println("Online status error: " + answer.getInt("response"));
@@ -205,10 +207,10 @@ public class VKUtils {
         }
     }
 
-    public static void setOffline(Account account) {
+    public static void setOffline(String token) {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
-            urlParameters.put("access_token", account.getAccessToken());
+            urlParameters.put("access_token", token);
             JSONObject answer = sendRequest("account.setOffline", urlParameters);
             if (answer.getInt("response") != 1)
                 System.out.println("Online status error: " + answer.getInt("response"));
@@ -235,10 +237,10 @@ public class VKUtils {
         }
     }
 
-    public static ArrayList<Message> getMessagesById(Account account, int messageId) {
+    public static ArrayList<Message> getMessagesById(String token, int messageId) {
         try {
             HashMap<String, String> urlParameters = new HashMap<>();
-            urlParameters.put("access_token", account.getAccessToken());
+            urlParameters.put("access_token", token);
             urlParameters.put("message_ids", Integer.toString(messageId));
             JSONObject obj = sendRequest("messages.getById", urlParameters).getJSONObject("response");
             return answerToMessages(obj);

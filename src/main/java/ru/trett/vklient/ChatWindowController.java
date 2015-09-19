@@ -26,8 +26,9 @@ import javafx.scene.web.WebView;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
-import ru.trett.vkauth.Message;
-import ru.trett.vkauth.VKUtils;
+import ru.trett.vkapi.Account;
+import ru.trett.vkapi.Message;
+import ru.trett.vkapi.VKUtils;
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -101,7 +102,7 @@ public class ChatWindowController {
                     m.setDate(timeStamp);
                     m.setBody(area.getText().replaceAll("<br>", "&lt;br&gt;"));
                     m.setDirection("out");
-                    String messageId = VKUtils.sendMessage(account, userId, m);
+                    String messageId = VKUtils.sendMessage(account.getAccessToken(), userId, m);
                     area.setText("");
                     keyEvent.consume();
                 }
@@ -110,7 +111,7 @@ public class ChatWindowController {
     }
 
     private void showHistory() {
-        ArrayList<Message> messages = VKUtils.getMessagesHistory(account, userId, 50, 0);
+        ArrayList<Message> messages = VKUtils.getMessagesHistory(account.getAccessToken(), userId, 50, 0);
         if (messages != null)
             messages.forEach(x -> appendMessage(x));
     }

@@ -16,12 +16,11 @@
 package ru.trett.vklient;
 
 import javafx.application.Platform;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import ru.trett.vkauth.Buddy;
-import ru.trett.vkauth.Message;
-import ru.trett.vkauth.OnlineStatus;
-import ru.trett.vkauth.VKUtils;
+import ru.trett.vkapi.*;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -33,13 +32,25 @@ import java.util.Date;
  */
 
 /**
- *
- * Parse udates array from answer
+ * Parse updates array from answer
  */
 
 public class UpdatesHandler {
 
-    public static void update(JSONArray array, Account account) {
+    private Account account;
+
+    UpdatesHandler(Account account) {
+        this.account = account;
+        account.getLongPollServer().haveUpdatesProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+                if (newValue)
+                    update(account.getLongPollServer().getUpdates());
+            }
+        });
+    }
+
+    public void update(JSONArray array) {
         for (int i = 0; i < array.length(); ++i) {
             JSONArray temp = array.getJSONArray(i);
             ArrayList<Object> list = new ArrayList<>();
@@ -61,7 +72,7 @@ public class UpdatesHandler {
                         Message message = new Message();
                         /* if message have attachment get message from server by id cause long poll return useless answer */
                         if (!new JSONObject(list.get(7).toString()).isNull("attach1")) {
-                            ArrayList<Message> messages = VKUtils.getMessagesById(account, (int) list.get(1));
+                            ArrayList<Message> messages = VKUtils.getMessagesById(account.getAccessToken(), (int) list.get(1));
                             if (messages != null)
                                 message = messages.get(0);
                         } else {

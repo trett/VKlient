@@ -20,8 +20,9 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
-import ru.trett.vkauth.Buddy;
-import ru.trett.vkauth.Message;
+import ru.trett.vkapi.Account;
+import ru.trett.vkapi.Buddy;
+import ru.trett.vkapi.Message;
 
 import java.io.IOException;
 

@@ -15,6 +15,8 @@
 
 package ru.trett.vklient;
 
+import ru.trett.vkapi.Account;
+
 import java.util.ArrayList;
 
 /**

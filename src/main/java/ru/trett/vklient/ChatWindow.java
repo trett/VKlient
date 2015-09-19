@@ -15,7 +15,8 @@
 
 package ru.trett.vklient;
 
-import ru.trett.vkauth.Message;
+import ru.trett.vkapi.Account;
+import ru.trett.vkapi.Message;
 
 /**
  * @author Roman Tretyakov

@@ -13,7 +13,7 @@
  *
  */
 
-package ru.trett.vkauth;
+package ru.trett.vkapi;
 
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;

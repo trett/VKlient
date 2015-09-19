@@ -27,10 +27,7 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
-import ru.trett.vkauth.AuthHelper;
-import ru.trett.vkauth.Buddy;
-import ru.trett.vkauth.OnlineStatus;
-import ru.trett.vkauth.VKUtils;
+import ru.trett.vkapi.*;
 
 import java.util.Map;
 
@@ -50,6 +47,7 @@ public class Roster {
     ObservableList<TreeItem<Buddy>> friendsModel;
     boolean showOffline = true;
     Config config = new Config();
+    UpdatesHandler updatesHandler;
 
     Roster() {
         root = new GridPane();
@@ -91,8 +89,7 @@ public class Roster {
         // check if token is exists & active
         if (config.getValue("access_token") != null &&
                 VKUtils.getUsers(config.getValue("access_token")) > 0) {
-            account = new Account();
-            addAccount(account);
+            createRootNode();
         } else {
             AuthHelper helper = new AuthHelper();
             helper.createAuthWindow();
@@ -102,8 +99,7 @@ public class Roster {
                         Map<String, String> list = helper.getAnswer();
                         config.setValue("access_token", list.get("access_token"));
                         config.setValue("user_id", list.get("user_id"));
-                        account = new Account();
-                        addAccount(account);
+                        createRootNode();
                     });
         }
         statusBox.valueProperty().addListener(
@@ -112,6 +108,8 @@ public class Roster {
                         switch (newValue) {
                             case ONLINE:
                                 account.setOnlineStatus(OnlineStatus.ONLINE);
+                                if (updatesHandler == null)
+                                    updatesHandler = new UpdatesHandler(account);
                                 if (friendsNode.getChildren().isEmpty())
                                     fillFriendsNode();
                                 break;
@@ -121,6 +119,8 @@ public class Roster {
                                 break;
                             case INVISIBLE:
                                 account.setOnlineStatus(OnlineStatus.INVISIBLE);
+                                if (updatesHandler == null)
+                                    updatesHandler = new UpdatesHandler(account);
                                 break;
                         }
                     });
@@ -225,6 +225,14 @@ public class Roster {
 
     private void saveSettings() {
         config.setValue("lastStatus", account.getOnlineStatus().name());
+    }
+
+    private void createRootNode() {
+        account = new Account();
+        account.setUserId(Integer.parseInt(config.getValue("user_id")));
+        account.setAccessToken(config.getValue("access_token"));
+        account.create();
+        addAccount(account);
     }
 
     private final class BuddyCellFactoryImpl extends TreeCell<Buddy> {

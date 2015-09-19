@@ -13,28 +13,28 @@
  *
  */
 
-package ru.trett.vkauth;
+package ru.trett.vkapi;
 
 /**
  * @author Roman Tretyakov
  * @since 15.08.2015
  */
 
-public class RequestReturnErrorException extends Exception {
+public class RequestReturnNullException extends Exception {
 
-    public RequestReturnErrorException() {
+    public RequestReturnNullException() {
         super();
     }
 
-    public RequestReturnErrorException(String message) {
+    public RequestReturnNullException(String message) {
         super(message);
     }
 
-    public RequestReturnErrorException(String message, Throwable cause) {
+    public RequestReturnNullException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public RequestReturnErrorException(Throwable cause) {
+    public RequestReturnNullException(Throwable cause) {
         super(cause);
     }
 }

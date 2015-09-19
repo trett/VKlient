@@ -13,17 +13,11 @@
  *
  */
 
-package ru.trett.vklient;
+package ru.trett.vkapi;
 
 import javafx.beans.value.ObservableValue;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import ru.trett.vkauth.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -45,11 +39,9 @@ public class Account extends BuddyImpl {
     private ScheduledExecutorService scheduledTimer;
     private Runnable stopTimer;
     private OnlineStatus onlineStatus;
+    private LongPollServer longPollServer;
 
-    public Account() {
-        Config config = new Config();
-        userId = Integer.parseInt(config.getValue("user_id"));
-        accessToken = config.getValue("access_token");
+    public void create() {
         ArrayList<Buddy> buddies = VKUtils.getUsers(new ArrayList<Integer>() {{
             add(userId);
         }}, accessToken);
@@ -62,8 +54,9 @@ public class Account extends BuddyImpl {
             onlineStatusProperty().addListener(
                     (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                         System.out.println("Account change state to " + newValue.intValue());
-                        if (newValue.intValue() == 1)
-                            longPollConnection();
+                        if (newValue.intValue() == 1) {
+                            longPollServer = new LongPollServer(this);
+                        }
                     });
         } else {
             throw new RuntimeException("Impossible to create Account");
@@ -93,7 +86,7 @@ public class Account extends BuddyImpl {
                 setOnlineStatusProperty(OnlineStatus.ONLINE.ordinal());
                 scheduledTimer = Executors.newSingleThreadScheduledExecutor();
                 ScheduledFuture<?> scheduledFuture = scheduledTimer.scheduleAtFixedRate(
-                        () -> VKUtils.setOnline(Account.this), 5, 90, TimeUnit.SECONDS
+                        () -> VKUtils.setOnline(Account.this.getAccessToken()), 5, 90, TimeUnit.SECONDS
                 );
                 stopTimer = new StopOnlineTimer(scheduledFuture);
                 if (friends != null)
@@ -102,7 +95,7 @@ public class Account extends BuddyImpl {
                 break;
             case OFFLINE:
                 setOnlineStatusProperty(OnlineStatus.OFFLINE.ordinal());
-                VKUtils.setOffline(this);
+                VKUtils.setOffline(getAccessToken());
                 if (scheduledTimer != null)
                     scheduledTimer.submit(stopTimer);
                 VKUtils.abortAllConnections();
@@ -111,7 +104,7 @@ public class Account extends BuddyImpl {
                 setOnlineStatusProperty(OnlineStatus.ONLINE.ordinal());
                 if (scheduledTimer != null)
                     scheduledTimer.submit(stopTimer);
-                VKUtils.setOffline(this);
+                VKUtils.setOffline(getAccessToken());
                 break;
         }
     }
@@ -132,41 +125,49 @@ public class Account extends BuddyImpl {
         return friends;
     }
 
-    private void getLongPollConnection() {
-        HashMap<String, String> longPollServer = VKUtils.getLongPollServer(Account.this);
-        if (longPollServer == null)
-            throw new RuntimeException("Can't get long poll server.");
-        lpServer = longPollServer.get("server");
-        lpServerKey = longPollServer.get("key");
-        ts = longPollServer.get("ts");
+    public LongPollServer getLongPollServer() {
+        return longPollServer;
     }
 
-    private void longPollConnection() {
-        getLongPollConnection();
-        Timer timer = new Timer();
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                while (onlineStatus != OnlineStatus.OFFLINE) {
-                    try {
-                        String answer = VKUtils.getUpdates(lpServer, lpServerKey, ts);
-                        assert answer != null;
-                        JSONObject json = new JSONObject(answer);
-                        if (json.has("failed")) {
-                            getLongPollConnection();
-                        } else {
-                            ts = json.optString("ts");
-                            JSONArray array = json.getJSONArray("updates");
-                            UpdatesHandler.update(array, Account.this);
-                        }
-                    } catch (RequestReturnNullException e) {
-                        System.out.println(e.getMessage());
-                    }
-                }
-            }
-        };
-        timer.schedule(timerTask, 5000);
+    public void setLongPollServer(LongPollServer longPollServer) {
+        this.longPollServer = longPollServer;
     }
+
+    //    private void getLongPollConnection() {
+//        HashMap<String, String> longPollServer = VKUtils.getLongPollServer(Account.this.getAccessToken());
+//        if (longPollServer == null)
+//            throw new RuntimeException("Can't get long poll server.");
+//        lpServer = longPollServer.get("server");
+//        lpServerKey = longPollServer.get("key");
+//        ts = longPollServer.get("ts");
+//    }
+//
+//    private void longPollConnection() {
+//        getLongPollConnection();
+//        Timer timer = new Timer();
+//        TimerTask timerTask = new TimerTask() {
+//            @Override
+//            public void run() {
+//                while (onlineStatus != OnlineStatus.OFFLINE) {
+//                    try {
+//                        String answer = VKUtils.getUpdates(lpServer, lpServerKey, ts);
+//                        assert answer != null;
+//                        JSONObject json = new JSONObject(answer);
+//                        if (json.has("failed")) {
+//                            getLongPollConnection();
+//                        } else {
+//                            ts = json.optString("ts");
+//                            JSONArray array = json.getJSONArray("updates");
+//                            UpdatesHandler.update(array, Account.this);
+//                        }
+//                    } catch (RequestReturnNullException e) {
+//                        System.out.println(e.getMessage());
+//                    }
+//                }
+//            }
+//        };
+//        timer.schedule(timerTask, 5000);
+//    }
 
     public Buddy getFriendById(ArrayList<Buddy> friends, int userId) {
         for (Buddy friend : friends) {
