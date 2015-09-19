@@ -42,9 +42,14 @@ public class Account extends BuddyImpl {
     private LongPollServer longPollServer;
 
     public void create() {
-        ArrayList<Buddy> buddies = VKUtils.getUsers(new ArrayList<Integer>() {{
-            add(userId);
-        }}, accessToken);
+        ArrayList<Buddy> buddies = null;
+        try {
+            buddies = VKUtils.getUsers(new ArrayList<Integer>() {{
+                add(userId);
+            }}, accessToken);
+        } catch (RequestReturnNullException | RequestReturnErrorException e) {
+            e.printStackTrace();
+        }
         if (buddies != null) {
             Buddy buddy = buddies.get(0);
             setFirstName(buddy.getFirstName());
@@ -81,31 +86,40 @@ public class Account extends BuddyImpl {
     @Override
     public void setOnlineStatus(OnlineStatus onlineStatus) {
         this.onlineStatus = onlineStatus;
-        switch (onlineStatus) {
-            case ONLINE:
-                setOnlineStatusProperty(OnlineStatus.ONLINE.ordinal());
-                scheduledTimer = Executors.newSingleThreadScheduledExecutor();
-                ScheduledFuture<?> scheduledFuture = scheduledTimer.scheduleAtFixedRate(
-                        () -> VKUtils.setOnline(Account.this.getAccessToken()), 5, 90, TimeUnit.SECONDS
-                );
-                stopTimer = new StopOnlineTimer(scheduledFuture);
-                if (friends != null)
+        try {
+            switch (onlineStatus) {
+                case ONLINE:
+                    setOnlineStatusProperty(OnlineStatus.ONLINE.ordinal());
+                    scheduledTimer = Executors.newSingleThreadScheduledExecutor();
+                    ScheduledFuture<?> scheduledFuture = scheduledTimer.scheduleAtFixedRate(
+                            () -> {
+                                try {
+                                    VKUtils.setOnline(Account.this.getAccessToken());
+                                } catch (RequestReturnNullException | RequestReturnErrorException e) {
+                                    e.printStackTrace();
+                                }
+                            }, 5, 90, TimeUnit.SECONDS);
+                    stopTimer = new StopOnlineTimer(scheduledFuture);
+                    if (friends != null)
+                        break;
+                    setFriends();
                     break;
-                setFriends();
-                break;
-            case OFFLINE:
-                setOnlineStatusProperty(OnlineStatus.OFFLINE.ordinal());
-                VKUtils.setOffline(getAccessToken());
-                if (scheduledTimer != null)
-                    scheduledTimer.submit(stopTimer);
-                VKUtils.abortAllConnections();
-                break;
-            case INVISIBLE:
-                setOnlineStatusProperty(OnlineStatus.ONLINE.ordinal());
-                if (scheduledTimer != null)
-                    scheduledTimer.submit(stopTimer);
-                VKUtils.setOffline(getAccessToken());
-                break;
+                case OFFLINE:
+                    setOnlineStatusProperty(OnlineStatus.OFFLINE.ordinal());
+                    VKUtils.setOffline(getAccessToken());
+                    if (scheduledTimer != null)
+                        scheduledTimer.submit(stopTimer);
+                    VKUtils.abortAllConnections();
+                    break;
+                case INVISIBLE:
+                    setOnlineStatusProperty(OnlineStatus.ONLINE.ordinal());
+                    if (scheduledTimer != null)
+                        scheduledTimer.submit(stopTimer);
+                    VKUtils.setOffline(getAccessToken());
+                    break;
+            }
+        } catch (RequestReturnNullException | RequestReturnErrorException e) {
+            e.printStackTrace();
         }
     }
 
@@ -118,7 +132,11 @@ public class Account extends BuddyImpl {
     }
 
     public void setFriends() {
-        friends = VKUtils.getFriends(userId, accessToken);
+        try {
+            friends = VKUtils.getFriends(userId, accessToken);
+        } catch (RequestReturnNullException | RequestReturnErrorException e) {
+            e.printStackTrace();
+        }
     }
 
     public ArrayList<Buddy> getFriends() {

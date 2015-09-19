@@ -46,30 +46,26 @@ public class VKUtils {
      * @param token   String
      * @return ArrayList buddies
      */
-    public static ArrayList<Buddy> getUsers(List<Integer> userIds, String token) {
-        try {
-            HashMap<String, String> urlParameters = new HashMap<>();
-            String ids = userIds.stream().map(x -> x.toString()).collect(Collectors.joining(","));
-            urlParameters.put("user_ids", ids);
-            urlParameters.put("access_token", token);
-            urlParameters.put("fields", "photo_50,online,status");
-            JSONObject obj = sendRequest("users.get", urlParameters);
-            JSONArray json = obj.getJSONArray("response");
-            ArrayList<Buddy> buddies = new ArrayList<>();
-            for (int i = 0; i < json.length(); ++i) {
-                Buddy buddy = new BuddyImpl();
-                buddy.setFirstName(json.getJSONObject(i).getString("first_name"));
-                buddy.setLastName(json.getJSONObject(i).getString("last_name"));
-                buddy.setAvatarURL(json.getJSONObject(i).getString("photo_50"));
-                buddy.setOnlineStatus(json.getJSONObject(i).getInt("online") == 1 ? OnlineStatus.ONLINE : OnlineStatus.OFFLINE);
-                buddy.setStatus(json.getJSONObject(i).getString("status"));
-                buddies.add(buddy);
-            }
-            return buddies;
-        } catch (RequestReturnNullException | RequestReturnErrorException e) {
-            e.printStackTrace();
-            return null;
+    public static ArrayList<Buddy> getUsers(List<Integer> userIds, String token)
+            throws RequestReturnNullException, RequestReturnErrorException {
+        HashMap<String, String> urlParameters = new HashMap<>();
+        String ids = userIds.stream().map(x -> x.toString()).collect(Collectors.joining(","));
+        urlParameters.put("user_ids", ids);
+        urlParameters.put("access_token", token);
+        urlParameters.put("fields", "photo_50,online,status");
+        JSONObject obj = sendRequest("users.get", urlParameters);
+        JSONArray json = obj.getJSONArray("response");
+        ArrayList<Buddy> buddies = new ArrayList<>();
+        for (int i = 0; i < json.length(); ++i) {
+            Buddy buddy = new BuddyImpl();
+            buddy.setFirstName(json.getJSONObject(i).getString("first_name"));
+            buddy.setLastName(json.getJSONObject(i).getString("last_name"));
+            buddy.setAvatarURL(json.getJSONObject(i).getString("photo_50"));
+            buddy.setOnlineStatus(json.getJSONObject(i).getInt("online") == 1 ? OnlineStatus.ONLINE : OnlineStatus.OFFLINE);
+            buddy.setStatus(json.getJSONObject(i).getString("status"));
+            buddies.add(buddy);
         }
+        return buddies;
     }
 
     /**
@@ -79,30 +75,26 @@ public class VKUtils {
      * @param token
      * @return ArrayList buddies
      */
-    public static ArrayList<Buddy> getFriends(int userId, String token) {
-        try {
-            HashMap<String, String> urlParameters = new HashMap<>();
-            urlParameters.put("user_id", Integer.toString(userId));
-            urlParameters.put("access_token", token);
-            urlParameters.put("fields", "first_name,last_name,photo_50,online,status");
-            JSONObject obj = sendRequest("friends.get", urlParameters).getJSONObject("response");
-            JSONArray json = obj.getJSONArray("items");
-            ArrayList<Buddy> buddies = new ArrayList<>();
-            for (int i = 0; i < json.length(); ++i) {
-                BuddyImpl buddy = new BuddyImpl();
-                buddy.setUserId(json.getJSONObject(i).getInt("id"));
-                buddy.setFirstName(json.getJSONObject(i).getString("first_name"));
-                buddy.setLastName(json.getJSONObject(i).getString("last_name"));
-                buddy.setAvatarURL(json.getJSONObject(i).getString("photo_50"));
-                buddy.setOnlineStatus(json.getJSONObject(i).getInt("online") == 1 ? OnlineStatus.ONLINE : OnlineStatus.OFFLINE);
-                buddy.setStatus(json.getJSONObject(i).getString("status"));
-                buddies.add(buddy);
-            }
-            return buddies;
-        } catch (RequestReturnNullException | RequestReturnErrorException e) {
-            e.printStackTrace();
-            return null;
+    public static ArrayList<Buddy> getFriends(int userId, String token)
+            throws RequestReturnNullException, RequestReturnErrorException {
+        HashMap<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("user_id", Integer.toString(userId));
+        urlParameters.put("access_token", token);
+        urlParameters.put("fields", "first_name,last_name,photo_50,online,status");
+        JSONObject obj = sendRequest("friends.get", urlParameters).getJSONObject("response");
+        JSONArray json = obj.getJSONArray("items");
+        ArrayList<Buddy> buddies = new ArrayList<>();
+        for (int i = 0; i < json.length(); ++i) {
+            BuddyImpl buddy = new BuddyImpl();
+            buddy.setUserId(json.getJSONObject(i).getInt("id"));
+            buddy.setFirstName(json.getJSONObject(i).getString("first_name"));
+            buddy.setLastName(json.getJSONObject(i).getString("last_name"));
+            buddy.setAvatarURL(json.getJSONObject(i).getString("photo_50"));
+            buddy.setOnlineStatus(json.getJSONObject(i).getInt("online") == 1 ? OnlineStatus.ONLINE : OnlineStatus.OFFLINE);
+            buddy.setStatus(json.getJSONObject(i).getString("status"));
+            buddies.add(buddy);
         }
+        return buddies;
     }
 
     /**
@@ -114,19 +106,15 @@ public class VKUtils {
      * @param rev
      * @return ArrayList Messages
      */
-    public static ArrayList<Message> getMessagesHistory(String token, int userId, int count, int rev) {
-        try {
-            HashMap<String, String> urlParameters = new HashMap<>();
-            urlParameters.put("access_token", token);
-            urlParameters.put("count", Integer.toString(count));
-            urlParameters.put("user_id", Integer.toString(userId));
-            urlParameters.put("rev", Integer.toString(rev));
-            JSONObject obj = sendRequest("messages.getHistory", urlParameters).getJSONObject("response");
-            return answerToMessages(obj);
-        } catch (RequestReturnNullException | RequestReturnErrorException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public static ArrayList<Message> getMessagesHistory(String token, int userId, int count, int rev)
+            throws RequestReturnNullException, RequestReturnErrorException {
+        HashMap<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("access_token", token);
+        urlParameters.put("count", Integer.toString(count));
+        urlParameters.put("user_id", Integer.toString(userId));
+        urlParameters.put("rev", Integer.toString(rev));
+        JSONObject obj = sendRequest("messages.getHistory", urlParameters).getJSONObject("response");
+        return answerToMessages(obj);
     }
 
     public static HashMap<String, String> getLongPollServer(String token) {
@@ -180,43 +168,33 @@ public class VKUtils {
         }
     }
 
-    public static String sendMessage(String token, int userId, Message message) {
-        try {
-            HashMap<String, String> urlParameters = new HashMap<>();
-            urlParameters.put("user_id", Integer.toString(userId));
-            urlParameters.put("access_token", token);
-            urlParameters.put("chat_id", "1");
-            urlParameters.put("message", message.getBody());
-            JSONObject answer = sendRequest("messages.send", urlParameters);
-            return answer.toString();
-        } catch (RequestReturnNullException | RequestReturnErrorException e) {
-            e.printStackTrace();
-            return null;
-        }
+    public static String sendMessage(String token, int userId, Message message)
+            throws RequestReturnNullException, RequestReturnErrorException {
+        HashMap<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("user_id", Integer.toString(userId));
+        urlParameters.put("access_token", token);
+        urlParameters.put("chat_id", "1");
+        urlParameters.put("message", message.getBody());
+        JSONObject answer = sendRequest("messages.send", urlParameters);
+        return answer.toString();
     }
 
-    public static void setOnline(String token) {
-        try {
-            HashMap<String, String> urlParameters = new HashMap<>();
-            urlParameters.put("access_token", token);
-            JSONObject answer = sendRequest("account.setOnline", urlParameters);
-            if (answer.getInt("response") != 1)
-                System.out.println("Online status error: " + answer.getInt("response"));
-        } catch (RequestReturnNullException | RequestReturnErrorException e) {
-            e.printStackTrace();
-        }
+    public static void setOnline(String token)
+            throws RequestReturnNullException, RequestReturnErrorException {
+        HashMap<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("access_token", token);
+        JSONObject answer = sendRequest("account.setOnline", urlParameters);
+        if (answer.getInt("response") != 1)
+            System.out.println("Online status error: " + answer.getInt("response"));
     }
 
-    public static void setOffline(String token) {
-        try {
-            HashMap<String, String> urlParameters = new HashMap<>();
-            urlParameters.put("access_token", token);
-            JSONObject answer = sendRequest("account.setOffline", urlParameters);
-            if (answer.getInt("response") != 1)
-                System.out.println("Online status error: " + answer.getInt("response"));
-        } catch (RequestReturnNullException | RequestReturnErrorException e) {
-            e.printStackTrace();
-        }
+    public static void setOffline(String token)
+            throws RequestReturnNullException, RequestReturnErrorException {
+        HashMap<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("access_token", token);
+        JSONObject answer = sendRequest("account.setOffline", urlParameters);
+        if (answer.getInt("response") != 1)
+            System.out.println("Online status error: " + answer.getInt("response"));
     }
 
     /**
