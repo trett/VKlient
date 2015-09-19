@@ -133,42 +133,6 @@ public class Account extends BuddyImpl {
         this.longPollServer = longPollServer;
     }
 
-    //    private void getLongPollConnection() {
-//        HashMap<String, String> longPollServer = VKUtils.getLongPollServer(Account.this.getAccessToken());
-//        if (longPollServer == null)
-//            throw new RuntimeException("Can't get long poll server.");
-//        lpServer = longPollServer.get("server");
-//        lpServerKey = longPollServer.get("key");
-//        ts = longPollServer.get("ts");
-//    }
-//
-//    private void longPollConnection() {
-//        getLongPollConnection();
-//        Timer timer = new Timer();
-//        TimerTask timerTask = new TimerTask() {
-//            @Override
-//            public void run() {
-//                while (onlineStatus != OnlineStatus.OFFLINE) {
-//                    try {
-//                        String answer = VKUtils.getUpdates(lpServer, lpServerKey, ts);
-//                        assert answer != null;
-//                        JSONObject json = new JSONObject(answer);
-//                        if (json.has("failed")) {
-//                            getLongPollConnection();
-//                        } else {
-//                            ts = json.optString("ts");
-//                            JSONArray array = json.getJSONArray("updates");
-//                            UpdatesHandler.update(array, Account.this);
-//                        }
-//                    } catch (RequestReturnNullException e) {
-//                        System.out.println(e.getMessage());
-//                    }
-//                }
-//            }
-//        };
-//        timer.schedule(timerTask, 5000);
-//    }
-
     public Buddy getFriendById(ArrayList<Buddy> friends, int userId) {
         for (Buddy friend : friends) {
             if (friend.getUserId() == userId)
