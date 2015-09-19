@@ -35,7 +35,7 @@ public class Config {
         File configFile = new File("vklient.properties");
         if (!configFile.exists()) {
             try {
-                if(!configFile.createNewFile())
+                if (!configFile.createNewFile())
                     System.out.println("Unable to create config file.");
             } catch (IOException e) {
                 e.printStackTrace();
@@ -53,7 +53,7 @@ public class Config {
         try {
             Properties config = new Properties();
             config.load(new FileInputStream("vklient.properties"));
-            config.put(key, value);
+            config.setProperty(key, value);
             FileOutputStream out = new FileOutputStream("vklient.properties");
             config.store(out, "account settings");
             out.close();
@@ -75,8 +75,30 @@ public class Config {
             return config.getProperty(key);
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
-        return null;
+    }
+
+    /**
+     * Get value of the property if exists or defaultValue
+     *
+     * @param key          Property key
+     * @param defaultValue return this if key not exists
+     * @return String property value
+     */
+    public String getValue(String key, String defaultValue) {
+        try {
+            Properties config = new Properties();
+            config.load(new FileInputStream("vklient.properties"));
+            String value = config.getProperty(key);
+            if (value == null || value.isEmpty())
+                return defaultValue;
+            else
+                return value;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
 }

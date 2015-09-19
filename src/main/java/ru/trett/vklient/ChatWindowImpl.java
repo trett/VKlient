@@ -33,8 +33,8 @@ import java.io.IOException;
 
 public class ChatWindowImpl implements ChatWindow {
 
-    public int userId = 0;
-    public Account account = null;
+    private int userId = 0;
+    private Account account = null;
     private Stage stage;
     private ChatWindowController chatWindowController;
 

@@ -108,7 +108,7 @@ public class VKUtils {
     /**
      * Get messages history
      *
-     * @param account
+     * @param token  Access token
      * @param userId
      * @param count
      * @param rev
@@ -168,10 +168,10 @@ public class VKUtils {
                     query(urlParameters).
                     build();
             String answer = longPollClient.send(request);
-            if(answer == null)
+            if (answer == null)
                 throw new RequestReturnNullException("Long Poll server return null");
             JSONObject obj = new JSONObject(answer);
-            if(obj.has("error"))
+            if (obj.has("error"))
                 throw new RequestReturnErrorException("NetworkClient return error: "
                         + obj.getJSONObject("error").toString());
             return obj;

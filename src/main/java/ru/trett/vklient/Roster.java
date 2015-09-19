@@ -39,46 +39,49 @@ import java.util.Map;
 public class Roster {
 
     private final GridPane root;
-    TreeItem<Buddy> me;
-    Account account;
-    TreeItem<Buddy> friendsNode;
-    TreeView<Buddy> tree;
-    IconLoader iconLoader;
-    ObservableList<TreeItem<Buddy>> friendsModel;
-    boolean showOffline = true;
-    Config config = new Config();
-    UpdatesHandler updatesHandler;
+    private final IconLoader iconLoader;
+    private final Config config = new Config();
+    private TreeItem<Buddy> me;
+    private Account account;
+    private TreeItem<Buddy> friendsNode;
+    private TreeView<Buddy> tree;
+    private ObservableList<TreeItem<Buddy>> friendsModel;
+    private boolean rosterHideOffline = (Boolean.valueOf(
+            config.getValue("rosterHideOffline", Boolean.toString(false))
+    )
+    );
+    private UpdatesHandler updatesHandler;
 
     Roster() {
         root = new GridPane();
-        ColumnConstraints column = new ColumnConstraints(200, 300, Double.MAX_VALUE);
-        column.setHgrow(Priority.ALWAYS);
-        root.getColumnConstraints().add(column);
-        RowConstraints row = new RowConstraints();
-        RowConstraints row2 = new RowConstraints(50, 200, Double.MAX_VALUE);
-        row2.setVgrow(Priority.ALWAYS);
-        RowConstraints row3 = new RowConstraints();
-        root.getRowConstraints().addAll(row, row2, row3);
         final MenuBar mbar = new MenuBar();
         final Menu main = new Menu();
+        final MenuItem quit = new MenuItem("Quit");
+        final CheckMenuItem hideOffline = new CheckMenuItem("Hide Offline");
+        final ComboBox<OnlineStatus> statusBox = new ComboBox<>();
+        final ColumnConstraints column = new ColumnConstraints(200, 300, Double.MAX_VALUE);
+        final RowConstraints row = new RowConstraints();
+        final RowConstraints row2 = new RowConstraints(50, 200, Double.MAX_VALUE);
+        final RowConstraints row3 = new RowConstraints();
+        column.setHgrow(Priority.ALWAYS);
+        root.getColumnConstraints().add(column);
+        row2.setVgrow(Priority.ALWAYS);
+        root.getRowConstraints().addAll(row, row2, row3);
         iconLoader = new IconLoader();
         main.setGraphic(iconLoader.getIcon("vkontakte", 16));
-        final MenuItem quit = new MenuItem("Quit");
         quit.setOnAction((ActionEvent event) -> {
             saveSettings();
             account.setOnlineStatus(OnlineStatus.OFFLINE);
             Platform.exit();
         });
-        final CheckMenuItem checkMenuItem = new CheckMenuItem("Hide Offline");
-        checkMenuItem.setOnAction((ActionEvent event) -> {
-            if (checkMenuItem.isSelected())
+        hideOffline.setOnAction((ActionEvent event) -> {
+            if (hideOffline.isSelected())
                 hideOffline();
             else
                 showOffline();
         });
-        main.getItems().addAll(checkMenuItem, quit);
+        main.getItems().addAll(hideOffline, quit);
         mbar.getMenus().addAll(main);
-        final ComboBox<OnlineStatus> statusBox = new ComboBox<>();
         statusBox.setMinWidth(column.getMinWidth());
         statusBox.setPrefWidth(Double.MAX_VALUE);
         ObservableList<OnlineStatus> status = FXCollections.observableArrayList(OnlineStatus.values());
@@ -95,7 +98,6 @@ public class Roster {
             helper.createAuthWindow();
             helper.isAnswerReceivedProperty().addListener(
                     (ObservableValue<? extends Boolean> answer, Boolean oldAnswer, Boolean newAnswer) -> {
-                        Config config = new Config();
                         Map<String, String> list = helper.getAnswer();
                         config.setValue("access_token", list.get("access_token"));
                         config.setValue("user_id", list.get("user_id"));
@@ -126,10 +128,13 @@ public class Roster {
                     });
                     thread.start();
                 });
-        statusBox.setValue(config.getValue("lastStatus") != null ?
-                        OnlineStatus.valueOf(config.getValue("lastStatus").toUpperCase()) :
-                        OnlineStatus.OFFLINE
+
+        statusBox.setValue(
+                OnlineStatus.valueOf(
+                        config.getValue("lastStatus", OnlineStatus.OFFLINE.name()).toUpperCase()
+                )
         );
+        hideOffline.setSelected(rosterHideOffline);
     }
 
     /**
@@ -167,7 +172,7 @@ public class Roster {
                     (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
                         System.out.println(x.getValue().getFirstName() + " change status to " + newValue.intValue());
                         Platform.runLater(() -> {
-                                    if (showOffline) {
+                                    if (!rosterHideOffline) {
                                         x.getGraphic().setEffect(effect(newValue.intValue()));
                                     } else if (newValue.intValue() == 1) {
                                         friendsNode.getChildren().add(x);
@@ -189,6 +194,8 @@ public class Roster {
                     });
         });
         friendsNode.setExpanded(true);
+        if(rosterHideOffline)
+            hideOffline();
         updateItems();
     }
 
@@ -209,14 +216,14 @@ public class Roster {
     }
 
     private void hideOffline() {
-        showOffline = false;
+        rosterHideOffline = true;
         friendsNode.getChildren().removeIf(
                 buddyTreeItem -> buddyTreeItem.getValue().getOnlineStatus().name().contains("OFFLINE")
         );
     }
 
     private void showOffline() {
-        showOffline = true;
+        rosterHideOffline = false;
         friendsModel.forEach(x -> {
             if (x.getValue().getOnlineStatus().name().contains("OFFLINE"))
                 friendsNode.getChildren().add(x);
@@ -225,6 +232,7 @@ public class Roster {
 
     private void saveSettings() {
         config.setValue("lastStatus", account.getOnlineStatus().name());
+        config.setValue("rosterHideOffline", Boolean.toString(rosterHideOffline));
     }
 
     private void createRootNode() {
