@@ -54,18 +54,7 @@ public class VKUtils {
         urlParameters.put("access_token", token);
         urlParameters.put("fields", "photo_50,online,status");
         JSONObject obj = sendRequest("users.get", urlParameters);
-        JSONArray json = obj.getJSONArray("response");
-        ArrayList<Buddy> buddies = new ArrayList<>();
-        for (int i = 0; i < json.length(); ++i) {
-            Buddy buddy = new BuddyImpl();
-            buddy.setFirstName(json.getJSONObject(i).getString("first_name"));
-            buddy.setLastName(json.getJSONObject(i).getString("last_name"));
-            buddy.setAvatarURL(json.getJSONObject(i).getString("photo_50"));
-            buddy.setOnlineStatus(json.getJSONObject(i).getInt("online") == 1 ? OnlineStatus.ONLINE : OnlineStatus.OFFLINE);
-            buddy.setStatus(json.getJSONObject(i).getString("status"));
-            buddies.add(buddy);
-        }
-        return buddies;
+        return userMapper(obj.getJSONArray("response"));
     }
 
     /**
@@ -82,19 +71,7 @@ public class VKUtils {
         urlParameters.put("access_token", token);
         urlParameters.put("fields", "first_name,last_name,photo_50,online,status");
         JSONObject obj = sendRequest("friends.get", urlParameters).getJSONObject("response");
-        JSONArray json = obj.getJSONArray("items");
-        ArrayList<Buddy> buddies = new ArrayList<>();
-        for (int i = 0; i < json.length(); ++i) {
-            BuddyImpl buddy = new BuddyImpl();
-            buddy.setUserId(json.getJSONObject(i).getInt("id"));
-            buddy.setFirstName(json.getJSONObject(i).getString("first_name"));
-            buddy.setLastName(json.getJSONObject(i).getString("last_name"));
-            buddy.setAvatarURL(json.getJSONObject(i).getString("photo_50"));
-            buddy.setOnlineStatus(json.getJSONObject(i).getInt("online") == 1 ? OnlineStatus.ONLINE : OnlineStatus.OFFLINE);
-            buddy.setStatus(json.getJSONObject(i).getString("status"));
-            buddies.add(buddy);
-        }
-        return buddies;
+        return userMapper(obj.getJSONArray("items"));
     }
 
     /**
@@ -246,7 +223,9 @@ public class VKUtils {
         }
     }
 
-    private static ArrayList<Message> answerToMessages(JSONObject object) {
+    public static ArrayList<Message> answerToMessages(JSONObject object) {
+        if(object == null || !object.has("items"))
+            return null;
         JSONArray array = object.getJSONArray("items");
         ArrayList<Message> messages = new ArrayList<>();
         Date date = new Date();
@@ -270,6 +249,26 @@ public class VKUtils {
         }
         Collections.reverse(messages);
         return messages;
+    }
+
+    public static ArrayList<Buddy> userMapper(JSONArray array) {
+        if (array == null)
+            return null;
+        ArrayList<Buddy> buddies = new ArrayList<>();
+        for (int i = 0; i < array.length(); ++i) {
+            Buddy buddy = new BuddyImpl();
+            if (array.getJSONObject(i).has("id"))
+                buddy.setUserId(array.getJSONObject(i).getInt("id"));
+            buddy.setFirstName(array.getJSONObject(i).getString("first_name"));
+            buddy.setLastName(array.getJSONObject(i).getString("last_name"));
+            buddy.setAvatarURL(array.getJSONObject(i).getString("photo_50"));
+            buddy.setOnlineStatus(array.getJSONObject(i).getInt("online") == 1 ?
+                            OnlineStatus.ONLINE : OnlineStatus.OFFLINE
+            );
+            buddy.setStatus(array.getJSONObject(i).getString("status"));
+            buddies.add(buddy);
+        }
+        return buddies;
     }
 
     public static void abortAllConnections() {
