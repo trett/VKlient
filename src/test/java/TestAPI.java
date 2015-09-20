@@ -33,7 +33,7 @@ import java.util.ArrayList;
  * @author Roman Tretyakov
  * @since 20.09.15
  */
-public class APITests extends Assert {
+public class TestAPI extends Assert {
 
     private final Message m = new Message();
 
