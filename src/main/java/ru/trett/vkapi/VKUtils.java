@@ -137,9 +137,9 @@ public class VKUtils {
             if (answer == null)
                 throw new RequestReturnNullException("Long Poll server return null");
             JSONObject obj = new JSONObject(answer);
-            if (obj.has("error"))
+            if (obj.has("failed"))
                 throw new RequestReturnErrorException("NetworkClient return error: "
-                        + obj.getJSONObject("error").toString());
+                        + obj.getJSONObject("failed").toString());
             return obj;
         } catch (ClientProtocolException e) {
             throw new RequestReturnNullException("Can't get Long Poll server cause: ", e);
