@@ -202,7 +202,7 @@ public class VKUtils {
         return answerToMessages(obj);
     }
 
-    private static JSONObject sendRequest(String vkMethod, HashMap<String, String> urlParameters)
+    public static JSONObject sendRequest(String vkMethod, HashMap<String, String> urlParameters)
             throws RequestReturnNullException, RequestReturnErrorException {
         try {
             urlParameters.put("v", Double.toString(API_VERSION));
@@ -224,8 +224,6 @@ public class VKUtils {
     }
 
     public static ArrayList<Message> answerToMessages(JSONObject object) {
-        if(object == null || !object.has("items"))
-            return null;
         JSONArray array = object.getJSONArray("items");
         ArrayList<Message> messages = new ArrayList<>();
         Date date = new Date();
@@ -252,8 +250,6 @@ public class VKUtils {
     }
 
     public static ArrayList<Buddy> userMapper(JSONArray array) {
-        if (array == null)
-            return null;
         ArrayList<Buddy> buddies = new ArrayList<>();
         for (int i = 0; i < array.length(); ++i) {
             Buddy buddy = new BuddyImpl();

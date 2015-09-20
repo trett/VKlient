@@ -13,9 +13,11 @@
  *
  */
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import ru.trett.vkapi.Buddy;
 import ru.trett.vkapi.Message;
@@ -31,7 +33,9 @@ import java.util.ArrayList;
  * @author Roman Tretyakov
  * @since 20.09.15
  */
-public class VKUtilsTest extends Assert {
+public class APITests extends Assert {
+
+    private final Message m = new Message();
 
     private JSONObject readFile(String fileName) {
         assertNotNull("Test file missing",
@@ -47,11 +51,6 @@ public class VKUtilsTest extends Assert {
             e.printStackTrace();
         }
         return null;
-    }
-
-    @Test
-    public void testUserMapNull() {
-        VKUtils.userMapper(null);
     }
 
     @Test
@@ -80,11 +79,6 @@ public class VKUtilsTest extends Assert {
     }
 
     @Test
-    public void testAnswerToMessagesNull() {
-        VKUtils.answerToMessages(null);
-    }
-
-    @Test
     public void testAnswerToMessagesEmpty() {
         JSONObject json = readFile("emptyMessages.json");
         assert json != null;
@@ -98,6 +92,23 @@ public class VKUtilsTest extends Assert {
         assert json != null;
         ArrayList<Message> messages = VKUtils.answerToMessages(json.getJSONObject("response"));
         assertFalse(messages.size() <= 0);
+    }
+
+    @Before
+    public void testAddEmptyAttachment() {
+        m.addAttachment(new JSONObject("{attachments:[]}"));
+        JSONObject json = readFile("attachments.json");
+        assert json != null;
+        JSONArray array = json.getJSONArray("attachments");
+        for (int i = 0; i < array.length(); ++i) {
+            m.addAttachment(array.getJSONObject(i));
+        }
+    }
+
+    @Test
+    public void testGetAttachments() {
+        assertTrue(m.getAttachments().size() > 0);
+        assertEquals(m.getAttachments().get(0).getPhoto(), "http://vk.com/images/stickers/50/64b.png");
     }
 
 }

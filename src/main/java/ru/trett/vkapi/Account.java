@@ -33,9 +33,6 @@ public class Account extends BuddyImpl {
     private int userId = 0;
     private String accessToken = null;
     private ArrayList<Buddy> friends = null;
-    private String lpServer = null;
-    private String lpServerKey = null;
-    private String ts = null;
     private ScheduledExecutorService scheduledTimer;
     private Runnable stopTimer;
     private OnlineStatus onlineStatus;
