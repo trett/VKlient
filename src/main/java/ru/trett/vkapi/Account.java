@@ -102,7 +102,7 @@ public class Account extends BuddyImpl {
                                 } catch (RequestReturnNullException | RequestReturnErrorException e) {
                                     e.printStackTrace();
                                 }
-                            }, 5, 90, TimeUnit.SECONDS);
+                            }, 5, 900, TimeUnit.SECONDS);
                     stopTimer = new StopOnlineTimer(scheduledFuture);
                     if (friends != null)
                         break;
