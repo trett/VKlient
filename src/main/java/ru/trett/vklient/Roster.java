@@ -89,21 +89,7 @@ public class Roster {
         root.add(mbar, 0, 0);
         root.add(statusBox, 0, 2);
         friendsNode = new TreeItem<>();
-        // check if token is exists & active
-        if (config.getValue("access_token") != null &&
-                Users.get(config.getValue("access_token")) > 0) {
-            createRootNode();
-        } else {
-            AuthHelper helper = new AuthHelper();
-            helper.createAuthWindow();
-            helper.isAnswerReceivedProperty().addListener(
-                    (ObservableValue<? extends Boolean> answer, Boolean oldAnswer, Boolean newAnswer) -> {
-                        Map<String, String> list = helper.getAnswer();
-                        config.setValue("access_token", list.get("access_token"));
-                        config.setValue("user_id", list.get("user_id"));
-                        createRootNode();
-                    });
-        }
+        createRootNode();
         statusBox.valueProperty().addListener(
                 (ObservableValue<? extends OnlineStatus> observable, OnlineStatus oldStatus, OnlineStatus newStatus) -> {
                     Thread thread = new Thread(() -> {
@@ -193,7 +179,7 @@ public class Roster {
                         updateItems();
                     });
         });
-        Platform.runLater(()-> friendsNode.setExpanded(true));
+        Platform.runLater(() -> friendsNode.setExpanded(true));
         if (rosterHideOffline)
             hideOffline();
         updateItems();
@@ -237,10 +223,24 @@ public class Roster {
 
     private void createRootNode() {
         account = new Account();
-        account.setUserId(Integer.parseInt(config.getValue("user_id")));
-        account.setAccessToken(config.getValue("access_token"));
-        account.create();
-        addAccount(account);
+        if (config.getValue("access_token") != null &&
+                Users.get(config.getValue("access_token")) > 0) {
+            account.setUserId(Integer.parseInt(config.getValue("user_id")));
+            account.setAccessToken(config.getValue("access_token"));
+            account.create();
+            addAccount(account);
+        } else {
+            account.getAuthHelper();
+            account.authFinishedProperty().addListener(
+                    (ObservableValue<? extends Boolean> observable, Boolean notFinished, Boolean finished) -> {
+                        if (finished) {
+                            config.setValue("access_token", account.getAccessToken());
+                            config.setValue("user_id", Integer.toString(account.getUserId()));
+                            account.create();
+                            addAccount(account);
+                        }
+                    });
+        }
     }
 
     private final class BuddyCellFactoryImpl extends TreeCell<Buddy> {
@@ -250,9 +250,9 @@ public class Roster {
 
         BuddyCellFactoryImpl() {
             setPrefWidth(150);
-            MenuItem addMenuItem = new MenuItem("Send Message");
-            addMenu.getItems().add(addMenuItem);
             setTextOverrun(OverrunStyle.WORD_ELLIPSIS);
+//            MenuItem addMenuItem = new MenuItem("Something");
+//            addMenu.getItems().add(addMenuItem);
 //            addMenuItem.setOnAction(new EventHandler() {
 //                public void handle(Event t) {
 //

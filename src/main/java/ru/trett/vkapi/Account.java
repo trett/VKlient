@@ -15,11 +15,15 @@
 
 package ru.trett.vkapi;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
 import org.json.JSONObject;
 
+import javax.print.DocFlavor;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -39,6 +43,7 @@ public class Account extends BuddyImpl {
     private Runnable stopTimer;
     private OnlineStatus onlineStatus;
     private LongPollServer longPollServer;
+    public BooleanProperty authFinished = new SimpleBooleanProperty(false);
 
     public void create() {
         ArrayList<Buddy> buddies = null;
@@ -160,7 +165,19 @@ public class Account extends BuddyImpl {
         return null;
     }
 
-    public void setOnline()
+    public boolean getAuthFinished() {
+        return authFinished.get();
+    }
+
+    public BooleanProperty authFinishedProperty() {
+        return authFinished;
+    }
+
+    public void setAuthFinished(boolean authFinished) {
+        this.authFinished.set(authFinished);
+    }
+
+    private void setOnline()
             throws RequestReturnNullException, RequestReturnErrorException {
         HashMap<String, String> urlParameters = new HashMap<>();
         urlParameters.put("access_token", getAccessToken());
@@ -169,7 +186,7 @@ public class Account extends BuddyImpl {
             System.out.println("Online status error: " + answer.getInt("response"));
     }
 
-    public void setOffline()
+    private void setOffline()
             throws RequestReturnNullException, RequestReturnErrorException {
         HashMap<String, String> urlParameters = new HashMap<>();
         urlParameters.put("access_token", getAccessToken());
@@ -215,6 +232,18 @@ public class Account extends BuddyImpl {
         urlParameters.put("message_ids", Integer.toString(messageId));
         JSONObject obj = NetworkHelper.sendRequest("messages.getById", urlParameters).getJSONObject("response");
         return new MessageMapper().map(obj);
+    }
+
+    public void getAuthHelper() {
+        AuthHelper helper = new AuthHelper();
+        helper.createAuthWindow();
+        helper.isAnswerReceivedProperty().addListener(
+                (ObservableValue<? extends Boolean> answer, Boolean oldAnswer, Boolean newAnswer) -> {
+                    Map<String, String> list = helper.getAnswer();
+                    this.accessToken = list.get("access_token");
+                    this.userId = Integer.parseInt(list.get("user_id"));
+                    setAuthFinished(true);
+                });
     }
 
     private final class StopOnlineTimer implements Runnable {
