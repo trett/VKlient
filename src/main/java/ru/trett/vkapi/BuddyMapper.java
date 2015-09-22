@@ -28,7 +28,7 @@ public class BuddyMapper {
     public ArrayList<Buddy> map(JSONArray array) {
         ArrayList<Buddy> buddies = new ArrayList<>();
         for (int i = 0; i < array.length(); ++i) {
-            Buddy buddy = new BuddyImpl();
+            Buddy buddy = new Buddy();
             if (array.getJSONObject(i).has("id"))
                 buddy.setUserId(array.getJSONObject(i).getInt("id"));
             buddy.setFirstName(array.getJSONObject(i).getString("first_name"));

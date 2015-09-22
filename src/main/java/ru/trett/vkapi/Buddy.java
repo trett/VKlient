@@ -16,76 +16,112 @@
 package ru.trett.vkapi;
 
 import javafx.beans.property.IntegerProperty;
-
+import javafx.beans.property.SimpleIntegerProperty;
 
 /**
  * @author Roman Tretyakov
  * @since 15.08.2015
  */
 
-/**
- * Contains info about all Users
- */
-public interface Buddy {
+public class Buddy {
+
+    private int userId = 0;
+    private String firstName = "";
+    private String lastName = "";
+    private String avatarURL = "";
+    private OnlineStatus onlineStatus = OnlineStatus.OFFLINE;
+    private String status = "";
+    private IntegerProperty onlineStatusProperty = new SimpleIntegerProperty();
+    private IntegerProperty newMessages = new SimpleIntegerProperty();
+
+    public final int getOnlineStatusProperty() {
+        return onlineStatusProperty.get();
+    }
+
+    public final void setOnlineStatusProperty(int onlineStatusProperty) {
+        this.onlineStatusProperty.set(onlineStatusProperty);
+    }
+
+    public IntegerProperty onlineStatusProperty() {
+        return onlineStatusProperty;
+    }
 
     /**
      * Return user_id
      *
      * @return int user_id
      */
-    int getUserId();
+    public int getUserId() {
+        return userId;
+    }
 
     /**
      * Set user_id
      *
      * @param userId int user_id
      */
-    void setUserId(int userId);
+    public void setUserId(int userId) {
+        this.userId = userId;
+    }
 
     /**
      * @return String Buddy last name
      */
-    String getLastName();
+    public String getLastName() {
+        return lastName;
+    }
 
     /**
      * Sets Buddy last name
      *
      * @param lastName String last name
      */
-    void setLastName(String lastName);
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
 
     /**
      * @return String first name
      */
-    String getFirstName();
+    public String getFirstName() {
+        return firstName;
+    }
 
     /**
      * Sets Buddy last name
      *
      * @param firstName String first name
      */
-    void setFirstName(String firstName);
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
 
     /**
      * Return URL contains avatar
      *
      * @return URL with avatar Image
      */
-    String getAvatarURL();
+    public String getAvatarURL() {
+        return avatarURL;
+    }
 
     /**
      * Sets avatar location
      *
      * @param avatarURL String location
      */
-    void setAvatarURL(String avatarURL);
+    public void setAvatarURL(String avatarURL) {
+        this.avatarURL = avatarURL;
+    }
 
     /**
      * Return online status
      *
      * @return String "online" or "offline"
      */
-    OnlineStatus getOnlineStatus();
+    public OnlineStatus getOnlineStatus() {
+        return onlineStatus;
+    }
 
     /**
      * Sets online status <br>
@@ -93,31 +129,33 @@ public interface Buddy {
      *
      * @param onlineStatus int
      */
-    void setOnlineStatus(OnlineStatus onlineStatus);
+    public void setOnlineStatus(OnlineStatus onlineStatus) {
+        this.setOnlineStatusProperty(onlineStatus.ordinal());
+        this.onlineStatus = onlineStatus;
+    }
 
     /**
      * @return String status
      */
-    String getStatus();
+    public String getStatus() {
+        return status;
+    }
 
-    /**
-     * Sets status
-     *
-     * @param status String status
-     */
-    void setStatus(String status);
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-    int getOnlineStatusProperty();
+    public int getNewMessages() {
+        return newMessages.get();
+    }
 
-    void setOnlineStatusProperty(int onlineStatusProperty);
+    public void setNewMessages(int newMessages) {
+        this.newMessages.set(newMessages);
+    }
 
-    IntegerProperty onlineStatusProperty();
-
-    int getNewMessages();
-
-    void setNewMessages(int newMessages);
-
-    IntegerProperty newMessagesProperty();
+    public IntegerProperty newMessagesProperty() {
+        return newMessages;
+    }
 
     /**
      * Sort by online status
@@ -125,6 +163,14 @@ public interface Buddy {
      * @param b Buddy
      * @return int
      */
-    int compareTo(Buddy b);
+    public int compareTo(Buddy b) {
+        if (this.getOnlineStatusProperty() > b.getOnlineStatusProperty()) {
+            return -1;
+        } else if (this.getOnlineStatusProperty() < b.getOnlineStatusProperty()) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
 
 }

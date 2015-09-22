@@ -20,7 +20,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
 import org.json.JSONObject;
 
-import javax.print.DocFlavor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,9 +33,8 @@ import java.util.concurrent.TimeUnit;
  * @since 15.08.2015
  */
 
-public class Account extends BuddyImpl {
-
-    private int userId = 0;
+public class Account extends Buddy {
+    
     private String accessToken = null;
     private ArrayList<Buddy> friends = null;
     private ScheduledExecutorService scheduledTimer;
@@ -49,7 +47,7 @@ public class Account extends BuddyImpl {
         ArrayList<Buddy> buddies = null;
         try {
             buddies = Users.get(new ArrayList<Integer>() {{
-                add(userId);
+                add(getUserId());
             }}, accessToken);
         } catch (RequestReturnNullException | RequestReturnErrorException e) {
             e.printStackTrace();
@@ -70,16 +68,6 @@ public class Account extends BuddyImpl {
         } else {
             throw new RuntimeException("Impossible to create Account");
         }
-    }
-
-    @Override
-    public int getUserId() {
-        return userId;
-    }
-
-    @Override
-    public void setUserId(int userId) {
-        this.userId = userId;
     }
 
     @Override
@@ -139,7 +127,7 @@ public class Account extends BuddyImpl {
 
     public void setFriends() {
         try {
-            friends = Friends.get(userId, accessToken);
+            friends = Friends.get(getUserId(), accessToken);
         } catch (RequestReturnNullException | RequestReturnErrorException e) {
             e.printStackTrace();
         }
@@ -241,7 +229,7 @@ public class Account extends BuddyImpl {
                 (ObservableValue<? extends Boolean> answer, Boolean oldAnswer, Boolean newAnswer) -> {
                     Map<String, String> list = helper.getAnswer();
                     this.accessToken = list.get("access_token");
-                    this.userId = Integer.parseInt(list.get("user_id"));
+                    setUserId(Integer.parseInt(list.get("user_id")));
                     setAuthFinished(true);
                 });
     }
