@@ -6,7 +6,7 @@
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
  *
- * This library is distributed in the hope that it will be useful,
+ * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
@@ -101,7 +101,7 @@ public class ChatWindowController {
                     m.setBody(area.getText().replaceAll("<br>", "&lt;br&gt;"));
                     m.setDirection("out");
                     try {
-                        String messageId = VKUtils.sendMessage(account.getAccessToken(), userId, m);
+                        String messageId = account.sendMessage(userId, m);
                     } catch (RequestReturnNullException | RequestReturnErrorException e) {
                         e.printStackTrace();
                     }
@@ -115,7 +115,7 @@ public class ChatWindowController {
     private void showHistory() {
         ArrayList<Message> messages = null;
         try {
-            messages = VKUtils.getMessagesHistory(account.getAccessToken(), userId, 50, 0);
+            messages = account.getMessagesHistory(userId, 50, 0);
         } catch (RequestReturnNullException | RequestReturnErrorException e) {
             e.printStackTrace();
         }

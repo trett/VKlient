@@ -6,7 +6,7 @@
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
  *
- * This library is distributed in the hope that it will be useful,
+ * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
@@ -91,7 +91,7 @@ public class Roster {
         friendsNode = new TreeItem<>();
         // check if token is exists & active
         if (config.getValue("access_token") != null &&
-                VKUtils.getUsers(config.getValue("access_token")) > 0) {
+                Users.get(config.getValue("access_token")) > 0) {
             createRootNode();
         } else {
             AuthHelper helper = new AuthHelper();
@@ -105,9 +105,9 @@ public class Roster {
                     });
         }
         statusBox.valueProperty().addListener(
-                (ObservableValue<? extends OnlineStatus> observable, OnlineStatus oldValue, OnlineStatus newValue) -> {
+                (ObservableValue<? extends OnlineStatus> observable, OnlineStatus oldStatus, OnlineStatus newStatus) -> {
                     Thread thread = new Thread(() -> {
-                        switch (newValue) {
+                        switch (newStatus) {
                             case ONLINE:
                                 account.setOnlineStatus(OnlineStatus.ONLINE);
                                 if (updatesHandler == null)
@@ -117,7 +117,7 @@ public class Roster {
                                 break;
                             case OFFLINE:
                                 account.setOnlineStatus(OnlineStatus.OFFLINE);
-                                friendsNode.getChildren().removeAll(friendsNode.getChildren());
+                                Platform.runLater(() -> friendsNode.getChildren().removeAll(friendsNode.getChildren()));
                                 break;
                             case INVISIBLE:
                                 account.setOnlineStatus(OnlineStatus.INVISIBLE);
@@ -169,12 +169,12 @@ public class Roster {
         friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue()));
         friendsNode.getChildren().forEach(x -> {
             x.getValue().onlineStatusProperty().addListener(
-                    (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-                        System.out.println(x.getValue().getFirstName() + " change status to " + newValue.intValue());
+                    (ObservableValue<? extends Number> observable, Number oldStatus, Number newStatus) -> {
+                        System.out.println(x.getValue().getFirstName() + " change status to " + newStatus.intValue());
                         Platform.runLater(() -> {
                                     if (!rosterHideOffline) {
-                                        x.getGraphic().setEffect(effect(newValue.intValue()));
-                                    } else if (newValue.intValue() == 1) {
+                                        x.getGraphic().setEffect(effect(newStatus.intValue()));
+                                    } else if (newStatus.intValue() == 1) {
                                         friendsNode.getChildren().add(x);
                                     } else {
                                         friendsNode.getChildren().remove(x);
@@ -193,8 +193,8 @@ public class Roster {
                         updateItems();
                     });
         });
-        friendsNode.setExpanded(true);
-        if(rosterHideOffline)
+        Platform.runLater(()-> friendsNode.setExpanded(true));
+        if (rosterHideOffline)
             hideOffline();
         updateItems();
     }

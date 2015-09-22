@@ -6,7 +6,7 @@
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
  *
- * This library is distributed in the hope that it will be useful,
+ * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
@@ -16,8 +16,10 @@
 package ru.trett.vkapi;
 
 import javafx.beans.value.ObservableValue;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -41,7 +43,7 @@ public class Account extends BuddyImpl {
     public void create() {
         ArrayList<Buddy> buddies = null;
         try {
-            buddies = VKUtils.getUsers(new ArrayList<Integer>() {{
+            buddies = Users.get(new ArrayList<Integer>() {{
                 add(userId);
             }}, accessToken);
         } catch (RequestReturnNullException | RequestReturnErrorException e) {
@@ -54,9 +56,9 @@ public class Account extends BuddyImpl {
             setStatus(buddy.getStatus());
             setAvatarURL(buddy.getAvatarURL());
             onlineStatusProperty().addListener(
-                    (ObservableValue<? extends Number> observable, Number oldValue, Number newValue) -> {
-                        System.out.println("Account change state to " + newValue.intValue());
-                        if (newValue.intValue() == 1) {
+                    (ObservableValue<? extends Number> observable, Number oldStatus, Number newStatus) -> {
+                        System.out.println("Account change state to " + newStatus.intValue());
+                        if (newStatus.intValue() == 1) {
                             longPollServer = new LongPollServer(this);
                         }
                     });
@@ -91,7 +93,7 @@ public class Account extends BuddyImpl {
                     ScheduledFuture<?> scheduledFuture = scheduledTimer.scheduleAtFixedRate(
                             () -> {
                                 try {
-                                    VKUtils.setOnline(Account.this.getAccessToken());
+                                    setOnline();
                                 } catch (RequestReturnNullException | RequestReturnErrorException e) {
                                     e.printStackTrace();
                                 }
@@ -103,16 +105,18 @@ public class Account extends BuddyImpl {
                     break;
                 case OFFLINE:
                     setOnlineStatusProperty(OnlineStatus.OFFLINE.ordinal());
-                    VKUtils.setOffline(getAccessToken());
-                    if (scheduledTimer != null)
+                    setOffline();
+                    if (scheduledTimer != null && !scheduledTimer.isShutdown())
                         scheduledTimer.submit(stopTimer);
-                    VKUtils.abortAllConnections();
+                    if (longPollServer != null)
+                        longPollServer.close();
+                    NetworkHelper.close();
                     break;
                 case INVISIBLE:
                     setOnlineStatusProperty(OnlineStatus.ONLINE.ordinal());
-                    if (scheduledTimer != null)
+                    if (scheduledTimer != null && !scheduledTimer.isShutdown())
                         scheduledTimer.submit(stopTimer);
-                    VKUtils.setOffline(getAccessToken());
+                    setOffline();
                     break;
             }
         } catch (RequestReturnNullException | RequestReturnErrorException e) {
@@ -130,7 +134,7 @@ public class Account extends BuddyImpl {
 
     public void setFriends() {
         try {
-            friends = VKUtils.getFriends(userId, accessToken);
+            friends = Friends.get(userId, accessToken);
         } catch (RequestReturnNullException | RequestReturnErrorException e) {
             e.printStackTrace();
         }
@@ -154,6 +158,63 @@ public class Account extends BuddyImpl {
                 return friend;
         }
         return null;
+    }
+
+    public void setOnline()
+            throws RequestReturnNullException, RequestReturnErrorException {
+        HashMap<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("access_token", getAccessToken());
+        JSONObject answer = NetworkHelper.sendRequest("account.setOnline", urlParameters);
+        if (answer.getInt("response") != 1)
+            System.out.println("Online status error: " + answer.getInt("response"));
+    }
+
+    public void setOffline()
+            throws RequestReturnNullException, RequestReturnErrorException {
+        HashMap<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("access_token", getAccessToken());
+        JSONObject answer = NetworkHelper.sendRequest("account.setOffline", urlParameters);
+        if (answer.getInt("response") != 1)
+            System.out.println("Online status error: " + answer.getInt("response"));
+    }
+
+    public String sendMessage(int userId, Message message)
+            throws RequestReturnNullException, RequestReturnErrorException {
+        HashMap<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("user_id", Integer.toString(userId));
+        urlParameters.put("access_token", getAccessToken());
+        urlParameters.put("chat_id", "1");
+        urlParameters.put("message", message.getBody());
+        JSONObject answer = NetworkHelper.sendRequest("messages.send", urlParameters);
+        return answer.toString();
+    }
+
+    /**
+     * Get messages history
+     *
+     * @param userId
+     * @param count
+     * @param rev
+     * @return ArrayList Messages
+     */
+    public ArrayList<Message> getMessagesHistory(int userId, int count, int rev)
+            throws RequestReturnNullException, RequestReturnErrorException {
+        HashMap<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("access_token", getAccessToken());
+        urlParameters.put("count", Integer.toString(count));
+        urlParameters.put("user_id", Integer.toString(userId));
+        urlParameters.put("rev", Integer.toString(rev));
+        JSONObject obj = NetworkHelper.sendRequest("messages.getHistory", urlParameters).getJSONObject("response");
+        return new MessageMapper().map(obj);
+    }
+
+    public ArrayList<Message> getMessagesById(int messageId)
+            throws RequestReturnNullException, RequestReturnErrorException {
+        HashMap<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("access_token", getAccessToken());
+        urlParameters.put("message_ids", Integer.toString(messageId));
+        JSONObject obj = NetworkHelper.sendRequest("messages.getById", urlParameters).getJSONObject("response");
+        return new MessageMapper().map(obj);
     }
 
     private final class StopOnlineTimer implements Runnable {

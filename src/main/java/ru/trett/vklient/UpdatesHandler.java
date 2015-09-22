@@ -6,7 +6,7 @@
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
  *
- * This library is distributed in the hope that it will be useful,
+ * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
@@ -41,12 +41,10 @@ public class UpdatesHandler {
 
     UpdatesHandler(Account account) {
         this.account = account;
-        account.getLongPollServer().haveUpdatesProperty().addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
-                if (newValue)
+        account.getLongPollServer().haveUpdatesProperty().addListener(
+                (ObservableValue<? extends Boolean> observable, Boolean noUpdates, Boolean haveUpdates) -> {
+                if (haveUpdates)
                     update(account.getLongPollServer().getUpdates());
-            }
         });
     }
 
@@ -74,7 +72,7 @@ public class UpdatesHandler {
                         if (!new JSONObject(list.get(7).toString()).isNull("attach1")) {
                             ArrayList<Message> messages = null;
                             try {
-                                messages = VKUtils.getMessagesById(account.getAccessToken(), (int) list.get(1));
+                                messages = account.getMessagesById((int) list.get(1));
                             } catch (RequestReturnNullException | RequestReturnErrorException e) {
                                 e.printStackTrace();
                             }

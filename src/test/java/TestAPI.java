@@ -6,7 +6,7 @@
  * (LGPL) version 2.1 which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/lgpl-2.1.html
  *
- * This library is distributed in the hope that it will be useful,
+ * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * Lesser General Public License for more details.
@@ -19,9 +19,7 @@ import org.json.simple.parser.JSONParser;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import ru.trett.vkapi.Buddy;
-import ru.trett.vkapi.Message;
-import ru.trett.vkapi.VKUtils;
+import ru.trett.vkapi.*;
 
 import java.io.FileReader;
 import java.net.URL;
@@ -57,7 +55,7 @@ public class TestAPI extends Assert {
     public void testUsersMapEmpty() {
         JSONObject json = readFile("empty.json");
         assert json != null;
-        ArrayList<Buddy> buddies = VKUtils.userMapper(json.getJSONArray("items"));
+        ArrayList<Buddy> buddies = new BuddyMapper().map(json.getJSONArray("items"));
         assertTrue(buddies.isEmpty());
     }
 
@@ -65,7 +63,7 @@ public class TestAPI extends Assert {
     public void testUsersMapUsersGet() {
         JSONObject json = readFile("usersget.json");
         assert json != null;
-        ArrayList<Buddy> buddies = VKUtils.userMapper(json.getJSONArray("response"));
+        ArrayList<Buddy> buddies = new BuddyMapper().map(json.getJSONArray("response"));
         assertFalse(buddies.size() <= 0);
     }
 
@@ -74,7 +72,7 @@ public class TestAPI extends Assert {
         JSONObject obj = readFile("friendsget.json");
         assert obj != null;
         JSONObject json = obj.getJSONObject("response");
-        ArrayList<Buddy> buddies = VKUtils.userMapper(json.getJSONArray("items"));
+        ArrayList<Buddy> buddies = new BuddyMapper().map(json.getJSONArray("items"));
         assertFalse(buddies.size() <= 0);
     }
 
@@ -82,7 +80,7 @@ public class TestAPI extends Assert {
     public void testAnswerToMessagesEmpty() {
         JSONObject json = readFile("emptyMessages.json");
         assert json != null;
-        ArrayList<Message> messages = VKUtils.answerToMessages(json.getJSONObject("response"));
+        ArrayList<Message> messages = new MessageMapper().map(json.getJSONObject("response"));
         assertTrue(messages.isEmpty());
     }
 
@@ -90,7 +88,7 @@ public class TestAPI extends Assert {
     public void testAnswerToMessagesMessagesGet() {
         JSONObject json = readFile("messagesHistory.json");
         assert json != null;
-        ArrayList<Message> messages = VKUtils.answerToMessages(json.getJSONObject("response"));
+        ArrayList<Message> messages = new MessageMapper().map(json.getJSONObject("response"));
         assertFalse(messages.size() <= 0);
     }
 
