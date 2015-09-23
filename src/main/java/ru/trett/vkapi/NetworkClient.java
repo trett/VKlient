@@ -34,7 +34,6 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONObject;
 
 import javax.net.ssl.SSLException;
 import java.io.IOException;
@@ -42,7 +41,6 @@ import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -54,7 +52,7 @@ public class NetworkClient {
 
     private RequestConfig requestConfig;
     private HttpRequestRetryHandler customRetryHandler;
-    private CloseableHttpClient httpclient;
+    private CloseableHttpClient httpClient;
     private CloseableHttpResponse httpResponse;
 
     NetworkClient(int timeout) {
@@ -100,9 +98,15 @@ public class NetworkClient {
                 build();
     }
 
+    /**
+     * Send Post Request to https
+     * @param request Request
+     * @return String answer
+     * @throws ClientProtocolException
+     */
     public String send(Request request)
             throws ClientProtocolException {
-        httpclient = HttpClients.custom().
+        httpClient = HttpClients.custom().
                 setRetryHandler(customRetryHandler).
                 setDefaultRequestConfig(requestConfig).
                 build();
@@ -118,9 +122,9 @@ public class NetworkClient {
             httpPost.setEntity(new UrlEncodedFormEntity(list, "UTF-8"));
             ResponseHandler<String> responseHandler = new BasicResponseHandler();
             System.out.println("Executing request " + httpPost.getRequestLine());
-            httpResponse = httpclient.execute(httpPost);
+            httpResponse = httpClient.execute(httpPost);
             String responseBody = responseHandler.handleResponse(httpResponse);
-            httpclient.close();
+            httpClient.close();
             System.out.println(responseBody);
             return responseBody;
         } catch (IOException | URISyntaxException e) {
@@ -135,8 +139,8 @@ public class NetworkClient {
         try {
             if (httpResponse != null)
                 httpResponse.close();
-            if (httpclient != null)
-                httpclient.close();
+            if (httpClient != null)
+                httpClient.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

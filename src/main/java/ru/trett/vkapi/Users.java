@@ -16,6 +16,9 @@
 package ru.trett.vkapi;
 
 import org.json.JSONObject;
+import ru.trett.vkapi.Exceptions.RequestReturnErrorException;
+import ru.trett.vkapi.Exceptions.RequestReturnNullException;
+import ru.trett.vkapi.Exceptions.TokenErrorException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,35 +35,38 @@ public class Users {
      * Get users by id
      *
      * @param userIds List of Integer ids
-     * @param token   String
+     * @param token   String access_token
      * @return ArrayList buddies
      */
-    public static ArrayList<Buddy> get(List<Integer> userIds, String token)
-            throws RequestReturnNullException, RequestReturnErrorException {
+    public static ArrayList<Buddy> get(List<Integer> userIds, String token) {
         HashMap<String, String> urlParameters = new HashMap<>();
-        String ids = userIds.stream().map(x -> x.toString()).collect(Collectors.joining(","));
+        String ids = userIds.stream().map(Object::toString).collect(Collectors.joining(","));
         urlParameters.put("user_ids", ids);
         urlParameters.put("access_token", token);
         urlParameters.put("fields", "photo_50,online,status");
-        JSONObject obj = NetworkHelper.sendRequest("users.get", urlParameters);
-        return new BuddyMapper().map(obj.getJSONArray("response"));
+        try {
+            JSONObject obj = NetworkHelper.sendRequest("users.get", urlParameters);
+            return new BuddyMapper().map(obj.getJSONArray("response"));
+        } catch (RequestReturnNullException | RequestReturnErrorException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     /**
      * Return user_id for given token
      *
-     * @param token
-     * @return int user_id or 0 if token wrong
+     * @param token String access_token
+     * @return int user_id
      */
-    public static int get(String token) {
+    public static int get(String token) throws TokenErrorException, RequestReturnNullException {
+        HashMap<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("access_token", token);
         try {
-            HashMap<String, String> urlParameters = new HashMap<>();
-            urlParameters.put("access_token", token);
             JSONObject json = NetworkHelper.sendRequest("users.get", urlParameters);
             return json.getJSONArray("response").getJSONObject(0).getInt("id");
-        } catch (RequestReturnNullException | RequestReturnErrorException e) {
-            e.printStackTrace();
-            return 0;
+        } catch (RequestReturnErrorException e) {
+            throw new TokenErrorException("Token error");
         }
     }
 

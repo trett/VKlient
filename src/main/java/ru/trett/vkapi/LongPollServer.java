@@ -20,6 +20,8 @@ import javafx.beans.property.SimpleBooleanProperty;
 import org.apache.http.client.ClientProtocolException;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import ru.trett.vkapi.Exceptions.RequestReturnErrorException;
+import ru.trett.vkapi.Exceptions.RequestReturnNullException;
 
 import java.util.HashMap;
 import java.util.Timer;
@@ -31,18 +33,26 @@ import java.util.TimerTask;
  */
 public class LongPollServer {
 
+    private final String API_VERSION = "5.37";
     public BooleanProperty haveUpdates = new SimpleBooleanProperty(false);
+    public BooleanProperty isOnline = new SimpleBooleanProperty(false);
     private String lpServer = null;
     private String lpServerKey = null;
     private String ts = null;
-    private JSONArray updates;
+    private JSONArray data;
     private NetworkClient networkClient;
     private Request request;
-    private final String API_VERSION = "5.37";
-    private NetworkClient longPollClient;
+    private NetworkClient longPollClient = new NetworkClient(26000);
+    private Account account;
 
     public LongPollServer(Account account) {
         networkClient = new NetworkClient(5000);
+        this.account = account;
+        System.out.println("Long Poll Created");
+    }
+
+    public void start() {
+        System.out.println("Long Poll Started");
         HashMap<String, String> urlParameters = new HashMap<>();
         urlParameters.put("access_token", account.getAccessToken());
         urlParameters.put("v", API_VERSION);
@@ -56,16 +66,19 @@ public class LongPollServer {
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                while (account.getOnlineStatus() != OnlineStatus.OFFLINE) {
+                while (isOnline.getValue()) {
                     setHaveUpdates(false);
                     try {
                         JSONObject json = getUpdates(lpServer, lpServerKey, ts);
                         ts = json.optString("ts");
-                        updates = json.getJSONArray("updates");
-                        if (updates.length() > 0)
+                        data = json.getJSONArray("updates");
+                        if (data.length() > 0)
                             setHaveUpdates(true);
                     } catch (RequestReturnNullException e) {
+                        stop();
                         System.out.println(e.getMessage());
+                        setIsOnline(false);
+                        return;
                     } catch (RequestReturnErrorException e) {
                         getLongPollConnection();
                     }
@@ -87,12 +100,12 @@ public class LongPollServer {
         return haveUpdates;
     }
 
-    public JSONArray getUpdates() {
-        return updates;
+    public JSONArray getData() {
+        return data;
     }
 
-    public void setUpdates(JSONArray updates) {
-        this.updates = updates;
+    public void setData(JSONArray data) {
+        this.data = data;
     }
 
     private void getLongPollConnection() {
@@ -103,7 +116,7 @@ public class LongPollServer {
             lpServer = obj.getJSONObject("response").getString("server");
             lpServerKey = obj.getJSONObject("response").getString("key");
             ts = Integer.toString(obj.getJSONObject("response").getInt("ts"));
-            longPollClient = new NetworkClient(26000);
+            setIsOnline(true);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -135,8 +148,20 @@ public class LongPollServer {
         }
     }
 
-    public void close() {
+    public void stop() {
         longPollClient.abort();
+        setIsOnline(false);
     }
 
+    public boolean getIstOnline() {
+        return isOnline.get();
+    }
+
+    public BooleanProperty isOnlineProperty() {
+        return isOnline;
+    }
+
+    public void setIsOnline(boolean online) {
+        this.isOnline.set(online);
+    }
 }

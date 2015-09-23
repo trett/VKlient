@@ -25,6 +25,11 @@ import java.util.ArrayList;
  */
 public class BuddyMapper {
 
+    /**
+     * Map JSONArray to ArrayList&lt;Buddy&gt;
+     * @param array JSONArray
+     * @return ArrayList&lt;Buddy&gt;
+     */
     public ArrayList<Buddy> map(JSONArray array) {
         ArrayList<Buddy> buddies = new ArrayList<>();
         for (int i = 0; i < array.length(); ++i) {

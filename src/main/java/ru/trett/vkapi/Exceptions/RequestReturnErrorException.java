@@ -13,7 +13,7 @@
  *
  */
 
-package ru.trett.vkapi;
+package ru.trett.vkapi.Exceptions;
 
 /**
  * @author Roman Tretyakov

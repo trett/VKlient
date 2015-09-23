@@ -141,6 +141,10 @@ public class Buddy {
         return status;
     }
 
+    /**
+     * Sets Status text
+     * @param status String Status text
+     */
     public void setStatus(String status) {
         this.status = status;
     }

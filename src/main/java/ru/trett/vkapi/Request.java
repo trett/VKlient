@@ -44,7 +44,6 @@ class RequestBuilder {
     private String _host;
     private String _path = "";
     private HashMap<String, String> _query;
-    private int _timeout = 5000;
 
     public RequestBuilder() {
     }

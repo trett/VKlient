@@ -16,12 +16,11 @@
 package ru.trett.vkapi;
 
 import org.apache.http.client.ClientProtocolException;
-import org.json.JSONArray;
 import org.json.JSONObject;
+import ru.trett.vkapi.Exceptions.RequestReturnErrorException;
+import ru.trett.vkapi.Exceptions.RequestReturnNullException;
 
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.HashMap;
 
 /**
  * @author Roman Tretyakov
@@ -36,6 +35,7 @@ public class NetworkHelper {
         networkClient = new NetworkClient(5000);
     }
 
+
     public static JSONObject sendRequest(String vkMethod, HashMap<String, String> urlParameters)
             throws RequestReturnNullException, RequestReturnErrorException {
         try {
@@ -48,7 +48,7 @@ public class NetworkHelper {
             JSONObject receivedAnswer = new JSONObject(str);
             if (receivedAnswer.has("error")) {
                 throw new RequestReturnErrorException(
-                        "NetworkClient return error: " + receivedAnswer.getJSONObject("error").toString());
+                        "NetworkClient return error: " + receivedAnswer.getJSONObject("error").getString("error_msg"));
             }
             System.out.println(urlParameters); //debug output
             return receivedAnswer;
