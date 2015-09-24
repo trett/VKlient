@@ -99,7 +99,6 @@ public class Account extends Buddy {
                 if (scheduledTimer != null && !scheduledTimer.isShutdown())
                     scheduledTimer.submit(stopTimer);
                 longPollServer.stop();
-                NetworkHelper.close();
                 getBuddyChange().setState(OnlineStatus.OFFLINE);
                 break;
             case INVISIBLE:
@@ -183,6 +182,7 @@ public class Account extends Buddy {
             JSONObject answer = NetworkHelper.sendRequest("account.setOffline", urlParameters);
             if (answer.getInt("response") != 1)
                 System.out.println("Online status error: " + answer.getInt("response"));
+            NetworkHelper.close();
         } catch (RequestReturnErrorException e) {
             System.out.println(e.getMessage());
         } catch (RequestReturnNullException e) {

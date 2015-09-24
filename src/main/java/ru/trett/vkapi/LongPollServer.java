@@ -24,6 +24,7 @@ import ru.trett.vkapi.Exceptions.RequestReturnErrorException;
 import ru.trett.vkapi.Exceptions.RequestReturnNullException;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -32,6 +33,12 @@ import java.util.TimerTask;
  * @since 19.09.15
  */
 public class LongPollServer {
+
+    private static NetworkClient longPollClient;
+
+    static {
+        longPollClient = new NetworkClient(26000);
+    }
 
     private final String API_VERSION = "5.37";
     public BooleanProperty haveUpdates = new SimpleBooleanProperty(false);
@@ -42,7 +49,6 @@ public class LongPollServer {
     private JSONArray data;
     private NetworkClient networkClient;
     private Request request;
-    private NetworkClient longPollClient = new NetworkClient(26000);
     private Account account;
 
     public LongPollServer(Account account) {
@@ -125,7 +131,7 @@ public class LongPollServer {
     public JSONObject getUpdates(String server, String key, String ts)
             throws RequestReturnNullException, RequestReturnErrorException {
         try {
-            HashMap<String, String> urlParameters = new HashMap<>();
+            Map<String, String> urlParameters = new HashMap<>();
             urlParameters.put("act", "a_check");
             urlParameters.put("key", key);
             urlParameters.put("ts", ts);
