@@ -29,6 +29,11 @@ import java.util.Date;
  */
 public class MessageMapper {
 
+    /**
+     * Map JSONObject to ArrayList&lt;Message&gt;
+     * @param object JSONObject
+     * @return ArrayList&lt;Message&gt messages
+     */
     public ArrayList<Message> map(JSONObject object) {
         JSONArray array = object.getJSONArray("items");
         ArrayList<Message> messages = new ArrayList<>();

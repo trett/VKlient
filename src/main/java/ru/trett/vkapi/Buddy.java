@@ -15,9 +15,6 @@
 
 package ru.trett.vkapi;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-
 /**
  * @author Roman Tretyakov
  * @since 15.08.2015
@@ -31,19 +28,18 @@ public class Buddy {
     private String avatarURL = "";
     private OnlineStatus onlineStatus = OnlineStatus.OFFLINE;
     private String status = "";
-    private IntegerProperty onlineStatusProperty = new SimpleIntegerProperty();
-    private IntegerProperty newMessages = new SimpleIntegerProperty();
+    private BuddyChange buddyChange = new BuddyChange(this);
 
-    public final int getOnlineStatusProperty() {
-        return onlineStatusProperty.get();
+    /**
+     * Het online status change notifier
+     * @return BuddyChange
+     */
+    public BuddyChange getBuddyChange() {
+        return buddyChange;
     }
 
-    public final void setOnlineStatusProperty(int onlineStatusProperty) {
-        this.onlineStatusProperty.set(onlineStatusProperty);
-    }
-
-    public IntegerProperty onlineStatusProperty() {
-        return onlineStatusProperty;
+    public void setBuddyChange(BuddyChange buddyChange) {
+        this.buddyChange = buddyChange;
     }
 
     /**
@@ -130,7 +126,8 @@ public class Buddy {
      * @param onlineStatus int
      */
     public void setOnlineStatus(OnlineStatus onlineStatus) {
-        this.setOnlineStatusProperty(onlineStatus.ordinal());
+        this.getBuddyChange().setState(onlineStatus);
+//        this.setOnlineStatusProperty(onlineStatus.ordinal());
         this.onlineStatus = onlineStatus;
     }
 
@@ -141,20 +138,12 @@ public class Buddy {
         return status;
     }
 
+    /**
+     * Sets Status text
+     * @param status String Status text
+     */
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public int getNewMessages() {
-        return newMessages.get();
-    }
-
-    public void setNewMessages(int newMessages) {
-        this.newMessages.set(newMessages);
-    }
-
-    public IntegerProperty newMessagesProperty() {
-        return newMessages;
     }
 
     /**
@@ -164,9 +153,9 @@ public class Buddy {
      * @return int
      */
     public int compareTo(Buddy b) {
-        if (this.getOnlineStatusProperty() > b.getOnlineStatusProperty()) {
+        if (this.getBuddyChange().getState().ordinal() > b.getBuddyChange().getState().ordinal()) {
             return -1;
-        } else if (this.getOnlineStatusProperty() < b.getOnlineStatusProperty()) {
+        } else if (this.getBuddyChange().getState().ordinal() < b.getBuddyChange().getState().ordinal()) {
             return 1;
         } else {
             return 0;

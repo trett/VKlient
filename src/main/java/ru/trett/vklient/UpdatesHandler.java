@@ -16,11 +16,12 @@
 package ru.trett.vklient;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.trett.vkapi.*;
+import ru.trett.vkapi.Exceptions.RequestReturnErrorException;
+import ru.trett.vkapi.Exceptions.RequestReturnNullException;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class UpdatesHandler {
         account.getLongPollServer().haveUpdatesProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean noUpdates, Boolean haveUpdates) -> {
                 if (haveUpdates)
-                    update(account.getLongPollServer().getUpdates());
+                    update(account.getLongPollServer().getData());
         });
     }
 
@@ -58,17 +59,20 @@ public class UpdatesHandler {
             //TODO: parse all !!!
             switch ((int) list.get(0)) {
                 case 8:
-                    account.getFriendById(account.getFriends(), -(int) list.get(1)).setOnlineStatus(OnlineStatus.ONLINE); //TODO:parse to platform
+                    account.getFriendById(account.getFriends(), -(int) list.get(1))
+                            .setOnlineStatus(OnlineStatus.ONLINE); //TODO:parse to platform
                     break;
                 case 9:
-                    account.getFriendById(account.getFriends(), -(int) list.get(1)).setOnlineStatus(OnlineStatus.OFFLINE);
+                    account.getFriendById(account.getFriends(), -(int) list.get(1))
+                            .setOnlineStatus(OnlineStatus.OFFLINE);
                     break;
                 case 4:
                     Platform.runLater(() -> {
                         int flag = (int) list.get(2);
 
                         Message message = new Message();
-                        /* if message have attachment get message from server by id cause long poll return useless answer */
+                        /* if message have attachment get message from server by id
+                         cause long poll return useless answer */
                         if (!new JSONObject(list.get(7).toString()).isNull("attach1")) {
                             ArrayList<Message> messages = null;
                             try {
@@ -93,12 +97,12 @@ public class UpdatesHandler {
                             chatWindow.appendMessage(message);
                         } else if (chatWindow != null) {
                             Buddy b = account.getFriendById(account.getFriends(), (int) list.get(3));
-                            b.setNewMessages(1);
+                            b.getBuddyChange().setNewMessages(1);
                             chatWindow.appendMessage(message);
                             NotificationProvider.showNotification(b.getFirstName() + " " + b.getLastName());
                         } else {
                             Buddy b = account.getFriendById(account.getFriends(), (int) list.get(3));
-                            b.setNewMessages(1);
+                            b.getBuddyChange().setNewMessages(1);
                             NotificationProvider.showNotification(b.getFirstName() + " " + b.getLastName());
                         }
                     });

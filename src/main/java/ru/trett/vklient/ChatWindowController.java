@@ -27,6 +27,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 import ru.trett.vkapi.*;
+import ru.trett.vkapi.Exceptions.RequestReturnErrorException;
+import ru.trett.vkapi.Exceptions.RequestReturnNullException;
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -120,7 +122,7 @@ public class ChatWindowController {
             e.printStackTrace();
         }
         if (messages != null)
-            messages.forEach(x -> appendMessage(x));
+            messages.forEach(this::appendMessage);
     }
 
     public void appendMessage(Message message) {

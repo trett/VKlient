@@ -19,6 +19,8 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ObservableValue;
 import org.json.JSONObject;
+import ru.trett.vkapi.Exceptions.RequestReturnErrorException;
+import ru.trett.vkapi.Exceptions.RequestReturnNullException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,40 +36,40 @@ import java.util.concurrent.TimeUnit;
  */
 
 public class Account extends Buddy {
-    
+
+    public BooleanProperty authFinished = new SimpleBooleanProperty(false);
     private String accessToken = null;
     private ArrayList<Buddy> friends = null;
     private ScheduledExecutorService scheduledTimer;
     private Runnable stopTimer;
     private OnlineStatus onlineStatus;
     private LongPollServer longPollServer;
-    public BooleanProperty authFinished = new SimpleBooleanProperty(false);
 
-    public void create() {
-        ArrayList<Buddy> buddies = null;
-        try {
-            buddies = Users.get(new ArrayList<Integer>() {{
-                add(getUserId());
-            }}, accessToken);
-        } catch (RequestReturnNullException | RequestReturnErrorException e) {
-            e.printStackTrace();
-        }
-        if (buddies != null) {
-            Buddy buddy = buddies.get(0);
-            setFirstName(buddy.getFirstName());
-            setLastName(buddy.getLastName());
-            setStatus(buddy.getStatus());
-            setAvatarURL(buddy.getAvatarURL());
-            onlineStatusProperty().addListener(
-                    (ObservableValue<? extends Number> observable, Number oldStatus, Number newStatus) -> {
-                        System.out.println("Account change state to " + newStatus.intValue());
-                        if (newStatus.intValue() == 1) {
-                            longPollServer = new LongPollServer(this);
-                        }
-                    });
-        } else {
-            throw new RuntimeException("Impossible to create Account");
-        }
+    /**
+     * Create account with given userId and Access token and connect to Long Poll Server
+     *
+     * @param userId      int user_id
+     * @param accessToken String access_token
+     */
+    public void create(int userId, String accessToken) {
+        setUserId(userId);
+        this.accessToken = accessToken;
+        ArrayList<Buddy> buddies = Users.get(new ArrayList<Integer>() {{
+            add(userId);
+        }}, accessToken);
+        if (buddies == null)
+            throw new RuntimeException("Impossible to create account");
+        Buddy me = buddies.get(0);
+        setFirstName(me.getFirstName());
+        setLastName(me.getLastName());
+        setStatus(me.getStatus());
+        setAvatarURL(me.getAvatarURL());
+        longPollServer = new LongPollServer(this);
+        longPollServer.isOnlineProperty().addListener(
+                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
+                    if (onlineStatus != OnlineStatus.OFFLINE && !newValue)
+                        setOnlineStatus(OnlineStatus.OFFLINE);
+                });
     }
 
     @Override
@@ -78,42 +80,38 @@ public class Account extends Buddy {
     @Override
     public void setOnlineStatus(OnlineStatus onlineStatus) {
         this.onlineStatus = onlineStatus;
-        try {
-            switch (onlineStatus) {
-                case ONLINE:
-                    setOnlineStatusProperty(OnlineStatus.ONLINE.ordinal());
-                    scheduledTimer = Executors.newSingleThreadScheduledExecutor();
-                    ScheduledFuture<?> scheduledFuture = scheduledTimer.scheduleAtFixedRate(
-                            () -> {
-                                try {
-                                    setOnline();
-                                } catch (RequestReturnNullException | RequestReturnErrorException e) {
-                                    e.printStackTrace();
-                                }
-                            }, 5, 900, TimeUnit.SECONDS);
-                    stopTimer = new StopOnlineTimer(scheduledFuture);
-                    if (friends != null)
-                        break;
+        System.out.println("Account set status " + onlineStatus.name());
+        switch (onlineStatus) {
+            case ONLINE:
+                if (!longPollServer.getIstOnline())
+                    longPollServer.start();
+                scheduledTimer = Executors.newSingleThreadScheduledExecutor();
+                ScheduledFuture<?> scheduledFuture = scheduledTimer.scheduleAtFixedRate(
+                        this::setOnline, 5, 900, TimeUnit.SECONDS
+                );
+                stopTimer = new StopOnlineTimer(scheduledFuture);
+                if (friends == null)
                     setFriends();
-                    break;
-                case OFFLINE:
-                    setOnlineStatusProperty(OnlineStatus.OFFLINE.ordinal());
-                    setOffline();
-                    if (scheduledTimer != null && !scheduledTimer.isShutdown())
-                        scheduledTimer.submit(stopTimer);
-                    if (longPollServer != null)
-                        longPollServer.close();
-                    NetworkHelper.close();
-                    break;
-                case INVISIBLE:
-                    setOnlineStatusProperty(OnlineStatus.ONLINE.ordinal());
-                    if (scheduledTimer != null && !scheduledTimer.isShutdown())
-                        scheduledTimer.submit(stopTimer);
-                    setOffline();
-                    break;
-            }
-        } catch (RequestReturnNullException | RequestReturnErrorException e) {
-            e.printStackTrace();
+                getBuddyChange().setState(OnlineStatus.ONLINE);
+                break;
+            case OFFLINE:
+                setOffline();
+                if (scheduledTimer != null && !scheduledTimer.isShutdown())
+                    scheduledTimer.submit(stopTimer);
+                longPollServer.stop();
+                NetworkHelper.close();
+                getBuddyChange().setState(OnlineStatus.OFFLINE);
+                break;
+            case INVISIBLE:
+                if (!longPollServer.getIstOnline())
+                    longPollServer.start();
+                if (scheduledTimer != null && !scheduledTimer.isShutdown())
+                    scheduledTimer.submit(stopTimer);
+                setOffline();
+                if (friends == null)
+                    setFriends();
+                getBuddyChange().setState(OnlineStatus.INVISIBLE);
+                break;
         }
     }
 
@@ -157,32 +155,50 @@ public class Account extends Buddy {
         return authFinished.get();
     }
 
-    public BooleanProperty authFinishedProperty() {
-        return authFinished;
-    }
-
     public void setAuthFinished(boolean authFinished) {
         this.authFinished.set(authFinished);
     }
 
-    private void setOnline()
-            throws RequestReturnNullException, RequestReturnErrorException {
-        HashMap<String, String> urlParameters = new HashMap<>();
-        urlParameters.put("access_token", getAccessToken());
-        JSONObject answer = NetworkHelper.sendRequest("account.setOnline", urlParameters);
-        if (answer.getInt("response") != 1)
-            System.out.println("Online status error: " + answer.getInt("response"));
+    public BooleanProperty authFinishedProperty() {
+        return authFinished;
     }
 
-    private void setOffline()
-            throws RequestReturnNullException, RequestReturnErrorException {
+    private void setOnline() {
         HashMap<String, String> urlParameters = new HashMap<>();
         urlParameters.put("access_token", getAccessToken());
-        JSONObject answer = NetworkHelper.sendRequest("account.setOffline", urlParameters);
-        if (answer.getInt("response") != 1)
-            System.out.println("Online status error: " + answer.getInt("response"));
+        try {
+            JSONObject answer = NetworkHelper.sendRequest("account.setOnline", urlParameters);
+            if (answer.getInt("response") != 1)
+                System.out.println("Online status error: " + answer.getInt("response"));
+        } catch (RequestReturnErrorException | RequestReturnNullException e) {
+            setOnlineStatus(OnlineStatus.OFFLINE);
+            e.printStackTrace();
+        }
     }
 
+    private void setOffline() {
+        HashMap<String, String> urlParameters = new HashMap<>();
+        urlParameters.put("access_token", getAccessToken());
+        try {
+            JSONObject answer = NetworkHelper.sendRequest("account.setOffline", urlParameters);
+            if (answer.getInt("response") != 1)
+                System.out.println("Online status error: " + answer.getInt("response"));
+        } catch (RequestReturnErrorException e) {
+            System.out.println(e.getMessage());
+        } catch (RequestReturnNullException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Send message to receiver  with userId
+     *
+     * @param userId  int user_id of the receiver
+     * @param message Message
+     * @return String message id
+     * @throws RequestReturnNullException
+     * @throws RequestReturnErrorException
+     */
     public String sendMessage(int userId, Message message)
             throws RequestReturnNullException, RequestReturnErrorException {
         HashMap<String, String> urlParameters = new HashMap<>();
@@ -197,9 +213,9 @@ public class Account extends Buddy {
     /**
      * Get messages history
      *
-     * @param userId
-     * @param count
-     * @param rev
+     * @param userId receiver user_id
+     * @param count  quantity of last messages
+     * @param rev    reversion
      * @return ArrayList Messages
      */
     public ArrayList<Message> getMessagesHistory(int userId, int count, int rev)
@@ -222,14 +238,20 @@ public class Account extends Buddy {
         return new MessageMapper().map(obj);
     }
 
+    /**
+     * Show authorization window and create Account
+     */
     public void getAuthHelper() {
         AuthHelper helper = new AuthHelper();
         helper.createAuthWindow();
         helper.isAnswerReceivedProperty().addListener(
                 (ObservableValue<? extends Boolean> answer, Boolean oldAnswer, Boolean newAnswer) -> {
                     Map<String, String> list = helper.getAnswer();
-                    this.accessToken = list.get("access_token");
-                    setUserId(Integer.parseInt(list.get("user_id")));
+                    try {
+                        create(Integer.parseInt(list.get("user_id")), list.get("access_token"));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     setAuthFinished(true);
                 });
     }

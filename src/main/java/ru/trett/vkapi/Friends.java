@@ -16,6 +16,8 @@
 package ru.trett.vkapi;
 
 import org.json.JSONObject;
+import ru.trett.vkapi.Exceptions.RequestReturnErrorException;
+import ru.trett.vkapi.Exceptions.RequestReturnNullException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,8 +31,8 @@ public class Friends {
     /**
      * Get friends for given user_id
      *
-     * @param userId
-     * @param token
+     * @param userId int user_id
+     * @param token String access_token
      * @return ArrayList buddies
      */
     public static ArrayList<Buddy> get(int userId, String token)
