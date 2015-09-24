@@ -33,12 +33,12 @@ import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
 
 import javax.net.ssl.SSLException;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,13 +50,22 @@ import java.util.List;
 
 public class NetworkClient {
 
-    private RequestConfig requestConfig;
-    private HttpRequestRetryHandler customRetryHandler;
-    private CloseableHttpClient httpClient;
+    private static final PoolingHttpClientConnectionManager connPool;
+
+    static {
+
+        connPool = new PoolingHttpClientConnectionManager();
+        connPool.setMaxTotal(10);
+        connPool.setDefaultMaxPerRoute(5);
+
+    }
+
+    private final CloseableHttpClient httpClient;
+    private HttpPost httpPost;
     private CloseableHttpResponse httpResponse;
 
     NetworkClient(int timeout) {
-        customRetryHandler = (exception, executionCount, context) -> {
+        HttpRequestRetryHandler customRetryHandler = (exception, executionCount, context) -> {
             if (executionCount >= 5) {
                 // Do not retry if over max retry count
                 return false;
@@ -90,32 +99,41 @@ public class NetworkClient {
             return false;
         };
 
-        requestConfig = RequestConfig.custom().
-                setConnectionRequestTimeout(timeout).
-                setSocketTimeout(timeout).
-                setConnectTimeout(timeout).
-                setCookieSpec(CookieSpecs.STANDARD).
-                build();
+        RequestConfig requestConfig = RequestConfig
+                .custom()
+                .setConnectionRequestTimeout(timeout)
+                .setSocketTimeout(timeout)
+                .setConnectTimeout(timeout)
+                .setCookieSpec(CookieSpecs.STANDARD).
+                        build();
+
+        httpClient = HttpClients
+                .custom()
+                .setRetryHandler(customRetryHandler)
+                .setDefaultRequestConfig(requestConfig)
+                .setConnectionManager(connPool)
+                .setConnectionManagerShared(true)
+                .build();
     }
 
     /**
      * Send Post Request to https
+     *
      * @param request Request
      * @return String answer
      * @throws ClientProtocolException
      */
     public String send(Request request)
             throws ClientProtocolException {
-        httpClient = HttpClients.custom().
-                setRetryHandler(customRetryHandler).
-                setDefaultRequestConfig(requestConfig).
-                build();
         try {
-            URIBuilder uriBuilder = new URIBuilder();
-            uriBuilder.setScheme("https").setHost(request.host).
-                    setPath(request.path);
-            URI uri = uriBuilder.build();
-            HttpPost httpPost = new HttpPost(uri);
+            connPool.closeExpiredConnections();
+            httpPost = new HttpPost(
+                    new URIBuilder()
+                            .setScheme("https")
+                            .setHost(request.host)
+                            .setPath(request.path)
+                            .build()
+            );
             List<NameValuePair> list = new ArrayList<>();
             if (request.query != null)
                 request.query.forEach((key, value) -> list.add(new BasicNameValuePair(key, value)));
@@ -124,26 +142,23 @@ public class NetworkClient {
             System.out.println("Executing request " + httpPost.getRequestLine());
             httpResponse = httpClient.execute(httpPost);
             String responseBody = responseHandler.handleResponse(httpResponse);
-            httpClient.close();
             System.out.println(responseBody);
             return responseBody;
         } catch (IOException | URISyntaxException e) {
             System.out.println(e.getMessage());
             return null;
         } finally {
-            abort();
+            try {
+                httpResponse.close();
+                httpClient.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public void abort() {
-        try {
-            if (httpResponse != null)
-                httpResponse.close();
-            if (httpClient != null)
-                httpClient.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        httpPost.abort();
     }
 
 }

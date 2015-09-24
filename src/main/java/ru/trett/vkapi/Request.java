@@ -15,7 +15,7 @@
 
 package ru.trett.vkapi;
 
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Roman Tretyakov
@@ -26,12 +26,12 @@ public class Request {
 
     String host;
     String path;
-    HashMap<String, String> query;
+    Map<String, String> query;
 
     Request() {
     }
 
-    Request(String host, String path, HashMap<String, String> query) {
+    Request(String host, String path, Map<String, String> query) {
         this.host = host;
         this.path = path;
         this.query = query;
@@ -43,7 +43,7 @@ class RequestBuilder {
 
     private String _host;
     private String _path = "";
-    private HashMap<String, String> _query;
+    private Map<String, String> _query;
 
     public RequestBuilder() {
     }
@@ -62,7 +62,7 @@ class RequestBuilder {
         return this;
     }
 
-    public RequestBuilder query(HashMap<String, String> _query) {
+    public RequestBuilder query(Map<String, String> _query) {
         this._query = _query;
         return this;
     }
