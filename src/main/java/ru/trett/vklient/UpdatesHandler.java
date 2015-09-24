@@ -97,12 +97,12 @@ public class UpdatesHandler {
                             chatWindow.appendMessage(message);
                         } else if (chatWindow != null) {
                             Buddy b = account.getFriendById(account.getFriends(), (int) list.get(3));
-                            b.setNewMessages(1);
+                            b.getBuddyChange().setNewMessages(1);
                             chatWindow.appendMessage(message);
                             NotificationProvider.showNotification(b.getFirstName() + " " + b.getLastName());
                         } else {
                             Buddy b = account.getFriendById(account.getFriends(), (int) list.get(3));
-                            b.setNewMessages(1);
+                            b.getBuddyChange().setNewMessages(1);
                             NotificationProvider.showNotification(b.getFirstName() + " " + b.getLastName());
                         }
                     });

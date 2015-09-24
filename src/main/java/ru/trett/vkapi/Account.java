@@ -67,8 +67,8 @@ public class Account extends Buddy {
         longPollServer = new LongPollServer(this);
         longPollServer.isOnlineProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
-                    if (!newValue)
-                        setOnlineStatusProperty(OnlineStatus.OFFLINE.ordinal());
+                    if (onlineStatus != OnlineStatus.OFFLINE && !newValue)
+                        setOnlineStatus(OnlineStatus.OFFLINE);
                 });
     }
 
@@ -83,7 +83,6 @@ public class Account extends Buddy {
         System.out.println("Account set status " + onlineStatus.name());
         switch (onlineStatus) {
             case ONLINE:
-                setOnlineStatusProperty(OnlineStatus.ONLINE.ordinal());
                 if (!longPollServer.getIstOnline())
                     longPollServer.start();
                 scheduledTimer = Executors.newSingleThreadScheduledExecutor();
@@ -91,28 +90,27 @@ public class Account extends Buddy {
                         this::setOnline, 5, 900, TimeUnit.SECONDS
                 );
                 stopTimer = new StopOnlineTimer(scheduledFuture);
-                if (friends != null)
-                    break;
-                setFriends();
+                if (friends == null)
+                    setFriends();
+                getBuddyChange().setState(OnlineStatus.ONLINE);
                 break;
             case OFFLINE:
-                setOnlineStatusProperty(OnlineStatus.OFFLINE.ordinal());
                 setOffline();
                 if (scheduledTimer != null && !scheduledTimer.isShutdown())
                     scheduledTimer.submit(stopTimer);
                 longPollServer.stop();
                 NetworkHelper.close();
+                getBuddyChange().setState(OnlineStatus.OFFLINE);
                 break;
             case INVISIBLE:
-                setOnlineStatusProperty(OnlineStatus.INVISIBLE.ordinal());
                 if (!longPollServer.getIstOnline())
                     longPollServer.start();
                 if (scheduledTimer != null && !scheduledTimer.isShutdown())
                     scheduledTimer.submit(stopTimer);
                 setOffline();
-                if (friends != null)
-                    break;
-                setFriends();
+                if (friends == null)
+                    setFriends();
+                getBuddyChange().setState(OnlineStatus.INVISIBLE);
                 break;
         }
     }
