@@ -122,10 +122,10 @@ public class Roster extends BuddyChangeSubscriber {
         this.account = account;
         me = new TreeItem<>(account, IconLoader.getImageFromUrl(account.getAvatarURL()));
         tree = new TreeView<>(me);
+        tree.setCellFactory(call -> new BuddyCellFactoryImpl());
         root.add(tree, 0, 1);
         me.setExpanded(true);
         me.getChildren().add(friendsNode);
-        updateItems();
         account.getBuddyChange().attach(this);
         account.setOnlineStatus(OnlineStatus.valueOf(
                         config.getValue("lastStatus", OnlineStatus.OFFLINE.name()).toUpperCase()
@@ -140,24 +140,26 @@ public class Roster extends BuddyChangeSubscriber {
         friendsNode.getChildren().addAll(friendsModel);
         friendsNode.getChildren().forEach(x -> x.getValue().getBuddyChange().attach(this));
         friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue()));
-        Platform.runLater(() -> friendsNode.setExpanded(true));
+        friendsNode.setExpanded(true);
         if (rosterHideOffline)
             hideOffline();
-        updateItems();
     }
 
-    private void updateItems() {
-        tree.setCellFactory(call -> new BuddyCellFactoryImpl());
-    }
-
-    private ColorAdjust effect(int online) {
+    private ColorAdjust effect(OnlineStatus onlineStatus) {
         ColorAdjust colorAdjust = new ColorAdjust();
-        if (online == 0) {
-            colorAdjust.setBrightness(-0.5);
-            colorAdjust.setContrast(-0.5);
-        } else {
-            colorAdjust.setBrightness(0);
-            colorAdjust.setContrast(0);
+        switch (onlineStatus) {
+            case OFFLINE:
+                colorAdjust.setBrightness(-0.5);
+                colorAdjust.setContrast(-0.5);
+                break;
+            case ONLINE:
+                colorAdjust.setBrightness(0);
+                colorAdjust.setContrast(0);
+                break;
+            case INVISIBLE:
+                colorAdjust.setBrightness(0);
+                colorAdjust.setContrast(0);
+                break;
         }
         return colorAdjust;
     }
@@ -217,7 +219,7 @@ public class Roster extends BuddyChangeSubscriber {
     private void setState(OnlineStatus onlineStatus) {
         switch (onlineStatus) {
             case OFFLINE:
-                Platform.runLater(() -> friendsNode.getChildren().removeAll(friendsNode.getChildren()));
+                friendsNode.getChildren().removeAll(friendsNode.getChildren());
                 break;
             case ONLINE:
                 if (updatesHandler == null)
@@ -228,7 +230,6 @@ public class Roster extends BuddyChangeSubscriber {
                     friendsNode.getChildren().addAll(friendsModel);
                     if (rosterHideOffline)
                         hideOffline();
-                    updateItems();
                 }
                 break;
             case INVISIBLE:
@@ -240,7 +241,6 @@ public class Roster extends BuddyChangeSubscriber {
                     friendsNode.getChildren().addAll(friendsModel);
                     if (rosterHideOffline)
                         hideOffline();
-                    updateItems();
                 }
                 break;
         }
@@ -250,11 +250,9 @@ public class Roster extends BuddyChangeSubscriber {
     public void update(Buddy buddy) {
         TreeItem<Buddy> treeItem;
         if (buddy.getUserId() == account.getUserId()) {
-            System.out.println("Account changed status to " + buddy.getBuddyChange().getState().name());
             statusBox.setValue(buddy.getBuddyChange().getState());
             setState(buddy.getBuddyChange().getState());
-            me.getGraphic().setEffect(effect(buddy.getBuddyChange().getState().ordinal()));
-            updateItems();
+            me.getGraphic().setEffect(effect(buddy.getBuddyChange().getState()));
             return;
         } else {
             System.out.println(buddy.getFirstName() + " changed status to " + buddy.getBuddyChange().getState().name());
@@ -265,14 +263,13 @@ public class Roster extends BuddyChangeSubscriber {
             return;
 
         if (!rosterHideOffline) {
-            treeItem.getGraphic().setEffect(effect(buddy.getBuddyChange().getState().ordinal()));
+            treeItem.getGraphic().setEffect(effect(buddy.getBuddyChange().getState()));
         } else if (buddy.getBuddyChange().getState() == OnlineStatus.ONLINE) {
             friendsNode.getChildren().add(treeItem);
         } else {
             friendsNode.getChildren().remove(treeItem);
         }
         friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue()));
-        updateItems();
     }
 
     @Override
@@ -285,7 +282,7 @@ public class Roster extends BuddyChangeSubscriber {
             treeItem.setGraphic(iconLoader.getIcon("unread", 32));
         else
             treeItem.setGraphic(IconLoader.getImageFromUrl(treeItem.getValue().getAvatarURL()));
-        updateItems();
+        friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue())); // temporary hack for update node
     }
 
     public TreeItem<Buddy> getTreeItemByUserId(int userId) {
@@ -301,7 +298,6 @@ public class Roster extends BuddyChangeSubscriber {
 
     private final class BuddyCellFactoryImpl extends TreeCell<Buddy> {
 
-        private TextField textField;
         private ContextMenu addMenu = new ContextMenu();
 
         BuddyCellFactoryImpl() {
@@ -335,18 +331,10 @@ public class Roster extends BuddyChangeSubscriber {
                 setText(null);
                 setGraphic(null);
             } else {
-                if (isEditing()) {
-                    if (textField != null) {
-                        textField.setText(getString());
-                    }
-                    setText(null);
-                    setGraphic(textField);
-                } else {
-                    setText(getString());
-                    setGraphic(getTreeItem().getGraphic());
-                    if (getItem() != null && getItem().getOnlineStatus() != null) {
-                        getTreeItem().getGraphic().setEffect(effect(getItem().getBuddyChange().getState().ordinal()));
-                    }
+                setText(getString());
+                setGraphic(getTreeItem().getGraphic());
+                if (getItem() != null && getItem().getOnlineStatus() != null) {
+                    getTreeItem().getGraphic().setEffect(effect(getItem().getBuddyChange().getState()));
                 }
             }
             setContextMenu(addMenu);

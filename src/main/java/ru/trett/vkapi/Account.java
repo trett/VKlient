@@ -83,7 +83,7 @@ public class Account extends Buddy {
         System.out.println("Account set status " + onlineStatus.name());
         switch (onlineStatus) {
             case ONLINE:
-                if (!longPollServer.getIstOnline())
+                if (!longPollServer.getIsOnline())
                     longPollServer.start();
                 scheduledTimer = Executors.newSingleThreadScheduledExecutor();
                 ScheduledFuture<?> scheduledFuture = scheduledTimer.scheduleAtFixedRate(
@@ -92,26 +92,25 @@ public class Account extends Buddy {
                 stopTimer = new StopOnlineTimer(scheduledFuture);
                 if (friends == null)
                     setFriends();
-                getBuddyChange().setState(OnlineStatus.ONLINE);
                 break;
             case OFFLINE:
                 setOffline();
                 if (scheduledTimer != null && !scheduledTimer.isShutdown())
                     scheduledTimer.submit(stopTimer);
-                longPollServer.stop();
-                getBuddyChange().setState(OnlineStatus.OFFLINE);
+                if (longPollServer.getIsOnline())
+                    longPollServer.stop();
                 break;
             case INVISIBLE:
-                if (!longPollServer.getIstOnline())
+                if (!longPollServer.getIsOnline())
                     longPollServer.start();
                 if (scheduledTimer != null && !scheduledTimer.isShutdown())
                     scheduledTimer.submit(stopTimer);
                 setOffline();
                 if (friends == null)
                     setFriends();
-                getBuddyChange().setState(OnlineStatus.INVISIBLE);
                 break;
         }
+        getBuddyChange().setState(onlineStatus);
     }
 
     public String getAccessToken() {
