@@ -159,7 +159,7 @@ public class LongPollServer {
         setIsOnline(false);
     }
 
-    public boolean getIstOnline() {
+    public boolean getIsOnline() {
         return isOnline.get();
     }
 
