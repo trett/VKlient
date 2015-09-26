@@ -33,17 +33,17 @@ public class VKlient extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
+    public void start(final Stage primaryStage) throws Exception {
         Config config = new Config();
         config.checkStore();
         setUserAgentStylesheet(STYLESHEET_MODENA);
         primaryStage.setTitle("VKlient");
-        Roster roster = new Roster();
+        final Roster roster = new Roster();
         primaryStage.setScene(new Scene(roster.getRoot(), 200, 400));
         primaryStage.setMinHeight(200);
         primaryStage.setMinWidth(200);
         try {
-            Image appIcon = new Image(getClass().getClassLoader().getResourceAsStream("vklient.png"));
+            final Image appIcon = new Image(getClass().getClassLoader().getResourceAsStream("vklient.png"));
             primaryStage.getIcons().add(appIcon);
         } catch (NullPointerException e) {
             System.out.println("Application icon not found");

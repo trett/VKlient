@@ -35,7 +35,7 @@ public class ChatWindowImpl implements ChatWindow {
 
     private int userId = 0;
     private Account account = null;
-    private Stage stage;
+    private final Stage stage = new Stage();
     private ChatWindowController chatWindowController;
 
     ChatWindowImpl() {
@@ -57,7 +57,6 @@ public class ChatWindowImpl implements ChatWindow {
             chatWindowController.setAccount(account);
             chatWindowController.setUserId(userId);
             Buddy user = account.getFriendById(account.getFriends(), userId);
-            stage = new Stage();
             stage.setTitle("Chat with " + user.getFirstName() + " " + user.getLastName());
             ImageView n = (ImageView) IconLoader.getImageFromUrl(user.getAvatarURL());
             stage.getIcons().add(n.getImage());
