@@ -61,6 +61,7 @@ public class NetworkClient {
     }
 
     private final CloseableHttpClient httpClient;
+    private final ResponseHandler<String> responseHandler = new BasicResponseHandler();
     private HttpPost httpPost;
     private CloseableHttpResponse httpResponse;
 
@@ -114,6 +115,7 @@ public class NetworkClient {
                 .setConnectionManager(connPool)
                 .setConnectionManagerShared(true)
                 .build();
+
     }
 
     /**
@@ -138,7 +140,6 @@ public class NetworkClient {
             if (request.query != null)
                 request.query.forEach((key, value) -> list.add(new BasicNameValuePair(key, value)));
             httpPost.setEntity(new UrlEncodedFormEntity(list, "UTF-8"));
-            ResponseHandler<String> responseHandler = new BasicResponseHandler();
             System.out.println("Executing request " + httpPost.getRequestLine());
             httpResponse = httpClient.execute(httpPost);
             String responseBody = responseHandler.handleResponse(httpResponse);

@@ -20,7 +20,9 @@ package ru.trett.vkapi;
  * @since 24.09.15
  */
 public abstract class BuddyChangeSubscriber {
-    protected BuddyChange buddyChange;
+
     public abstract void update(Buddy buddy);
+
     public abstract void haveNewMessage(Buddy buddy);
+
 }

@@ -45,7 +45,6 @@ public class Roster extends BuddyChangeSubscriber {
     private Account account;
     private TreeItem<Buddy> me;
     private TreeItem<Buddy> friendsNode;
-    private TreeView<Buddy> tree;
     private ObservableList<TreeItem<Buddy>> friendsModel = FXCollections.observableArrayList();
     private boolean rosterHideOffline = (Boolean.valueOf(
             config.getValue("rosterHideOffline", Boolean.toString(false))
@@ -85,7 +84,7 @@ public class Roster extends BuddyChangeSubscriber {
         mbar.getMenus().addAll(main);
         statusBox.setMinWidth(column.getMinWidth());
         statusBox.setPrefWidth(Double.MAX_VALUE);
-        ObservableList<OnlineStatus> status = FXCollections.observableArrayList(OnlineStatus.values());
+        final ObservableList<OnlineStatus> status = FXCollections.observableArrayList(OnlineStatus.values());
         statusBox.getItems().addAll(status);
         root.add(mbar, 0, 0);
         root.add(statusBox, 0, 2);
@@ -121,7 +120,7 @@ public class Roster extends BuddyChangeSubscriber {
     public void addAccount(Account account) {
         this.account = account;
         me = new TreeItem<>(account, IconLoader.getImageFromUrl(account.getAvatarURL()));
-        tree = new TreeView<>(me);
+        final TreeView<Buddy> tree = new TreeView<>(me);
         tree.setCellFactory(call -> new BuddyCellFactoryImpl());
         root.add(tree, 0, 1);
         me.setExpanded(true);
@@ -220,6 +219,7 @@ public class Roster extends BuddyChangeSubscriber {
         switch (onlineStatus) {
             case OFFLINE:
                 friendsNode.getChildren().removeAll(friendsNode.getChildren());
+                System.gc();
                 break;
             case ONLINE:
                 if (updatesHandler == null)

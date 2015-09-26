@@ -20,7 +20,7 @@ import org.json.JSONObject;
 import ru.trett.vkapi.Exceptions.RequestReturnErrorException;
 import ru.trett.vkapi.Exceptions.RequestReturnNullException;
 
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Roman Tretyakov
@@ -36,12 +36,16 @@ public class NetworkHelper {
     }
 
 
-    public static JSONObject sendRequest(String vkMethod, HashMap<String, String> urlParameters)
+    public static JSONObject sendRequest(final String vkMethod,
+                                         final Map<String, String> urlParameters)
             throws RequestReturnNullException, RequestReturnErrorException {
         try {
             urlParameters.put("v", API_VERSION);
-            Request request = new RequestBuilder().host("api.vk.com/method/").
-                    path(vkMethod).query(urlParameters).build();
+            Request request = new RequestBuilder()
+                    .host("api.vk.com/method/")
+                    .path(vkMethod)
+                    .query(urlParameters)
+                    .build();
             String str = networkClient.send(request);
             if (str == null)
                 throw new RequestReturnNullException("NetworkClient return null");

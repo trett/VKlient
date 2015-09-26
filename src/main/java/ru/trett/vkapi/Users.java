@@ -20,9 +20,7 @@ import ru.trett.vkapi.Exceptions.RequestReturnErrorException;
 import ru.trett.vkapi.Exceptions.RequestReturnNullException;
 import ru.trett.vkapi.Exceptions.TokenErrorException;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -39,7 +37,7 @@ public class Users {
      * @return ArrayList buddies
      */
     public static ArrayList<Buddy> get(List<Integer> userIds, String token) {
-        HashMap<String, String> urlParameters = new HashMap<>();
+        Map<String, String> urlParameters = new WeakHashMap<>();
         String ids = userIds.stream().map(Object::toString).collect(Collectors.joining(","));
         urlParameters.put("user_ids", ids);
         urlParameters.put("access_token", token);
@@ -60,7 +58,7 @@ public class Users {
      * @return int user_id
      */
     public static int get(String token) throws TokenErrorException, RequestReturnNullException {
-        HashMap<String, String> urlParameters = new HashMap<>();
+        Map<String, String> urlParameters = new WeakHashMap<>();
         urlParameters.put("access_token", token);
         try {
             JSONObject json = NetworkHelper.sendRequest("users.get", urlParameters);
