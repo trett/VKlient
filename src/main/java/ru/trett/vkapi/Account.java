@@ -44,6 +44,7 @@ public class Account extends Buddy {
     private Runnable stopTimer;
     private OnlineStatus onlineStatus;
     private LongPollServer longPollServer;
+    private NetworkHelper networkHelper = new NetworkHelper();
 
     /**
      * Create account with given userId and Access token and connect to Long Poll Server
@@ -163,7 +164,7 @@ public class Account extends Buddy {
 
     private void setOnline() {
         try {
-            JSONObject answer = NetworkHelper.sendRequest("account.setOnline",
+            JSONObject answer = networkHelper.sendRequest("account.setOnline",
                     new WeakHashMap<String, String>() {{
                         put("access_token", getAccessToken());
                     }}
@@ -178,14 +179,14 @@ public class Account extends Buddy {
 
     private void setOffline() {
         try {
-            JSONObject answer = NetworkHelper.sendRequest("account.setOffline",
+            JSONObject answer = networkHelper.sendRequest("account.setOffline",
                     new WeakHashMap<String, String>() {{
                         put("access_token", getAccessToken());
                     }}
             );
             if (answer.getInt("response") != 1)
                 System.out.println("Online status error: " + answer.getInt("response"));
-            NetworkHelper.close();
+            networkHelper.close();
         } catch (RequestReturnErrorException e) {
             System.out.println(e.getMessage());
         } catch (RequestReturnNullException e) {
@@ -209,7 +210,7 @@ public class Account extends Buddy {
         urlParameters.put("access_token", getAccessToken());
         urlParameters.put("chat_id", "1");
         urlParameters.put("message", message.getBody());
-        JSONObject answer = NetworkHelper.sendRequest("messages.send", urlParameters);
+        JSONObject answer = networkHelper.sendRequest("messages.send", urlParameters);
         return answer.toString();
     }
 
@@ -228,7 +229,7 @@ public class Account extends Buddy {
         urlParameters.put("count", Integer.toString(count));
         urlParameters.put("user_id", Integer.toString(userId));
         urlParameters.put("rev", Integer.toString(rev));
-        JSONObject obj = NetworkHelper.sendRequest("messages.getHistory", urlParameters).getJSONObject("response");
+        JSONObject obj = networkHelper.sendRequest("messages.getHistory", urlParameters).getJSONObject("response");
         return new MessageMapper().map(obj);
     }
 
@@ -237,7 +238,7 @@ public class Account extends Buddy {
         Map<String, String> urlParameters = new WeakHashMap<>();
         urlParameters.put("access_token", getAccessToken());
         urlParameters.put("message_ids", Integer.toString(messageId));
-        JSONObject obj = NetworkHelper.sendRequest("messages.getById", urlParameters).getJSONObject("response");
+        JSONObject obj = networkHelper.sendRequest("messages.getById", urlParameters).getJSONObject("response");
         return new MessageMapper().map(obj);
     }
 

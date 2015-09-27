@@ -168,7 +168,6 @@ public class Roster extends BuddyChangeSubscriber {
         friendsNode.getChildren().removeIf(
                 buddyTreeItem -> buddyTreeItem.getValue().getOnlineStatus().name().contains("OFFLINE")
         );
-        System.gc();
     }
 
     private void showOffline() {
@@ -177,7 +176,6 @@ public class Roster extends BuddyChangeSubscriber {
             if (x.getValue().getOnlineStatus().name().contains("OFFLINE"))
                 friendsNode.getChildren().add(x);
         });
-        System.gc();
     }
 
     private void saveSettings() {

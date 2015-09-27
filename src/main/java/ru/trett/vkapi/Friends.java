@@ -41,7 +41,7 @@ public class Friends {
         urlParameters.put("user_id", Integer.toString(userId));
         urlParameters.put("access_token", token);
         urlParameters.put("fields", "first_name,last_name,photo_50,online,status");
-        JSONObject obj = NetworkHelper.sendRequest("friends.get", urlParameters).getJSONObject("response");
+        JSONObject obj = new NetworkHelper().sendRequest("friends.get", urlParameters).getJSONObject("response");
         return new BuddyMapper().map(obj.getJSONArray("items"));
     }
 

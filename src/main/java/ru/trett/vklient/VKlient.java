@@ -34,9 +34,9 @@ public class VKlient extends Application {
 
     @Override
     public void start(final Stage primaryStage) throws Exception {
+        setUserAgentStylesheet(STYLESHEET_MODENA);
         Config config = new Config();
         config.checkStore();
-        setUserAgentStylesheet(STYLESHEET_MODENA);
         primaryStage.setTitle("VKlient");
         final Roster roster = new Roster();
         primaryStage.setScene(new Scene(roster.getRoot(), 200, 400));

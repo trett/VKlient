@@ -43,7 +43,7 @@ public class Users {
         urlParameters.put("access_token", token);
         urlParameters.put("fields", "photo_50,online,status");
         try {
-            JSONObject obj = NetworkHelper.sendRequest("users.get", urlParameters);
+            JSONObject obj = new NetworkHelper().sendRequest("users.get", urlParameters);
             return new BuddyMapper().map(obj.getJSONArray("response"));
         } catch (RequestReturnNullException | RequestReturnErrorException e) {
             e.printStackTrace();
@@ -61,7 +61,7 @@ public class Users {
         Map<String, String> urlParameters = new WeakHashMap<>();
         urlParameters.put("access_token", token);
         try {
-            JSONObject json = NetworkHelper.sendRequest("users.get", urlParameters);
+            JSONObject json = new NetworkHelper().sendRequest("users.get", urlParameters);
             return json.getJSONArray("response").getJSONObject(0).getInt("id");
         } catch (RequestReturnErrorException e) {
             throw new TokenErrorException("Token error");
