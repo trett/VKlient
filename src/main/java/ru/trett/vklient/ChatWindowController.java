@@ -26,9 +26,10 @@ import javafx.scene.web.WebView;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
-import ru.trett.vkapi.*;
+import ru.trett.vkapi.Account;
 import ru.trett.vkapi.Exceptions.RequestReturnErrorException;
 import ru.trett.vkapi.Exceptions.RequestReturnNullException;
+import ru.trett.vkapi.Message;
 
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -83,6 +84,7 @@ public class ChatWindowController {
         engine.getLoadWorker().stateProperty().addListener(
                 (ObservableValue<? extends Worker.State> observable, Worker.State oldValue, Worker.State newValue) -> {
                     if (newValue == Worker.State.SUCCEEDED) {
+                        doc = engine.getDocument();
                         showHistory();
                         engine.executeScript("scroll();");
 //                        engine.executeScript("if (!document.getElementById('FirebugLite')){E = document['createElement' + 'NS'] && document.documentElement.namespaceURI;E = E ? document['createElement' + 'NS'](E, 'script') : document['createElement']('script');E['setAttribute']('id', 'FirebugLite');E['setAttribute']('src', 'https://getfirebug.com/' + 'firebug-lite.js' + '#startOpened');E['setAttribute']('FirebugLite', '4');(document['getElementsByTagName']('head')[0] || document['getElementsByTagName']('body')[0]).appendChild(E);E = new Image;E['setAttribute']('src', 'https://getfirebug.com/' + '#startOpened');}");
@@ -125,8 +127,7 @@ public class ChatWindowController {
             messages.forEach(this::appendMessage);
     }
 
-    public void appendMessage(Message message) {
-        doc = engine.getDocument();
+    public void appendMessage(final Message message) {
         String body = message.getBody().replaceAll("<br>", "\n"); // God fuck them all. Wrong character from LongPoll server
         Element el = doc.createElement("div");
         el.setAttribute("id", message.getDirection().contains("in") ? "incomingMessage" : "outgoingMessage");

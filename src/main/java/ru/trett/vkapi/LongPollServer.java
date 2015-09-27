@@ -23,10 +23,10 @@ import org.json.JSONObject;
 import ru.trett.vkapi.Exceptions.RequestReturnErrorException;
 import ru.trett.vkapi.Exceptions.RequestReturnNullException;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.WeakHashMap;
 
 /**
  * @author Roman Tretyakov
@@ -59,13 +59,15 @@ public class LongPollServer {
 
     public void start() {
         System.out.println("Long Poll Started");
-        HashMap<String, String> urlParameters = new HashMap<>();
-        urlParameters.put("access_token", account.getAccessToken());
-        urlParameters.put("v", API_VERSION);
         request = new RequestBuilder()
                 .host("api.vk.com/method/")
                 .path("messages.getLongPollServer")
-                .query(urlParameters)
+                .query(
+                        new WeakHashMap<String, String>() {{
+                            put("access_token", account.getAccessToken());
+                            put("v", API_VERSION);
+                        }}
+                )
                 .build();
         getLongPollConnection();
         Timer timer = new Timer();
@@ -128,10 +130,10 @@ public class LongPollServer {
         }
     }
 
-    public JSONObject getUpdates(String server, String key, String ts)
+    public JSONObject getUpdates(final String server, final String key, final String ts)
             throws RequestReturnNullException, RequestReturnErrorException {
         try {
-            Map<String, String> urlParameters = new HashMap<>();
+            Map<String, String> urlParameters = new WeakHashMap<>();
             urlParameters.put("act", "a_check");
             urlParameters.put("key", key);
             urlParameters.put("ts", ts);
@@ -163,11 +165,11 @@ public class LongPollServer {
         return isOnline.get();
     }
 
-    public BooleanProperty isOnlineProperty() {
-        return isOnline;
-    }
-
     public void setIsOnline(boolean online) {
         this.isOnline.set(online);
+    }
+
+    public BooleanProperty isOnlineProperty() {
+        return isOnline;
     }
 }

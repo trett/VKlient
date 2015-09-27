@@ -23,8 +23,8 @@ import ru.trett.vkapi.Exceptions.RequestReturnErrorException;
 import ru.trett.vkapi.Exceptions.RequestReturnNullException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -51,7 +51,7 @@ public class Account extends Buddy {
      * @param userId      int user_id
      * @param accessToken String access_token
      */
-    public void create(int userId, String accessToken) {
+    public void create(final int userId, final String accessToken) {
         setUserId(userId);
         this.accessToken = accessToken;
         ArrayList<Buddy> buddies = Users.get(new ArrayList<Integer>() {{
@@ -162,10 +162,12 @@ public class Account extends Buddy {
     }
 
     private void setOnline() {
-        HashMap<String, String> urlParameters = new HashMap<>();
-        urlParameters.put("access_token", getAccessToken());
         try {
-            JSONObject answer = NetworkHelper.sendRequest("account.setOnline", urlParameters);
+            JSONObject answer = NetworkHelper.sendRequest("account.setOnline",
+                    new WeakHashMap<String, String>() {{
+                        put("access_token", getAccessToken());
+                    }}
+            );
             if (answer.getInt("response") != 1)
                 System.out.println("Online status error: " + answer.getInt("response"));
         } catch (RequestReturnErrorException | RequestReturnNullException e) {
@@ -175,10 +177,12 @@ public class Account extends Buddy {
     }
 
     private void setOffline() {
-        HashMap<String, String> urlParameters = new HashMap<>();
-        urlParameters.put("access_token", getAccessToken());
         try {
-            JSONObject answer = NetworkHelper.sendRequest("account.setOffline", urlParameters);
+            JSONObject answer = NetworkHelper.sendRequest("account.setOffline",
+                    new WeakHashMap<String, String>() {{
+                        put("access_token", getAccessToken());
+                    }}
+            );
             if (answer.getInt("response") != 1)
                 System.out.println("Online status error: " + answer.getInt("response"));
             NetworkHelper.close();
@@ -198,9 +202,9 @@ public class Account extends Buddy {
      * @throws RequestReturnNullException
      * @throws RequestReturnErrorException
      */
-    public String sendMessage(int userId, Message message)
+    public String sendMessage(final int userId, final Message message)
             throws RequestReturnNullException, RequestReturnErrorException {
-        HashMap<String, String> urlParameters = new HashMap<>();
+        Map<String, String> urlParameters = new WeakHashMap<>();
         urlParameters.put("user_id", Integer.toString(userId));
         urlParameters.put("access_token", getAccessToken());
         urlParameters.put("chat_id", "1");
@@ -217,9 +221,9 @@ public class Account extends Buddy {
      * @param rev    reversion
      * @return ArrayList Messages
      */
-    public ArrayList<Message> getMessagesHistory(int userId, int count, int rev)
+    public ArrayList<Message> getMessagesHistory(final int userId, final int count, final int rev)
             throws RequestReturnNullException, RequestReturnErrorException {
-        HashMap<String, String> urlParameters = new HashMap<>();
+        Map<String, String> urlParameters = new WeakHashMap<>();
         urlParameters.put("access_token", getAccessToken());
         urlParameters.put("count", Integer.toString(count));
         urlParameters.put("user_id", Integer.toString(userId));
@@ -228,9 +232,9 @@ public class Account extends Buddy {
         return new MessageMapper().map(obj);
     }
 
-    public ArrayList<Message> getMessagesById(int messageId)
+    public ArrayList<Message> getMessagesById(final int messageId)
             throws RequestReturnNullException, RequestReturnErrorException {
-        HashMap<String, String> urlParameters = new HashMap<>();
+        Map<String, String> urlParameters = new WeakHashMap<>();
         urlParameters.put("access_token", getAccessToken());
         urlParameters.put("message_ids", Integer.toString(messageId));
         JSONObject obj = NetworkHelper.sendRequest("messages.getById", urlParameters).getJSONObject("response");
