@@ -29,15 +29,18 @@ import java.util.Map;
 public class NetworkHelper {
 
     private static final String API_VERSION = "5.37";
-    private static NetworkClient networkClient;
+    private static final NetworkClient networkClient;
 
     static {
         networkClient = new NetworkClient(5000);
     }
 
+    public void close() {
+        networkClient.abort();
+    }
 
-    public static JSONObject sendRequest(final String vkMethod,
-                                         final Map<String, String> urlParameters)
+    public JSONObject sendRequest(final String vkMethod,
+                                  final Map<String, String> urlParameters)
             throws RequestReturnNullException, RequestReturnErrorException {
         try {
             urlParameters.put("v", API_VERSION);
@@ -52,17 +55,14 @@ public class NetworkHelper {
             JSONObject receivedAnswer = new JSONObject(str);
             if (receivedAnswer.has("error")) {
                 throw new RequestReturnErrorException(
-                        "NetworkClient return error: " + receivedAnswer.getJSONObject("error").getString("error_msg"));
+                        "NetworkClient return error: " + receivedAnswer.getJSONObject("error")
+                                .getString("error_msg"));
             }
             System.out.println(urlParameters); //debug output
             return receivedAnswer;
         } catch (ClientProtocolException e) {
             throw new RequestReturnNullException("NetworkClient return null.", e);
         }
-    }
-
-    public static void close() {
-        networkClient.abort();
     }
 
 }

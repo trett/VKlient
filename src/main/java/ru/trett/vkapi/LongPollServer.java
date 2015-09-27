@@ -34,7 +34,7 @@ import java.util.WeakHashMap;
  */
 public class LongPollServer {
 
-    private static NetworkClient longPollClient;
+    private static final NetworkClient longPollClient;
 
     static {
         longPollClient = new NetworkClient(26000);
@@ -118,9 +118,7 @@ public class LongPollServer {
 
     private void getLongPollConnection() {
         try {
-            String answer = networkClient.send(request);
-            System.out.println("Get Server:" + answer);
-            JSONObject obj = new JSONObject(answer);
+            JSONObject obj = new JSONObject(networkClient.send(request));
             lpServer = obj.getJSONObject("response").getString("server");
             lpServerKey = obj.getJSONObject("response").getString("key");
             ts = Integer.toString(obj.getJSONObject("response").getInt("ts"));
