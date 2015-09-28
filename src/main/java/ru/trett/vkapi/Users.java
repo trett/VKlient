@@ -36,7 +36,7 @@ public class Users {
      * @param token   String access_token
      * @return ArrayList buddies
      */
-    public static ArrayList<Buddy> get(List<Integer> userIds, String token) {
+    public ArrayList<Buddy> get(List<Integer> userIds, String token) {
         Map<String, String> urlParameters = new WeakHashMap<>();
         String ids = userIds.stream().map(Object::toString).collect(Collectors.joining(","));
         urlParameters.put("user_ids", ids);
@@ -57,7 +57,7 @@ public class Users {
      * @param token String access_token
      * @return int user_id
      */
-    public static int get(String token) throws TokenErrorException, RequestReturnNullException {
+    public int get(String token) throws TokenErrorException, RequestReturnNullException {
         Map<String, String> urlParameters = new WeakHashMap<>();
         urlParameters.put("access_token", token);
         try {

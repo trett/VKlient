@@ -38,7 +38,7 @@ public class IconLoader {
      * @param url String URI
      * @return Node Graphic
      */
-    public static Node getImageFromUrl(String url) {
+    public Node getImageFromUrl(String url) {
         ImageView image = new ImageView(new Image(url));
         image.setFitWidth(32);
         image.setPreserveRatio(true);

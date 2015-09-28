@@ -55,7 +55,7 @@ public class Account extends Buddy {
     public void create(final int userId, final String accessToken) {
         setUserId(userId);
         this.accessToken = accessToken;
-        ArrayList<Buddy> buddies = Users.get(new ArrayList<Integer>() {{
+        ArrayList<Buddy> buddies = new Users().get(new ArrayList<Integer>() {{
             add(userId);
         }}, accessToken);
         if (buddies == null)
@@ -124,7 +124,7 @@ public class Account extends Buddy {
 
     public void setFriends() {
         try {
-            friends = Friends.get(getUserId(), accessToken);
+            friends = new Friends().get(getUserId(), accessToken);
         } catch (RequestReturnNullException | RequestReturnErrorException e) {
             e.printStackTrace();
         }

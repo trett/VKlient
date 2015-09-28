@@ -20,6 +20,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import ru.trett.vkapi.Account;
 import ru.trett.vkapi.Buddy;
 import ru.trett.vkapi.Message;
@@ -33,9 +34,9 @@ import java.io.IOException;
 
 public class ChatWindowImpl implements ChatWindow {
 
+    private final Stage stage = new Stage();
     private int userId = 0;
     private Account account = null;
-    private final Stage stage = new Stage();
     private ChatWindowController chatWindowController;
 
     ChatWindowImpl() {
@@ -58,10 +59,12 @@ public class ChatWindowImpl implements ChatWindow {
             chatWindowController.setUserId(userId);
             Buddy user = account.getFriendById(account.getFriends(), userId);
             stage.setTitle("Chat with " + user.getFirstName() + " " + user.getLastName());
-            ImageView n = (ImageView) IconLoader.getImageFromUrl(user.getAvatarURL());
+            ImageView n = (ImageView) new IconLoader().getImageFromUrl(user.getAvatarURL());
             stage.getIcons().add(n.getImage());
             stage.setScene(new Scene(root, 600, 700));
             stage.show();
+            stage.setOnCloseRequest((WindowEvent event) ->
+                    ChatWindowFactory.getOpenWindows().remove(this));
         } catch (IOException e) {
             e.printStackTrace();
         }
