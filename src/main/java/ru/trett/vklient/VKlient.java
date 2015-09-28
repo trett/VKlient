@@ -39,7 +39,10 @@ public class VKlient extends Application {
         config.checkStore();
         primaryStage.setTitle("VKlient");
         final Roster roster = new Roster();
-        primaryStage.setScene(new Scene(roster.getRoot(), 200, 400));
+        primaryStage.setScene(new Scene(roster.getRoot(),
+                Double.parseDouble(config.getValue("rosterWidth", "200")),
+                Double.parseDouble(config.getValue("rosterHeight", "400"))
+        ));
         primaryStage.setMinHeight(200);
         primaryStage.setMinWidth(200);
         try {

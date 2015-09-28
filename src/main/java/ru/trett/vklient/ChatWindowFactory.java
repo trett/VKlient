@@ -26,10 +26,15 @@ import java.util.ArrayList;
 
 public class ChatWindowFactory {
 
-    private static ArrayList<ChatWindow> chatWindows;
+    private static ArrayList<ChatWindow> openWindows;
 
-    public static ArrayList<ChatWindow> getChatWindows() {
-        return chatWindows;
+    static
+    {
+        openWindows = new ArrayList<>();
+    }
+
+    public static ArrayList<ChatWindow> getOpenWindows() {
+        return openWindows;
     }
 
     /**
@@ -40,8 +45,8 @@ public class ChatWindowFactory {
      * @return existing window or null
      */
     public static ChatWindow getInstance(Account account, int userId) {
-        if (chatWindows != null && chatWindows.size() > 0) {
-            for (ChatWindow cw : chatWindows) {
+        if (openWindows.size() > 0) {
+            for (ChatWindow cw : openWindows) {
                 if (account == cw.getAccount() && userId == cw.getUserId())
                     return cw;
             }
@@ -57,10 +62,9 @@ public class ChatWindowFactory {
      * @return new ChatWindow instance
      */
     public static ChatWindow createInstance(Account account, int userId) {
-        if (chatWindows == null)
-            chatWindows = new ArrayList<>();
         ChatWindowImpl chatWindow = new ChatWindowImpl(account, userId);
-        chatWindows.add(chatWindow);
+        openWindows.add(chatWindow);
         return chatWindow;
     }
+
 }

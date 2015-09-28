@@ -95,11 +95,6 @@ public class UpdatesHandler {
                         ChatWindow chatWindow = ChatWindowFactory.getInstance(account, (int) list.get(3));
                         if (chatWindow != null && chatWindow.isShowing()) {
                             chatWindow.appendMessage(message);
-                        } else if (chatWindow != null) {
-                            Buddy b = account.getFriendById(account.getFriends(), (int) list.get(3));
-                            b.getBuddyChange().setNewMessages(1);
-                            chatWindow.appendMessage(message);
-                            NotificationProvider.showNotification(b.getFirstName() + " " + b.getLastName());
                         } else {
                             Buddy b = account.getFriendById(account.getFriends(), (int) list.get(3));
                             b.getBuddyChange().setNewMessages(1);

@@ -119,7 +119,7 @@ public class Message {
         public static final int MEDIA = 512;
     }
 
-    public class Attachment {
+    public static class Attachment {
 
         String photo = null;
         String title = null;

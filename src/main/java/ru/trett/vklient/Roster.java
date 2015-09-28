@@ -119,7 +119,7 @@ public class Roster extends BuddyChangeSubscriber {
      */
     public void addAccount(Account account) {
         this.account = account;
-        me = new TreeItem<>(account, IconLoader.getImageFromUrl(account.getAvatarURL()));
+        me = new TreeItem<>(account, iconLoader.getImageFromUrl(account.getAvatarURL()));
         final TreeView<Buddy> tree = new TreeView<>(me);
         tree.setCellFactory(call -> new BuddyCellFactoryImpl());
         root.add(tree, 0, 1);
@@ -134,7 +134,7 @@ public class Roster extends BuddyChangeSubscriber {
 
     private void createFriendsNode() {
         account.getFriends().forEach(x ->
-                        friendsModel.add(new TreeItem<>(x, IconLoader.getImageFromUrl(x.getAvatarURL())))
+                        friendsModel.add(new TreeItem<>(x, iconLoader.getImageFromUrl(x.getAvatarURL())))
         );
         friendsNode.getChildren().addAll(friendsModel);
         friendsNode.getChildren().forEach(x -> x.getValue().getBuddyChange().attach(this));
@@ -181,13 +181,15 @@ public class Roster extends BuddyChangeSubscriber {
     private void saveSettings() {
         config.setValue("lastStatus", account.getOnlineStatus().name());
         config.setValue("rosterHideOffline", Boolean.toString(rosterHideOffline));
+        config.setValue("rosterWidth", Double.toString(root.getWidth()));
+        config.setValue("rosterHeight", Double.toString(root.getHeight()));
     }
 
     private void createRootNode() {
         account = new Account();
         if (config.getValue("access_token") != null) {
             try {
-                Users.get(config.getValue("access_token"));
+                new Users().get(config.getValue("access_token"));
                 account.create(Integer.parseInt(config.getValue("user_id")),
                         config.getValue("access_token"));
                 addAccount(account);
@@ -219,7 +221,6 @@ public class Roster extends BuddyChangeSubscriber {
         switch (onlineStatus) {
             case OFFLINE:
                 friendsNode.getChildren().removeAll(friendsNode.getChildren());
-                System.gc();
                 break;
             case ONLINE:
                 if (updatesHandler == null)
@@ -281,7 +282,7 @@ public class Roster extends BuddyChangeSubscriber {
         if (buddy.getBuddyChange().getNewMessages() > 0)
             treeItem.setGraphic(iconLoader.getIcon("unread", 32));
         else
-            treeItem.setGraphic(IconLoader.getImageFromUrl(treeItem.getValue().getAvatarURL()));
+            treeItem.setGraphic(iconLoader.getImageFromUrl(treeItem.getValue().getAvatarURL()));
         friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue())); // temporary hack for update node
     }
 

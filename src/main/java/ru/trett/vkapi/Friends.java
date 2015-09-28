@@ -35,7 +35,7 @@ public class Friends {
      * @param token  String access_token
      * @return ArrayList buddies
      */
-    public static ArrayList<Buddy> get(int userId, String token)
+    public ArrayList<Buddy> get(int userId, String token)
             throws RequestReturnNullException, RequestReturnErrorException {
         HashMap<String, String> urlParameters = new HashMap<>();
         urlParameters.put("user_id", Integer.toString(userId));
