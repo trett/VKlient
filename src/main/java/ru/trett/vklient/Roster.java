@@ -253,7 +253,9 @@ public class Roster extends BuddyChangeSubscriber {
         if (buddy.getUserId() == account.getUserId()) {
             statusBox.setValue(buddy.getBuddyChange().getState());
             setState(buddy.getBuddyChange().getState());
-            me.getGraphic().setEffect(effect(buddy.getBuddyChange().getState()));
+            Platform.runLater(() ->
+                            me.getGraphic().setEffect(effect(buddy.getBuddyChange().getState()))
+            );
             return;
         } else {
             System.out.println(buddy.getFirstName() + " changed status to " + buddy.getBuddyChange().getState().name());
@@ -263,14 +265,17 @@ public class Roster extends BuddyChangeSubscriber {
         if (treeItem == null)
             return;
 
-        if (!rosterHideOffline) {
-            treeItem.getGraphic().setEffect(effect(buddy.getBuddyChange().getState()));
-        } else if (buddy.getBuddyChange().getState() == OnlineStatus.ONLINE) {
-            friendsNode.getChildren().add(treeItem);
-        } else {
-            friendsNode.getChildren().remove(treeItem);
-        }
-        friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue()));
+        Platform.runLater(() -> {
+                    if (!rosterHideOffline) {
+                        treeItem.getGraphic().setEffect(effect(buddy.getBuddyChange().getState()));
+                    } else if (buddy.getBuddyChange().getState() == OnlineStatus.ONLINE) {
+                        friendsNode.getChildren().add(treeItem);
+                    } else {
+                        friendsNode.getChildren().remove(treeItem);
+                    }
+                    friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue()));
+                }
+        );
     }
 
     @Override
@@ -278,12 +283,13 @@ public class Roster extends BuddyChangeSubscriber {
         TreeItem<Buddy> treeItem = getTreeItemByUserId(buddy.getUserId());
         if (treeItem == null)
             return;
-
-        if (buddy.getBuddyChange().getNewMessages() > 0)
-            treeItem.setGraphic(iconLoader.getIcon("unread", 32));
-        else
-            treeItem.setGraphic(iconLoader.getImageFromUrl(treeItem.getValue().getAvatarURL()));
-        friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue())); // temporary hack for update node
+        Platform.runLater(() -> {
+            if (buddy.getBuddyChange().getNewMessages() > 0)
+                treeItem.setGraphic(iconLoader.getIcon("unread", 32));
+            else
+                treeItem.setGraphic(iconLoader.getImageFromUrl(treeItem.getValue().getAvatarURL()));
+            friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue())); // temporary hack for update node
+        });
     }
 
     public TreeItem<Buddy> getTreeItemByUserId(int userId) {

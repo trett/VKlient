@@ -29,14 +29,13 @@ public class Message {
     private String date;
     private String body;
     private String direction;
-    private ArrayList<Attachment> attachments;
+    private ArrayList<Attachment> attachments = new ArrayList<>();
 
     public ArrayList<Attachment> getAttachments() {
         return attachments;
     }
 
     public void addAttachment(JSONObject attachment) {
-        attachments = new ArrayList<>();
         Attachment a = new Attachment();
         switch (attachment.optString("type")) {
             case AttachmentType.LINK:
@@ -68,7 +67,7 @@ public class Message {
                 //TODO:
                 break;
         }
-        this.attachments.add(a);
+        attachments.add(a);
     }
 
     public String getDate() {
