@@ -27,6 +27,7 @@ public class BuddyMapper {
 
     /**
      * Map JSONArray to ArrayList&lt;Buddy&gt;
+     *
      * @param array JSONArray
      * @return ArrayList&lt;Buddy&gt;
      */
@@ -39,8 +40,10 @@ public class BuddyMapper {
             buddy.setFirstName(array.getJSONObject(i).getString("first_name"));
             buddy.setLastName(array.getJSONObject(i).getString("last_name"));
             buddy.setAvatarURL(array.getJSONObject(i).getString("photo_50"));
-            buddy.setOnlineStatus(array.getJSONObject(i).getInt("online") == 1 ?
-                            OnlineStatus.ONLINE : OnlineStatus.OFFLINE
+            buddy.setOnlineStatus(
+                    array.getJSONObject(i).getInt("online") == 1 ?
+                            OnlineStatus.ONLINE : OnlineStatus.OFFLINE,
+                    OnlineStatusReason.BY_NETWORK_REQUEST
             );
             buddy.setStatus(array.getJSONObject(i).getString("status"));
             buddies.add(buddy);

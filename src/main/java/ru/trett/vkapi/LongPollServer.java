@@ -42,7 +42,7 @@ public class LongPollServer {
 
     private final String API_VERSION = "5.37";
     public BooleanProperty haveUpdates = new SimpleBooleanProperty(false);
-    public BooleanProperty isOnline = new SimpleBooleanProperty(false);
+    private boolean isOnline = false;
     private String lpServer = null;
     private String lpServerKey = null;
     private String ts = null;
@@ -54,7 +54,7 @@ public class LongPollServer {
     public LongPollServer(Account account) {
         networkClient = new NetworkClient(5000);
         this.account = account;
-        System.out.println("Long Poll Created");
+        System.out.println("Long Poll Connection has been created.");
     }
 
     public void start() {
@@ -74,7 +74,7 @@ public class LongPollServer {
         TimerTask timerTask = new TimerTask() {
             @Override
             public void run() {
-                while (isOnline.getValue()) {
+                while (isOnline) {
                     setHaveUpdates(false);
                     try {
                         JSONObject json = getUpdates(lpServer, lpServerKey, ts);
@@ -83,9 +83,11 @@ public class LongPollServer {
                         if (data.length() > 0)
                             setHaveUpdates(true);
                     } catch (RequestReturnNullException e) {
-                        stop();
-                        System.out.println(e.getMessage());
-                        setIsOnline(false);
+                        if(account.getOnlineStatus() != OnlineStatus.OFFLINE) {
+                            account.connectionError(e);
+                            System.out.println(e.getMessage());
+                            isOnline = false;
+                        }
                         return;
                     } catch (RequestReturnErrorException e) {
                         getLongPollConnection();
@@ -122,9 +124,9 @@ public class LongPollServer {
             lpServer = obj.getJSONObject("response").getString("server");
             lpServerKey = obj.getJSONObject("response").getString("key");
             ts = Integer.toString(obj.getJSONObject("response").getInt("ts"));
-            setIsOnline(true);
+            isOnline = true;
         } catch (Exception e) {
-            e.printStackTrace();
+            account.connectionError(e);
         }
     }
 
@@ -156,18 +158,16 @@ public class LongPollServer {
 
     public void stop() {
         longPollClient.abort();
-        setIsOnline(false);
+        System.out.println("Long Poll stopped.");
+        isOnline = false;
     }
 
     public boolean getIsOnline() {
-        return isOnline.get();
-    }
-
-    public void setIsOnline(boolean online) {
-        this.isOnline.set(online);
-    }
-
-    public BooleanProperty isOnlineProperty() {
         return isOnline;
     }
+
+    public void setIsOnline(boolean isOnline) {
+        this.isOnline = isOnline;
+    }
+
 }
