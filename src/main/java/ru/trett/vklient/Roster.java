@@ -27,9 +27,12 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.RowConstraints;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import ru.trett.vkapi.*;
 import ru.trett.vkapi.Exceptions.RequestReturnNullException;
 import ru.trett.vkapi.Exceptions.TokenErrorException;
+
 
 /**
  * @author Roman Tretyakov
@@ -71,7 +74,8 @@ public class Roster extends BuddyChangeSubscriber {
         quit.setOnAction((ActionEvent event) -> {
             saveSettings();
             if (account.getOnlineStatus() != OnlineStatus.OFFLINE)
-                account.setOnlineStatus(OnlineStatus.OFFLINE);
+                account.setOnlineStatus(OnlineStatus.OFFLINE,
+                        OnlineStatusReason.ON_DEMAND);
             Platform.exit();
         });
         hideOffline.setOnAction((ActionEvent event) -> {
@@ -82,19 +86,25 @@ public class Roster extends BuddyChangeSubscriber {
         });
         main.getItems().addAll(hideOffline, quit);
         mbar.getMenus().addAll(main);
+        statusBox.setCellFactory(call -> new StatusBoxCellImpl());
         statusBox.setMinWidth(column.getMinWidth());
         statusBox.setPrefWidth(Double.MAX_VALUE);
-        final ObservableList<OnlineStatus> status = FXCollections.observableArrayList(OnlineStatus.values());
+        final ObservableList<OnlineStatus> status =
+                FXCollections.observableArrayList(OnlineStatus.values());
         statusBox.getItems().addAll(status);
         root.add(mbar, 0, 0);
         root.add(statusBox, 0, 2);
         friendsNode = new TreeItem<>();
         createRootNode();
         statusBox.setOnAction((ActionEvent event) -> {
-            Thread thread = new Thread(() -> {
-                account.setOnlineStatus(OnlineStatus.valueOf(statusBox.getValue().name()));
-            });
-            thread.start();
+            if (statusBox.getValue() != account.getOnlineStatus() &&
+                    !account.isErrorState()) {
+                Thread thread = new Thread(() -> {
+                    account.setOnlineStatus(OnlineStatus.valueOf(statusBox.getValue().name()),
+                            OnlineStatusReason.ON_DEMAND);
+                });
+                thread.start();
+            }
         });
         statusBox.setValue(
                 OnlineStatus.valueOf(
@@ -128,7 +138,7 @@ public class Roster extends BuddyChangeSubscriber {
         account.getBuddyChange().attach(this);
         account.setOnlineStatus(OnlineStatus.valueOf(
                         config.getValue("lastStatus", OnlineStatus.OFFLINE.name()).toUpperCase()
-                )
+                ), OnlineStatusReason.ON_DEMAND
         );
     }
 
@@ -251,9 +261,12 @@ public class Roster extends BuddyChangeSubscriber {
     public void update(Buddy buddy) {
         TreeItem<Buddy> treeItem;
         if (buddy.getUserId() == account.getUserId()) {
-            statusBox.setValue(buddy.getBuddyChange().getState());
             setState(buddy.getBuddyChange().getState());
-            me.getGraphic().setEffect(effect(buddy.getBuddyChange().getState()));
+            Platform.runLater(() -> {
+                        statusBox.setValue(buddy.getBuddyChange().getState());
+                        me.getGraphic().setEffect(effect(buddy.getBuddyChange().getState()));
+                    }
+            );
             return;
         } else {
             System.out.println(buddy.getFirstName() + " changed status to " + buddy.getBuddyChange().getState().name());
@@ -263,14 +276,17 @@ public class Roster extends BuddyChangeSubscriber {
         if (treeItem == null)
             return;
 
-        if (!rosterHideOffline) {
-            treeItem.getGraphic().setEffect(effect(buddy.getBuddyChange().getState()));
-        } else if (buddy.getBuddyChange().getState() == OnlineStatus.ONLINE) {
-            friendsNode.getChildren().add(treeItem);
-        } else {
-            friendsNode.getChildren().remove(treeItem);
-        }
-        friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue()));
+        Platform.runLater(() -> {
+                    if (!rosterHideOffline) {
+                        treeItem.getGraphic().setEffect(effect(buddy.getBuddyChange().getState()));
+                    } else if (buddy.getBuddyChange().getState() == OnlineStatus.ONLINE) {
+                        friendsNode.getChildren().add(treeItem);
+                    } else {
+                        friendsNode.getChildren().remove(treeItem);
+                    }
+                    friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue()));
+                }
+        );
     }
 
     @Override
@@ -278,12 +294,13 @@ public class Roster extends BuddyChangeSubscriber {
         TreeItem<Buddy> treeItem = getTreeItemByUserId(buddy.getUserId());
         if (treeItem == null)
             return;
-
-        if (buddy.getBuddyChange().getNewMessages() > 0)
-            treeItem.setGraphic(iconLoader.getIcon("unread", 32));
-        else
-            treeItem.setGraphic(iconLoader.getImageFromUrl(treeItem.getValue().getAvatarURL()));
-        friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue())); // temporary hack for update node
+        Platform.runLater(() -> {
+            if (buddy.getBuddyChange().getNewMessages() > 0)
+                treeItem.setGraphic(iconLoader.getIcon("unread", 32));
+            else
+                treeItem.setGraphic(iconLoader.getImageFromUrl(treeItem.getValue().getAvatarURL()));
+            friendsNode.getChildren().sort((o1, o2) -> o1.getValue().compareTo(o2.getValue())); // temporary hack for update node
+        });
     }
 
     public TreeItem<Buddy> getTreeItemByUserId(int userId) {
@@ -346,6 +363,41 @@ public class Roster extends BuddyChangeSubscriber {
                 return getItem().getFirstName() + " " + getItem().getLastName() +
                         System.getProperty("line.separator") + getItem().getStatus();
             return "";
+        }
+    }
+
+    public final class StatusBoxCellImpl extends ListCell<OnlineStatus> {
+
+        private final Circle circle;
+
+        StatusBoxCellImpl() {
+            circle = new Circle(6);
+        }
+
+        @Override
+        protected void updateItem(OnlineStatus item, boolean empty) {
+            super.updateItem(item, empty);
+
+            if (item == null || empty) {
+                setGraphic(null);
+            } else {
+                switch (item) {
+                    case ONLINE:
+                        setTextFill(Color.GREEN);
+                        circle.setFill(Color.GREEN);
+                        break;
+                    case OFFLINE:
+                        setTextFill(Color.GRAY);
+                        circle.setFill(Color.GRAY);
+                        break;
+                    case INVISIBLE:
+                        setTextFill(Color.BLUEVIOLET);
+                        circle.setFill(Color.BLUEVIOLET);
+                        break;
+                }
+                setText(item.name());
+                setGraphic(circle);
+            }
         }
     }
 

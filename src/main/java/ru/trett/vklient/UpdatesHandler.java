@@ -44,9 +44,9 @@ public class UpdatesHandler {
         this.account = account;
         account.getLongPollServer().haveUpdatesProperty().addListener(
                 (ObservableValue<? extends Boolean> observable, Boolean noUpdates, Boolean haveUpdates) -> {
-                if (haveUpdates)
-                    update(account.getLongPollServer().getData());
-        });
+                    if (haveUpdates)
+                        update(account.getLongPollServer().getData());
+                });
     }
 
     public void update(JSONArray array) {
@@ -60,11 +60,13 @@ public class UpdatesHandler {
             switch ((int) list.get(0)) {
                 case 8:
                     account.getFriendById(account.getFriends(), -(int) list.get(1))
-                            .setOnlineStatus(OnlineStatus.ONLINE); //TODO:parse to platform
+                            .setOnlineStatus(OnlineStatus.ONLINE,
+                                    OnlineStatusReason.BY_NETWORK_REQUEST); //TODO:parse to platform
                     break;
                 case 9:
                     account.getFriendById(account.getFriends(), -(int) list.get(1))
-                            .setOnlineStatus(OnlineStatus.OFFLINE);
+                            .setOnlineStatus(OnlineStatus.OFFLINE,
+                                    OnlineStatusReason.BY_NETWORK_REQUEST);
                     break;
                 case 4:
                     Platform.runLater(() -> {
@@ -78,7 +80,7 @@ public class UpdatesHandler {
                             try {
                                 messages = account.getMessagesById((int) list.get(1));
                             } catch (RequestReturnNullException | RequestReturnErrorException e) {
-                                e.printStackTrace();
+                                account.connectionError(e);
                             }
                             if (messages != null)
                                 message = messages.get(0);

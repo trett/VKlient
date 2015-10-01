@@ -45,6 +45,7 @@ public class Account extends Buddy {
     private OnlineStatus onlineStatus;
     private LongPollServer longPollServer;
     private NetworkHelper networkHelper = new NetworkHelper();
+    private boolean errorState = false;
 
     /**
      * Create account with given userId and Access token and connect to Long Poll Server
@@ -66,11 +67,6 @@ public class Account extends Buddy {
         setStatus(me.getStatus());
         setAvatarURL(me.getAvatarURL());
         longPollServer = new LongPollServer(this);
-        longPollServer.isOnlineProperty().addListener(
-                (ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) -> {
-                    if (onlineStatus != OnlineStatus.OFFLINE && !newValue)
-                        setOnlineStatus(OnlineStatus.OFFLINE);
-                });
     }
 
     @Override
@@ -79,39 +75,53 @@ public class Account extends Buddy {
     }
 
     @Override
-    public void setOnlineStatus(OnlineStatus onlineStatus) {
+    public void setOnlineStatus(OnlineStatus onlineStatus, OnlineStatusReason reason) {
         this.onlineStatus = onlineStatus;
-        System.out.println("Account set status " + onlineStatus.name());
-        switch (onlineStatus) {
-            case ONLINE:
-                if (!longPollServer.getIsOnline())
-                    longPollServer.start();
-                scheduledTimer = Executors.newSingleThreadScheduledExecutor();
-                ScheduledFuture<?> scheduledFuture = scheduledTimer.scheduleAtFixedRate(
-                        this::setOnline, 5, 900, TimeUnit.SECONDS
-                );
-                stopTimer = new StopOnlineTimer(scheduledFuture);
-                if (friends == null)
-                    setFriends();
-                break;
-            case OFFLINE:
-                setOffline();
-                if (scheduledTimer != null && !scheduledTimer.isShutdown())
-                    scheduledTimer.submit(stopTimer);
-                if (longPollServer.getIsOnline())
-                    longPollServer.stop();
-                break;
-            case INVISIBLE:
-                if (!longPollServer.getIsOnline())
-                    longPollServer.start();
-                if (scheduledTimer != null && !scheduledTimer.isShutdown())
-                    scheduledTimer.submit(stopTimer);
-                setOffline();
-                if (friends == null)
-                    setFriends();
-                break;
+        System.out.println("Account set status " + onlineStatus.name() +
+                " Reason: " + reason.name());
+        try {
+            switch (onlineStatus) {
+                case ONLINE:
+                    if (!longPollServer.getIsOnline())
+                        longPollServer.start();
+                    scheduledTimer = Executors.newSingleThreadScheduledExecutor();
+                    ScheduledFuture<?> scheduledFuture = scheduledTimer.scheduleAtFixedRate(
+                            () -> {
+                                try {
+                                    setOnline();
+                                    System.out.println("Timer started");
+                                } catch (RequestReturnNullException | RequestReturnErrorException e) {
+                                    connectionError(e);
+                                }
+                            }, 5, 900, TimeUnit.SECONDS
+                    );
+                    stopTimer = new StopOnlineTimer(scheduledFuture);
+                    if (friends == null)
+                        setFriends();
+                    break;
+                case OFFLINE:
+                    if (reason != OnlineStatusReason.CONNECTION_ERROR)
+                        setOffline();
+                    if (scheduledTimer != null && !scheduledTimer.isShutdown())
+                        scheduledTimer.submit(stopTimer);
+                    if (longPollServer.getIsOnline())
+                        longPollServer.stop();
+                    break;
+                case INVISIBLE:
+                    if (!longPollServer.getIsOnline())
+                        longPollServer.start();
+                    if (scheduledTimer != null && !scheduledTimer.isShutdown())
+                        scheduledTimer.submit(stopTimer);
+                    setOffline();
+                    if (friends == null)
+                        setFriends();
+                    break;
+            }
+        } catch (RequestReturnErrorException | RequestReturnNullException e) {
+            connectionError(e);
         }
         getBuddyChange().setState(onlineStatus);
+        errorState = false;
     }
 
     public String getAccessToken() {
@@ -126,7 +136,7 @@ public class Account extends Buddy {
         try {
             friends = new Friends().get(getUserId(), accessToken);
         } catch (RequestReturnNullException | RequestReturnErrorException e) {
-            e.printStackTrace();
+            connectionError(e);
         }
     }
 
@@ -162,36 +172,25 @@ public class Account extends Buddy {
         return authFinished;
     }
 
-    private void setOnline() {
-        try {
-            JSONObject answer = networkHelper.sendRequest("account.setOnline",
-                    new WeakHashMap<String, String>() {{
-                        put("access_token", getAccessToken());
-                    }}
-            );
-            if (answer.getInt("response") != 1)
-                System.out.println("Online status error: " + answer.getInt("response"));
-        } catch (RequestReturnErrorException | RequestReturnNullException e) {
-            setOnlineStatus(OnlineStatus.OFFLINE);
-            e.printStackTrace();
-        }
+    private void setOnline() throws RequestReturnNullException, RequestReturnErrorException {
+        JSONObject answer = networkHelper.sendRequest("account.setOnline",
+                new WeakHashMap<String, String>() {{
+                    put("access_token", getAccessToken());
+                }}
+        );
+        if (answer.getInt("response") != 1)
+            System.out.println("Online status error: " + answer.getInt("response"));
     }
 
-    private void setOffline() {
-        try {
-            JSONObject answer = networkHelper.sendRequest("account.setOffline",
-                    new WeakHashMap<String, String>() {{
-                        put("access_token", getAccessToken());
-                    }}
-            );
-            if (answer.getInt("response") != 1)
-                System.out.println("Online status error: " + answer.getInt("response"));
-            networkHelper.close();
-        } catch (RequestReturnErrorException e) {
-            System.out.println(e.getMessage());
-        } catch (RequestReturnNullException e) {
-            e.printStackTrace();
-        }
+    private void setOffline() throws RequestReturnNullException, RequestReturnErrorException {
+        JSONObject answer = networkHelper.sendRequest("account.setOffline",
+                new WeakHashMap<String, String>() {{
+                    put("access_token", getAccessToken());
+                }}
+        );
+        if (answer.getInt("response") != 1)
+            System.out.println("Online status error: " + answer.getInt("response"));
+        networkHelper.close();
     }
 
     /**
@@ -260,6 +259,16 @@ public class Account extends Buddy {
                 });
     }
 
+    public boolean isErrorState() {
+        return errorState;
+    }
+
+    public void connectionError(Exception e) {
+        errorState = true;
+        setOnlineStatus(OnlineStatus.OFFLINE, OnlineStatusReason.CONNECTION_ERROR);
+        System.out.println("Connection state error cause " + e.getMessage());
+    }
+
     private final class StopOnlineTimer implements Runnable {
         private ScheduledFuture<?> scheduledFuture;
 
@@ -272,6 +281,7 @@ public class Account extends Buddy {
             if (!scheduledFuture.isCancelled())
                 scheduledFuture.cancel(true);
             scheduledTimer.shutdown();
+            System.out.println("Timer stopped");
         }
     }
 

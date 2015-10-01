@@ -106,7 +106,7 @@ public class TestAPI extends Assert {
     @Test
     public void testGetAttachments() {
         assertTrue(m.getAttachments().size() > 0);
-        assertEquals(m.getAttachments().get(0).getPhoto(), "http://vk.com/images/stickers/50/64b.png");
+        assertEquals(m.getAttachments().get(1).getPhoto(), "http://vk.com/images/stickers/50/64b.png");
     }
 
 }

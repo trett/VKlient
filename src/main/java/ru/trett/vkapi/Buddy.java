@@ -125,9 +125,8 @@ public class Buddy {
      *
      * @param onlineStatus int
      */
-    public void setOnlineStatus(OnlineStatus onlineStatus) {
+    public void setOnlineStatus(OnlineStatus onlineStatus, OnlineStatusReason reason) {
         this.getBuddyChange().setState(onlineStatus);
-//        this.setOnlineStatusProperty(onlineStatus.ordinal());
         this.onlineStatus = onlineStatus;
     }
 

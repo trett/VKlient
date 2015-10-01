@@ -29,3 +29,28 @@
     
 }*/
 
+.combo-box {
+       -fx-font-style: italic;
+}
+
+.combo-box.ONLINE {
+    -fx-background-color: green;
+}
+
+.combo-box.OFFLINE {
+    -fx-background-color: gray;
+}
+
+.combo-box.INVISIBLE {
+    -fx-background-color: blue;
+}
+
+.combo-box .list-cell {
+    -fx-text-alignment: CENTER;
+    -fx-alignment: CENTER;
+}
+
+.combo-box .arrow, .combo-box .arrow-button{
+    -fx-background-color: transparent;
+}
+
