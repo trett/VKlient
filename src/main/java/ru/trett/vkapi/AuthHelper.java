@@ -39,7 +39,7 @@ import java.util.Map;
 
 public class AuthHelper {
 
-    private static URL answer = null;
+    private static URL answer;
     // Application ID
     private final int CLIENT_ID = 5029224;
     private BooleanProperty isAnswerReceived = new SimpleBooleanProperty(false);

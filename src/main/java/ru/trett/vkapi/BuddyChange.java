@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class BuddyChange {
 
-    private List<BuddyChangeSubscriber> buddyChangeSubscribers = new ArrayList<>();
+    private List<BuddyChangeSubscriber> buddyChangeSubscribers = new ArrayList<>(1);
     private OnlineStatus state;
     private int newMessages;
     private Buddy buddy;

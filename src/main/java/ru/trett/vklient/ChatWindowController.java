@@ -50,8 +50,8 @@ public class ChatWindowController {
     @FXML
     private TextArea area;
     private WebEngine engine;
-    private Account account = null;
-    private int userId = 0;
+    private Account account;
+    private int userId;
     private Document doc;
 
 

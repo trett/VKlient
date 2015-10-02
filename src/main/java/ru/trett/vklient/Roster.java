@@ -309,9 +309,7 @@ public class Roster extends BuddyChangeSubscriber {
             if (item.getValue().getUserId() == userId)
                 treeItem = item;
         }
-        if (treeItem == null)
-            System.out.println("Item not found");
-        return treeItem;
+        return treeItem == null ? null : treeItem;
     }
 
     private final class BuddyCellFactoryImpl extends TreeCell<Buddy> {
