@@ -35,8 +35,8 @@ import java.io.IOException;
 public class ChatWindowImpl implements ChatWindow {
 
     private final Stage stage = new Stage();
-    private int userId = 0;
-    private Account account = null;
+    private int userId;
+    private Account account;
     private ChatWindowController chatWindowController;
 
     ChatWindowImpl() {

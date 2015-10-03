@@ -38,14 +38,14 @@ import java.util.concurrent.TimeUnit;
 public class Account extends Buddy {
 
     public BooleanProperty authFinished = new SimpleBooleanProperty(false);
-    private String accessToken = null;
-    private ArrayList<Buddy> friends = null;
+    private String accessToken;
+    private ArrayList<Buddy> friends;
     private ScheduledExecutorService scheduledTimer;
     private Runnable stopTimer;
     private OnlineStatus onlineStatus;
     private LongPollServer longPollServer;
     private NetworkHelper networkHelper = new NetworkHelper();
-    private boolean errorState = false;
+    private boolean errorState;
 
     /**
      * Create account with given userId and Access token and connect to Long Poll Server
@@ -56,7 +56,7 @@ public class Account extends Buddy {
     public void create(final int userId, final String accessToken) {
         setUserId(userId);
         this.accessToken = accessToken;
-        ArrayList<Buddy> buddies = new Users().get(new ArrayList<Integer>() {{
+        ArrayList<Buddy> buddies = new Users().get(new ArrayList<Integer>(1) {{
             add(userId);
         }}, accessToken);
         if (buddies == null)

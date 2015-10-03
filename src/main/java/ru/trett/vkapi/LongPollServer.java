@@ -24,8 +24,6 @@ import ru.trett.vkapi.Exceptions.RequestReturnErrorException;
 import ru.trett.vkapi.Exceptions.RequestReturnNullException;
 
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.WeakHashMap;
 
 /**
@@ -35,24 +33,25 @@ import java.util.WeakHashMap;
 public class LongPollServer {
 
     private static final NetworkClient longPollClient;
+    private static final NetworkClient networkClient;
 
     static {
         longPollClient = new NetworkClient(26000);
+        networkClient = new NetworkClient(5000);
     }
 
     private final String API_VERSION = "5.37";
     public BooleanProperty haveUpdates = new SimpleBooleanProperty(false);
-    private boolean isOnline = false;
-    private String lpServer = null;
-    private String lpServerKey = null;
-    private String ts = null;
+    private boolean isOnline;
+    private String lpServer;
+    private String lpServerKey;
+    private String ts;
     private JSONArray data;
-    private NetworkClient networkClient;
     private Request request;
     private Account account;
+    private Thread thread;
 
     public LongPollServer(Account account) {
-        networkClient = new NetworkClient(5000);
         this.account = account;
         System.out.println("Long Poll Connection has been created.");
     }
@@ -70,32 +69,28 @@ public class LongPollServer {
                 )
                 .build();
         getLongPollConnection();
-        Timer timer = new Timer();
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                while (isOnline) {
-                    setHaveUpdates(false);
-                    try {
-                        JSONObject json = getUpdates(lpServer, lpServerKey, ts);
-                        ts = json.optString("ts");
-                        data = json.getJSONArray("updates");
-                        if (data.length() > 0)
-                            setHaveUpdates(true);
-                    } catch (RequestReturnNullException e) {
-                        if(account.getOnlineStatus() != OnlineStatus.OFFLINE) {
-                            account.connectionError(e);
-                            System.out.println(e.getMessage());
-                            isOnline = false;
-                        }
-                        return;
-                    } catch (RequestReturnErrorException e) {
-                        getLongPollConnection();
+        thread = new Thread(() -> {
+            while (isOnline) {
+                setHaveUpdates(false);
+                try {
+                    JSONObject json = getUpdates(lpServer, lpServerKey, ts);
+                    ts = json.optString("ts");
+                    data = json.getJSONArray("updates");
+                    if (data.length() > 0)
+                        setHaveUpdates(true);
+                } catch (RequestReturnNullException e) {
+                    if (account.getOnlineStatus() != OnlineStatus.OFFLINE) {
+                        account.connectionError(e);
+                        System.out.println(e.getMessage());
+                        isOnline = false;
                     }
+                    return;
+                } catch (RequestReturnErrorException e) {
+                    getLongPollConnection();
                 }
             }
-        };
-        timer.schedule(timerTask, 2000);
+        });
+        thread.start();
     }
 
     public boolean getHaveUpdates() {
@@ -160,6 +155,7 @@ public class LongPollServer {
         longPollClient.abort();
         System.out.println("Long Poll stopped.");
         isOnline = false;
+        thread.interrupt();
     }
 
     public boolean getIsOnline() {

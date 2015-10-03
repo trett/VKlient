@@ -22,7 +22,7 @@ package ru.trett.vkapi;
 
 public class Buddy {
 
-    private int userId = 0;
+    private int userId;
     private String firstName = "";
     private String lastName = "";
     private String avatarURL = "";

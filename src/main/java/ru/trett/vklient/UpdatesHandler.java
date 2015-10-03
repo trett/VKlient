@@ -52,7 +52,7 @@ public class UpdatesHandler {
     public void update(JSONArray array) {
         for (int i = 0; i < array.length(); ++i) {
             JSONArray temp = array.getJSONArray(i);
-            ArrayList<Object> list = new ArrayList<>();
+            ArrayList<Object> list = new ArrayList<>(1);
             for (int j = 0; j < temp.length(); ++j) {
                 list.add(temp.get(j));
             }

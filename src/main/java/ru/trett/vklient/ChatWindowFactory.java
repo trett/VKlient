@@ -30,7 +30,7 @@ public class ChatWindowFactory {
 
     static
     {
-        openWindows = new ArrayList<>();
+        openWindows = new ArrayList<>(1);
     }
 
     public static ArrayList<ChatWindow> getOpenWindows() {
