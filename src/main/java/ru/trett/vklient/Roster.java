@@ -86,7 +86,9 @@ public class Roster extends BuddyChangeSubscriber {
         });
         main.getItems().addAll(hideOffline, quit);
         mbar.getMenus().addAll(main);
-        statusBox.setCellFactory(call -> new StatusBoxCellImpl());
+        statusBox.setButtonCell(new StatusBoxCellImpl());
+        statusBox.setCellFactory(listView -> new StatusBoxCellImpl());
+
         statusBox.setMinWidth(column.getMinWidth());
         statusBox.setPrefWidth(Double.MAX_VALUE);
         final ObservableList<OnlineStatus> status =
@@ -381,16 +383,13 @@ public class Roster extends BuddyChangeSubscriber {
             } else {
                 switch (item) {
                     case ONLINE:
-                        setTextFill(Color.GREEN);
                         circle.setFill(Color.GREEN);
                         break;
                     case OFFLINE:
-                        setTextFill(Color.GRAY);
                         circle.setFill(Color.GRAY);
                         break;
                     case INVISIBLE:
-                        setTextFill(Color.BLUEVIOLET);
-                        circle.setFill(Color.BLUEVIOLET);
+                        circle.setFill(Color.YELLOWGREEN);
                         break;
                 }
                 setText(item.name());
