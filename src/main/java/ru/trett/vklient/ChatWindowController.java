@@ -26,6 +26,8 @@ import javafx.scene.web.WebView;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
+import org.w3c.dom.events.EventListener;
+import org.w3c.dom.events.EventTarget;
 import ru.trett.vkapi.Account;
 import ru.trett.vkapi.Exceptions.RequestReturnErrorException;
 import ru.trett.vkapi.Exceptions.RequestReturnNullException;
@@ -35,8 +37,10 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringEscapeUtils.unescapeHtml4;
+import static ru.trett.vklient.ExternalBrowser.open;
 
 /**
  * @author Roman Tretyakov
@@ -45,6 +49,10 @@ import static org.apache.commons.lang3.StringEscapeUtils.unescapeHtml4;
 
 public class ChatWindowController {
 
+    public static final String EVENT_TYPE_CLICK = "click";
+    private static final String URL_REGEX = "\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
+    private static final Pattern pattern = Pattern.compile(URL_REGEX);
+    EventListener listener;
     @FXML
     private WebView view;
     @FXML
@@ -84,6 +92,14 @@ public class ChatWindowController {
         engine.getLoadWorker().stateProperty().addListener(
                 (ObservableValue<? extends Worker.State> observable, Worker.State oldValue, Worker.State newValue) -> {
                     if (newValue == Worker.State.SUCCEEDED) {
+                        listener = ev -> {
+                            ev.preventDefault();
+                            String domEventType = ev.getType();
+                            if (domEventType.equals(EVENT_TYPE_CLICK)) {
+                                String href = ((Element) ev.getTarget()).getAttribute("href");
+                                open(href);
+                            }
+                        };
                         doc = engine.getDocument();
                         showHistory();
                         engine.executeScript("scroll();");
@@ -128,18 +144,34 @@ public class ChatWindowController {
     }
 
     public void appendMessage(final Message message) {
-        String body = message.getBody().replaceAll("<br>", "\n"); // God fuck them all. Wrong character from LongPoll server
+        String body = unescapeHtml4(message.getBody().replaceAll("<br>", "\n")); // Wrong character from LongPoll server
         Element el = doc.createElement("div");
         el.setAttribute("id", message.getDirection().contains("in") ? "incomingMessage" : "outgoingMessage");
         el.appendChild(doc.createElement("span"));
-        String[] splitString = body.split("\n");
         Text date = doc.createTextNode("[" + message.getDate() + "] ");
         el.appendChild(date);
+        String[] splitString = body.split("\n");
         for (String part : splitString) {
-            Text textNode = doc.createTextNode(unescapeHtml4(part));
-            el.appendChild(textNode);
+            if (part.matches(URL_REGEX)) {
+                String[] words = body.split("\\s+");
+                for (String word : words) {
+                    if (word.matches(URL_REGEX)) {
+                        Element url = doc.createElement("a");
+                        url.setAttribute("href", word);
+                        url.appendChild(doc.createTextNode(word));
+                        el.appendChild(url);
+                        ((EventTarget) url).addEventListener(EVENT_TYPE_CLICK, listener, false);
+                    } else {
+                        el.appendChild(doc.createTextNode(word));
+                    }
+                }
+            } else {
+                el.appendChild(doc.createTextNode(part));
+
+            }
             el.appendChild(doc.createElement("br"));
         }
+
         if (message.getAttachments() != null) {
             Element div = doc.createElement("div");
             div.setAttribute("id", "attachment");
@@ -159,6 +191,7 @@ public class ChatWindowController {
                     Element url = doc.createElement("a");
                     url.setAttribute("href", a.getUrl());
                     url.appendChild(doc.createTextNode(a.getUrl()));
+                    ((EventTarget) url).addEventListener(EVENT_TYPE_CLICK, listener, false);
                     div.appendChild(url);
                 }
                 if (a.getDescription() != null) {

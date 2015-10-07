@@ -48,6 +48,8 @@ public class Message {
                 break;
             case AttachmentType.PHOTO:
                 a.setPhoto(attachment.getJSONObject("photo").getString("photo_75"));
+                if (attachment.getJSONObject("photo").has("photo_604"))
+                    a.setUrl(attachment.getJSONObject("photo").getString("photo_604"));
                 break;
             case AttachmentType.WALL:
                 //TODO: parse
