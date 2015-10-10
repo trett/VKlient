@@ -82,39 +82,34 @@ public class Account extends Buddy {
         try {
             switch (onlineStatus) {
                 case ONLINE:
-                    if (!longPollServer.getIsOnline())
-                        longPollServer.start();
+                    longPollServer.start();
                     scheduledTimer = Executors.newSingleThreadScheduledExecutor();
                     ScheduledFuture<?> scheduledFuture = scheduledTimer.scheduleAtFixedRate(
                             () -> {
                                 try {
                                     setOnline();
-                                    System.out.println("Timer started");
                                 } catch (RequestReturnNullException | RequestReturnErrorException e) {
                                     connectionError(e);
                                 }
                             }, 5, 900, TimeUnit.SECONDS
                     );
                     stopTimer = new StopOnlineTimer(scheduledFuture);
-                    if (friends == null)
-                        setFriends();
+                    setFriends();
                     break;
                 case OFFLINE:
                     if (reason != OnlineStatusReason.CONNECTION_ERROR)
                         setOffline();
                     if (scheduledTimer != null && !scheduledTimer.isShutdown())
                         scheduledTimer.submit(stopTimer);
-                    if (longPollServer.getIsOnline())
-                        longPollServer.stop();
+                    longPollServer.stop();
+                    friends = null;
                     break;
                 case INVISIBLE:
-                    if (!longPollServer.getIsOnline())
-                        longPollServer.start();
+                    longPollServer.start();
                     if (scheduledTimer != null && !scheduledTimer.isShutdown())
                         scheduledTimer.submit(stopTimer);
                     setOffline();
-                    if (friends == null)
-                        setFriends();
+                    setFriends();
                     break;
             }
         } catch (RequestReturnErrorException | RequestReturnNullException e) {
@@ -133,6 +128,8 @@ public class Account extends Buddy {
     }
 
     public void setFriends() {
+        if (friends != null)
+            return;
         try {
             friends = new Friends().get(getUserId(), accessToken);
         } catch (RequestReturnNullException | RequestReturnErrorException e) {
@@ -281,7 +278,6 @@ public class Account extends Buddy {
             if (!scheduledFuture.isCancelled())
                 scheduledFuture.cancel(true);
             scheduledTimer.shutdown();
-            System.out.println("Timer stopped");
         }
     }
 

@@ -57,6 +57,8 @@ public class LongPollServer {
     }
 
     public void start() {
+        if (isOnline)
+            return;
         System.out.println("Long Poll Started");
         request = new RequestBuilder()
                 .host("api.vk.com/method/")
@@ -90,6 +92,7 @@ public class LongPollServer {
                 }
             }
         });
+        thread.setDaemon(true);
         thread.start();
     }
 
@@ -152,6 +155,8 @@ public class LongPollServer {
     }
 
     public void stop() {
+        if (!isOnline)
+            return;
         longPollClient.abort();
         System.out.println("Long Poll stopped.");
         isOnline = false;
