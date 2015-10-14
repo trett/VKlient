@@ -30,8 +30,8 @@ import javafx.scene.layout.RowConstraints;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import ru.trett.vkapi.*;
+import ru.trett.vkapi.Exceptions.RequestReturnErrorException;
 import ru.trett.vkapi.Exceptions.RequestReturnNullException;
-import ru.trett.vkapi.Exceptions.TokenErrorException;
 
 
 /**
@@ -48,6 +48,7 @@ public class Roster extends BuddyChangeSubscriber {
     private Account account;
     private TreeItem<Buddy> me;
     private TreeItem<Buddy> friendsNode;
+    private UpdatesHandler updatesHandler;
     private ObservableList<TreeItem<Buddy>> friendsModel = FXCollections.observableArrayList();
     private boolean rosterHideOffline = (Boolean.valueOf(
             config.getValue("rosterHideOffline", Boolean.toString(false))
@@ -71,10 +72,12 @@ public class Roster extends BuddyChangeSubscriber {
         iconLoader = new IconLoader();
         main.setGraphic(iconLoader.getIcon("vkontakte", 16));
         quit.setOnAction((ActionEvent event) -> {
-            saveSettings();
-            if (account.getOnlineStatus() != OnlineStatus.OFFLINE)
-                account.setOnlineStatus(OnlineStatus.OFFLINE,
-                        OnlineStatusReason.ON_DEMAND);
+            if (account != null) {
+                saveSettings();
+                if (account.getOnlineStatus() != OnlineStatus.OFFLINE)
+                    account.setOnlineStatus(OnlineStatus.OFFLINE,
+                            OnlineStatusReason.ON_DEMAND);
+            }
             Platform.exit();
         });
         hideOffline.setOnAction((ActionEvent event) -> {
@@ -98,28 +101,24 @@ public class Roster extends BuddyChangeSubscriber {
         friendsNode = new TreeItem<>();
         try {
             addAccount();
-            statusBox.setOnAction((ActionEvent event) -> {
-                if (statusBox.getValue() != account.getOnlineStatus() &&
-                        !account.isErrorState()) {
-                    Thread thread = new Thread(() -> {
-                        account.setOnlineStatus(OnlineStatus.valueOf(statusBox.getValue().name()),
-                                OnlineStatusReason.ON_DEMAND);
-                    });
-                    thread.start();
-                }
-            });
-            statusBox.setValue(
-                    OnlineStatus.valueOf(
-                            config.getValue("lastStatus", OnlineStatus.OFFLINE.name()).toUpperCase()
-                    )
-            );
-            hideOffline.setSelected(rosterHideOffline);
         } catch (RequestReturnNullException e) {
-            statusBox.setValue(OnlineStatus.OFFLINE);
-        } catch (TokenErrorException e) {
+            System.err.println("Network error.");
+        } catch (RequestReturnErrorException e) {
             System.out.println(e.getMessage());
             authorize(account);
         }
+        statusBox.setOnAction((ActionEvent event) -> {
+            if (account == null)
+                return;
+            if (statusBox.getValue() != account.getOnlineStatus()) {
+                Thread thread = new Thread(() -> {
+                    account.setOnlineStatus(OnlineStatus.valueOf(statusBox.getValue().name()),
+                            OnlineStatusReason.ON_DEMAND);
+                });
+                thread.start();
+            }
+        });
+        hideOffline.setSelected(rosterHideOffline);
     }
 
     /**
@@ -143,7 +142,7 @@ public class Roster extends BuddyChangeSubscriber {
         root.add(tree, 0, 1);
         me.setExpanded(true);
         me.getChildren().add(friendsNode);
-        account.getBuddyChange().attach(this);
+        account.getBuddyChangeEvent().attach(this);
         account.setOnlineStatus(OnlineStatus.valueOf(
                         config.getValue("lastStatus", OnlineStatus.OFFLINE.name()).toUpperCase()
                 ), OnlineStatusReason.ON_DEMAND
@@ -151,11 +150,15 @@ public class Roster extends BuddyChangeSubscriber {
     }
 
     private void createFriendsNode() {
+        if (account.getFriends() == null) {
+            System.err.println("Can't create friends for null");
+            return;
+        }
         if (friendsModel.isEmpty()) {
             account.getFriends().forEach(x ->
                             friendsModel.add(new TreeItem<>(x, iconLoader.getImageFromUrl(x.getAvatarURL())))
             );
-            friendsModel.forEach(x -> x.getValue().getBuddyChange().attach(this));
+            friendsModel.forEach(x -> x.getValue().getBuddyChangeEvent().attach(this));
             friendsModel.sort((o1, o2) -> o1.getValue().compareTo(o2.getValue()));
         }
 
@@ -167,7 +170,8 @@ public class Roster extends BuddyChangeSubscriber {
         if (rosterHideOffline)
             hideOffline();
 
-        new UpdatesHandler(account);
+        if (updatesHandler == null)
+            updatesHandler = new UpdatesHandler(account);
     }
 
     private ColorAdjust effect(OnlineStatus onlineStatus) {
@@ -207,15 +211,13 @@ public class Roster extends BuddyChangeSubscriber {
         config.setValue("rosterHeight", Double.toString(root.getHeight()));
     }
 
-    private void addAccount() throws RequestReturnNullException, TokenErrorException {
-        account = new Account();
-        if (config.getValue("access_token") != null) {
-            new Users().get(config.getValue("access_token"));
-            account.create(Integer.parseInt(config.getValue("user_id")),
+    private void addAccount() throws RequestReturnNullException, RequestReturnErrorException {
+        if (config.getValue("access_token") != null && config.getValue("user_id") != null) {
+            account = new Account(Integer.parseInt(config.getValue("user_id")),
                     config.getValue("access_token"));
             createRootNode(account);
         } else {
-            authorize(account);
+            authorize(new Account());
         }
     }
 
@@ -229,33 +231,31 @@ public class Roster extends BuddyChangeSubscriber {
                         createRootNode(account);
                     }
                 });
-    }
-
-    private void setState(OnlineStatus onlineStatus) {
-        switch (onlineStatus) {
-            case OFFLINE:
-                friendsNode.getChildren().clear();
-                friendsModel.clear();
-                break;
-            default:
-                createFriendsNode();
-                break;
-        }
+        this.account = account;
     }
 
     @Override
     public void update(Buddy buddy) {
         TreeItem<Buddy> treeItem;
         if (buddy.getUserId() == account.getUserId()) {
-            setState(buddy.getBuddyChange().getState());
+            switch (buddy.getBuddyChangeEvent().getState()) {
+                case OFFLINE:
+                    friendsNode.getChildren().clear();
+                    friendsModel.forEach(x -> x.getValue().getBuddyChangeEvent().remove(this));
+                    friendsModel.clear();
+                    break;
+                default:
+                    createFriendsNode();
+                    break;
+            }
             Platform.runLater(() -> {
-                        statusBox.setValue(buddy.getBuddyChange().getState());
-                        me.getGraphic().setEffect(effect(buddy.getBuddyChange().getState()));
+                        statusBox.setValue(account.getOnlineStatus());
+                        me.getGraphic().setEffect(effect(account.getOnlineStatus()));
                     }
             );
             return;
         } else {
-            System.out.println(buddy.getFirstName() + " changed status to " + buddy.getBuddyChange().getState().name());
+            System.out.println(buddy.getFirstName() + " changed status to " + buddy.getBuddyChangeEvent().getState().name());
             treeItem = getTreeItemByUserId(buddy.getUserId());
         }
 
@@ -264,8 +264,8 @@ public class Roster extends BuddyChangeSubscriber {
 
         Platform.runLater(() -> {
                     if (!rosterHideOffline) {
-                        treeItem.getGraphic().setEffect(effect(buddy.getBuddyChange().getState()));
-                    } else if (buddy.getBuddyChange().getState() == OnlineStatus.ONLINE) {
+                        treeItem.getGraphic().setEffect(effect(buddy.getBuddyChangeEvent().getState()));
+                    } else if (buddy.getBuddyChangeEvent().getState() == OnlineStatus.ONLINE) {
                         friendsNode.getChildren().add(treeItem);
                     } else {
                         friendsNode.getChildren().remove(treeItem);
@@ -281,7 +281,7 @@ public class Roster extends BuddyChangeSubscriber {
         if (treeItem == null)
             return;
         Platform.runLater(() -> {
-            if (buddy.getBuddyChange().getNewMessages() > 0)
+            if (buddy.getBuddyChangeEvent().getNewMessages() > 0)
                 treeItem.setGraphic(iconLoader.getIcon("unread", 32));
             else
                 treeItem.setGraphic(iconLoader.getImageFromUrl(treeItem.getValue().getAvatarURL()));
@@ -320,7 +320,7 @@ public class Roster extends BuddyChangeSubscriber {
                         chatWindow.showWindow();
                     else if (!getItem().equals(me.getValue()))
                         ChatWindowFactory.createInstance(account, getItem().getUserId());
-                    getItem().getBuddyChange().setNewMessages(0);
+                    getItem().getBuddyChangeEvent().setNewMessages(0);
                 }
             });
 
@@ -335,7 +335,7 @@ public class Roster extends BuddyChangeSubscriber {
             } else {
                 setText(getString());
                 setGraphic(getTreeItem().getGraphic());
-                getTreeItem().getGraphic().setEffect(effect(getItem().getBuddyChange().getState()));
+                getTreeItem().getGraphic().setEffect(effect(getItem().getBuddyChangeEvent().getState()));
             }
             setContextMenu(addMenu);
         }
@@ -353,7 +353,7 @@ public class Roster extends BuddyChangeSubscriber {
         private final Circle circle;
 
         StatusBoxCellImpl() {
-            circle = new Circle(6);
+            circle = new Circle(7);
         }
 
         @Override
@@ -378,6 +378,8 @@ public class Roster extends BuddyChangeSubscriber {
                         break;
                 }
                 setGraphic(circle);
+                getGraphic().setStyle(
+                        "-fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 12, 0, 1, 1);");
             }
         }
     }

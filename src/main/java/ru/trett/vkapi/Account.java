@@ -45,7 +45,9 @@ public class Account extends Buddy {
     private OnlineStatus onlineStatus;
     private LongPollServer longPollServer;
     private NetworkHelper networkHelper = new NetworkHelper();
-    private boolean errorState;
+
+    public Account() {
+    }
 
     /**
      * Create account with given userId and Access token and connect to Long Poll Server
@@ -53,7 +55,8 @@ public class Account extends Buddy {
      * @param userId      int user_id
      * @param accessToken String access_token
      */
-    public void create(final int userId, final String accessToken) {
+    public Account(final int userId, final String accessToken)
+            throws RequestReturnNullException, RequestReturnErrorException {
         setUserId(userId);
         this.accessToken = accessToken;
         ArrayList<Buddy> buddies = new Users().get(new ArrayList<Integer>(1) {{
@@ -91,7 +94,7 @@ public class Account extends Buddy {
                                 } catch (RequestReturnNullException | RequestReturnErrorException e) {
                                     connectionError(e);
                                 }
-                            }, 5, 900, TimeUnit.SECONDS
+                            }, 1, 900, TimeUnit.SECONDS
                     );
                     stopTimer = new StopOnlineTimer(scheduledFuture);
                     setFriends();
@@ -115,8 +118,7 @@ public class Account extends Buddy {
         } catch (RequestReturnErrorException | RequestReturnNullException e) {
             connectionError(e);
         }
-        getBuddyChange().setState(onlineStatus);
-        errorState = false;
+        getBuddyChangeEvent().setState(onlineStatus);
     }
 
     public String getAccessToken() {
@@ -248,7 +250,7 @@ public class Account extends Buddy {
                 (ObservableValue<? extends Boolean> answer, Boolean oldAnswer, Boolean newAnswer) -> {
                     Map<String, String> list = helper.getAnswer();
                     try {
-                        create(Integer.parseInt(list.get("user_id")), list.get("access_token"));
+                        new Account(Integer.parseInt(list.get("user_id")), list.get("access_token"));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
@@ -256,14 +258,9 @@ public class Account extends Buddy {
                 });
     }
 
-    public boolean isErrorState() {
-        return errorState;
-    }
-
     public void connectionError(Exception e) {
-        errorState = true;
         setOnlineStatus(OnlineStatus.OFFLINE, OnlineStatusReason.CONNECTION_ERROR);
-        System.out.println("Connection state error cause " + e.getMessage());
+        System.err.println("Connection state error cause " + e.getMessage());
     }
 
     private final class StopOnlineTimer implements Runnable {

@@ -28,18 +28,19 @@ public class Buddy {
     private String avatarURL = "";
     private OnlineStatus onlineStatus = OnlineStatus.OFFLINE;
     private String status = "";
-    private BuddyChange buddyChange = new BuddyChange(this);
+    private BuddyChangeEvent buddyChangeEvent = new BuddyChangeEvent(this);
 
     /**
-     * Het online status change notifier
-     * @return BuddyChange
+     * Get online status change notifier
+     *
+     * @return BuddyChangeEvent
      */
-    public BuddyChange getBuddyChange() {
-        return buddyChange;
+    public BuddyChangeEvent getBuddyChangeEvent() {
+        return buddyChangeEvent;
     }
 
-    public void setBuddyChange(BuddyChange buddyChange) {
-        this.buddyChange = buddyChange;
+    public void setBuddyChangeEvent(BuddyChangeEvent buddyChangeEvent) {
+        this.buddyChangeEvent = buddyChangeEvent;
     }
 
     /**
@@ -126,7 +127,7 @@ public class Buddy {
      * @param onlineStatus int
      */
     public void setOnlineStatus(OnlineStatus onlineStatus, OnlineStatusReason reason) {
-        this.getBuddyChange().setState(onlineStatus);
+        this.getBuddyChangeEvent().setState(onlineStatus);
         this.onlineStatus = onlineStatus;
     }
 
@@ -139,6 +140,7 @@ public class Buddy {
 
     /**
      * Sets Status text
+     *
      * @param status String Status text
      */
     public void setStatus(String status) {
@@ -152,9 +154,9 @@ public class Buddy {
      * @return int
      */
     public int compareTo(Buddy b) {
-        if (this.getBuddyChange().getState().ordinal() > b.getBuddyChange().getState().ordinal()) {
+        if (this.getBuddyChangeEvent().getState().ordinal() > b.getBuddyChangeEvent().getState().ordinal()) {
             return -1;
-        } else if (this.getBuddyChange().getState().ordinal() < b.getBuddyChange().getState().ordinal()) {
+        } else if (this.getBuddyChangeEvent().getState().ordinal() < b.getBuddyChangeEvent().getState().ordinal()) {
             return 1;
         } else {
             return 0;

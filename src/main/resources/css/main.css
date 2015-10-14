@@ -5,11 +5,8 @@
 
 
 .tree-cell {
-    -fx-font-smoothing-type: gray;
     -fx-font-family: "Liberation Sans", "Courier New";
-/*    -fx-font-size: 0.9em; */
-/*    -fx-background-color: linear-gradient(#ffffff 0%, #f6f6f6 47%, #ededed 100%);*/
-    
+    -fx-indent: 3;
 } 
 
 .tree-cell:selected {
@@ -21,13 +18,7 @@
 
 .tree-cell:even {
     -fx-background-color: #ededed;
-} 
-
-/*.tree-cell:highlighted {
-    -fx-background-color: linear-gradient(#328BDB 0%, #207BCF 25%, #1973C9 75%, #0A65BF 100%);
-    -fx-text-fill: black;
-    
-}*/
+}
 
 .combo-box .arrow, .combo-box .arrow-button{
     -fx-background-color: transparent;

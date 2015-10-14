@@ -99,7 +99,7 @@ public class UpdatesHandler {
                             chatWindow.appendMessage(message);
                         } else {
                             Buddy b = account.getFriendById(account.getFriends(), (int) list.get(3));
-                            b.getBuddyChange().setNewMessages(1);
+                            b.getBuddyChangeEvent().setNewMessages(1);
                             NotificationProvider.showNotification(b.getFirstName() + " " + b.getLastName());
                         }
                     });

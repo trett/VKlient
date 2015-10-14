@@ -143,7 +143,7 @@ public class LongPollServer {
                     build();
             String answer = longPollClient.send(request);
             if (answer == null)
-                throw new RequestReturnNullException("Long Poll server return null");
+                throw new RequestReturnNullException("Long Poll server return null.");
             JSONObject obj = new JSONObject(answer);
             if (obj.has("failed"))
                 throw new RequestReturnErrorException("NetworkClient return error: "
@@ -161,14 +161,6 @@ public class LongPollServer {
         System.out.println("Long Poll stopped.");
         isOnline = false;
         thread.interrupt();
-    }
-
-    public boolean getIsOnline() {
-        return isOnline;
-    }
-
-    public void setIsOnline(boolean isOnline) {
-        this.isOnline = isOnline;
     }
 
 }

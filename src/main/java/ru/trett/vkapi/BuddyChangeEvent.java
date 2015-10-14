@@ -22,14 +22,14 @@ import java.util.List;
  * @author Roman Tretyakov
  * @since 24.09.15
  */
-public class BuddyChange {
+public class BuddyChangeEvent {
 
     private List<BuddyChangeSubscriber> buddyChangeSubscribers = new ArrayList<>(1);
     private OnlineStatus state;
     private int newMessages;
     private Buddy buddy;
 
-    BuddyChange(Buddy buddy) {
+    BuddyChangeEvent(Buddy buddy) {
         this.buddy = buddy;
     }
 
@@ -53,6 +53,10 @@ public class BuddyChange {
 
     public void attach(BuddyChangeSubscriber buddyChangeSubscriber) {
         buddyChangeSubscribers.add(buddyChangeSubscriber);
+    }
+
+    public void remove(BuddyChangeSubscriber buddyChangeSubscriber) {
+        buddyChangeSubscribers.remove(buddyChangeSubscriber);
     }
 
     public void notifySubscribersAboutStatusChange() {
