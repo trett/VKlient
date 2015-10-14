@@ -15,12 +15,13 @@
 
 package ru.trett.vkapi;
 
-import org.json.JSONObject;
 import ru.trett.vkapi.Exceptions.RequestReturnErrorException;
 import ru.trett.vkapi.Exceptions.RequestReturnNullException;
-import ru.trett.vkapi.Exceptions.TokenErrorException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -36,36 +37,17 @@ public class Users {
      * @param token   String access_token
      * @return ArrayList buddies
      */
-    public ArrayList<Buddy> get(List<Integer> userIds, String token) {
+    public ArrayList<Buddy> get(List<Integer> userIds, String token)
+            throws RequestReturnNullException, RequestReturnErrorException {
         Map<String, String> urlParameters = new WeakHashMap<>();
         String ids = userIds.stream().map(Object::toString).collect(Collectors.joining(","));
         urlParameters.put("user_ids", ids);
         urlParameters.put("access_token", token);
         urlParameters.put("fields", "photo_50,online,status");
-        try {
-            JSONObject obj = new NetworkHelper().sendRequest("users.get", urlParameters);
-            return new BuddyMapper().map(obj.getJSONArray("response"));
-        } catch (RequestReturnNullException | RequestReturnErrorException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /**
-     * Return user_id for given token
-     *
-     * @param token String access_token
-     * @return int user_id
-     */
-    public int get(String token) throws TokenErrorException, RequestReturnNullException {
-        Map<String, String> urlParameters = new WeakHashMap<>();
-        urlParameters.put("access_token", token);
-        try {
-            JSONObject json = new NetworkHelper().sendRequest("users.get", urlParameters);
-            return json.getJSONArray("response").getJSONObject(0).getInt("id");
-        } catch (RequestReturnErrorException e) {
-            throw new TokenErrorException("Token error");
-        }
+        return new BuddyMapper()
+                .map(new NetworkHelper()
+                        .sendRequest("users.get", urlParameters)
+                        .getJSONArray("response"));
     }
 
 }
