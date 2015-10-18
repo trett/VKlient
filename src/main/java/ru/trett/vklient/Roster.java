@@ -105,7 +105,7 @@ public class Roster extends BuddyChangeSubscriber {
             System.err.println("Network error.");
         } catch (RequestReturnErrorException e) {
             System.out.println(e.getMessage());
-            authorize(account);
+            authorize(new Account());
         }
         statusBox.setOnAction((ActionEvent event) -> {
             if (account == null)
@@ -213,7 +213,8 @@ public class Roster extends BuddyChangeSubscriber {
 
     private void addAccount() throws RequestReturnNullException, RequestReturnErrorException {
         if (config.getValue("access_token") != null && config.getValue("user_id") != null) {
-            account = new Account(Integer.parseInt(config.getValue("user_id")),
+            account = new Account();
+            account.build(Integer.parseInt(config.getValue("user_id")),
                     config.getValue("access_token"));
             createRootNode(account);
         } else {
