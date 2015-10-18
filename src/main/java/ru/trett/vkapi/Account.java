@@ -46,16 +46,13 @@ public class Account extends Buddy {
     private LongPollServer longPollServer;
     private NetworkHelper networkHelper = new NetworkHelper();
 
-    public Account() {
-    }
-
     /**
      * Create account with given userId and Access token and connect to Long Poll Server
      *
      * @param userId      int user_id
      * @param accessToken String access_token
      */
-    public Account(final int userId, final String accessToken)
+    public void build(final int userId, final String accessToken)
             throws RequestReturnNullException, RequestReturnErrorException {
         setUserId(userId);
         this.accessToken = accessToken;
@@ -250,7 +247,7 @@ public class Account extends Buddy {
                 (ObservableValue<? extends Boolean> answer, Boolean oldAnswer, Boolean newAnswer) -> {
                     Map<String, String> list = helper.getAnswer();
                     try {
-                        new Account(Integer.parseInt(list.get("user_id")), list.get("access_token"));
+                        build(Integer.parseInt(list.get("user_id")), list.get("access_token"));
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
