@@ -11,7 +11,7 @@ body {
 }
 
 #incomingMessage > span {
-    background:url('./downarrow.png') no-repeat bottom left ;
+    background:url('jar:file:VKlient.jar!/chat/downarrow.png') no-repeat bottom left ;
     display: inline-block;
     margin-right: 5px;
     margin-bottom: -3px;
@@ -20,7 +20,7 @@ body {
 }
 
 #outgoingMessage > span {
-    background: url('./uparrow.png') no-repeat bottom left;
+    background: url('jar:file:VKlient.jar!/chat/uparrow.png') no-repeat bottom left;
     display: inline-block;
     margin-right: 5px;
     margin-bottom: -3px;
