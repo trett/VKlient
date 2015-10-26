@@ -11,4 +11,4 @@
 
 #### Run: ####
 * cd VKlient/target
-* java -jar VKlient.jar
+* java -jar vklient.jar
