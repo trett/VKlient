@@ -37,7 +37,6 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.regex.Pattern;
 
 import static org.apache.commons.lang3.StringEscapeUtils.unescapeHtml4;
 import static ru.trett.vklient.ExternalBrowser.open;
@@ -51,7 +50,6 @@ public class ChatWindowController {
 
     public static final String EVENT_TYPE_CLICK = "click";
     private static final String URL_REGEX = "\\b(https?|ftp|file)://[-a-zA-Z0-9+&@#/%?=~_|!:,.;]*[-a-zA-Z0-9+&@#/%=~_|]";
-    private static final Pattern pattern = Pattern.compile(URL_REGEX);
     EventListener listener;
     @FXML
     private WebView view;
@@ -85,7 +83,7 @@ public class ChatWindowController {
     @FXML
     private void initialize() {
         engine = view.getEngine();
-        URL htmlPath = getClass().getClassLoader().getResource("chatStyle/chat.html");
+        URL htmlPath = getClass().getClassLoader().getResource("chat/chat.html");
         if (htmlPath == null)
             throw new RuntimeException("HTML Template was not found");
         engine.load(htmlPath.toExternalForm());

@@ -7,8 +7,8 @@
 #### Build: ####
 * git clone http://github.com/trett/VKlient.git
 * cd ./VKlient
-* mvn assembly:assembly
+* mvn package
 
 #### Run: ####
 * cd VKlient/target
-* java -jar vklient-1.1-SNAPSHOT-jar-with-dependencies.jar
+* java -jar VKlient.jar
