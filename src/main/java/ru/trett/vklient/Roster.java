@@ -245,9 +245,11 @@ public class Roster extends BuddyChangeSubscriber {
                     friendsModel.forEach(x -> x.getValue().getBuddyChangeEvent().remove(this));
                     friendsModel.clear();
                     break;
-                default:
+                case ONLINE:
                     createFriendsNode();
                     break;
+                case INVISIBLE:
+                    createFriendsNode();
             }
             Platform.runLater(() -> {
                         statusBox.setValue(account.getOnlineStatus());
